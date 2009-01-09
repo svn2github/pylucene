@@ -1,0 +1,61 @@
+
+For bug <NUM>, see http://bugzilla.osafoundation.org/show_bug.cgi?id=<NUM>
+
+Version 2.4.0 ->
+----------------------
+ - PyLucene now a subproject of the Apache Lucene project
+ - 
+
+Version 2.3.2 -> 2.4.0
+----------------------
+ - fixed Debian bug http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=499599
+ - arrays are now wrapped with JArray() instances instead of expanded into lists
+ - return by value in arrays now supported
+ - PythonTermDocs removed since arrays can now receive values
+ - PythonReader removed since arrays now wrapped
+ - added InstantiatedIndex contrib to build
+ - PyLucene built with JCC 2.1
+
+Version 2.3.1 -> 2.3.2
+----------------------
+ - fixed code generation for clone() broken by finalization proxy work
+ - added 'union' and 'NULL' to the list of reserved words
+ - fixed castCheck() to work with finalization proxies
+ - added scorePayload() delegator to PythonSimilarityDelegator
+ - added support for --install-dir and --use-distutils options
+ - added support for INSTALL_OPT to Makefile
+ - fixed basic samples to initialize VM
+ - added bdist target to Makefile
+
+Version 2.3 -> 2.3.1
+--------------------
+ - fixed bug in JCC using the wrong field modifiers for setter (Bill Janssen)
+ - added missing calls for generating wrappers for ancestors of Exception
+ - added missing call for generating wrappers for String
+ - added PythonTokenizer for implementing complete tokenizers in Python
+
+Version 2.2 -> 2.3
+------------------
+
+ - PyLucene with JCC introduced
+ - added support for Python 2.3.5
+ - added support for using clone() with extensions
+ - renamed decRef() (and incRef()) native extensions method to pythonDecRef()
+ - improved error reporting a bit
+ - JCC now generates Python properties for get/set/is methods
+ - fixed bug in generated code invoking parent method when inherited from above
+ - added support for building on 64-bit Linux (Ubuntu 7.10)
+ - added support for implicitely iterable Enumeration
+ - added support for --root and --prefix for jcc invocations (Esteve Fernandez)
+ - jcc switched to setuptools by default (and fallback on distutils)
+ - fixed bug 11643
+ - added support for automatic boxing of primitives when Object is expected
+ - fixed bug in missing extensions' Iterator and Enumeration methods
+ - added JavaSet.py sample using PythonSet and PythonIterator extensions
+ - added missing LICENSE files
+ - fixed memory leak when calling inherited methods via callSuper()
+ - made finalize() method public on extensions for manually breaking ref cycle
+ - added support for building on Solaris with Sun Studio C++ (Solaris 11)
+ - fixed leak of local refs of jstring when converting to an array of String
+ - automated finalization of extensions via proxy for breaking ref cycle
+ - added Py_CLEAR and Py_VISIT macros for Python 2.3.5 compilation

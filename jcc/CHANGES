@@ -1,0 +1,91 @@
+
+For bug <NUM>, see http://bugzilla.osafoundation.org/show_bug.cgi?id=<NUM>
+
+Version 2.1 ->
+------------------
+ - JCC now a subproject of the Apache PyLucene project
+ - 
+
+Version 2.0 -> 2.1
+------------------
+ - fixed bug with not checking missing module name when attempting build
+ - increased jcc's java stack to 512k
+ - added support for iPod/iPhone, with shared mode
+ - added missing cast to jweak in call to DeleteWeakGlobalRef()
+ - fixed local string ref leak in JArray<jstring> (Aaron Lav)
+ - fixed local ref leak if ref for object already exists in table (Aaron Lav)
+ - fixed bug with error reporting from class methods (Aaron Lav)
+ - fixed bug with reporting python errors with RuntimeException when not shared
+ - removed bogus storage class from template specializations (Joseph Barillari)
+
+Version 1.9 -> 2.0
+------------------
+ - fixed bug with failed findClass() import
+ - fixed bug 12127
+ - added -ljvm to linux2 and sunos5 LFLAGS
+ - added support for using JCC in reverse (starting from Java VM) (shared only)
+ - using PythonException for reporting Python errors (shared only)
+ - inserted Apache 2.0 license copyright notices
+ - fixed bug with declaring array parameters in extension methods
+ - added support for --module to add individual python files to resulting egg
+ - JCC in reverse functional on Mac OS X and Linux
+ - fixed JCC in reverse threading issues
+ - JCC in reverse usable with Tomcat
+ - got python stacktrace into PythonException's message
+ - added 'self' property to get wrapped python object from extension wrapper
+ - added headless AWT workaround to JCC's own initVM() call
+ - added DEBUG_CFLAGS to setup.py to improve debug build support
+ - fixed uninitialized Class class bug (parseArgs)
+ - added errorName field to PythonException
+ - added support for excluding stack trace from PythonException
+ - arrays are now wrapped by JArray() objects instead of expanded into lists
+ - return by value in arrays now supported
+ - added support for nested arrays via JArray().cast_()
+ - included patch to setuptools to support shared mode on Linux
+
+Version 1.8 -> 1.9
+------------------
+ - fixed code generation for clone() broken by finalization proxy work
+ - added 'union' to the list of reserved words
+ - fixed castCheck() to work with finalization proxies
+ - --compile no longer installs by default
+ - fixed bug in __init__.cpp #include statements for package-less classes
+ - fixed line ending bug on Windows
+ - fixed multiple JCC-built extensions in same process problem
+ - removed env argument from initVM() as it's redundant with the libjcc.dylib
+ - reimplemented env->setClassPath() in terms of system URLClassLoader hack
+ - added support for --include option
+ - added 'NULL' to list of reserved words
+ - added support for building shared libjcc library on Mac OS X and Linux
+ - fixed bug with generating wrappers for abstract Enumeration implementations
+ - added support for --install-dir and --use-distutils options
+ - copy jcc runtime sources into extension source tree before compiling
+ - added detection of invalid command line args
+ - fixed double-free bug when passing in vmargs
+ - added defines to enable building with MinGW (Bill Janssen)
+ - added support for --bdist
+ - added support for --compiler
+ - fixed crasher on Windows with virtual JObject.weaken$()
+ - fixed bug not checking return value from initVM()
+ - fixed bug with findClass() not catching C++ exception when class not found
+ - added missing code in parseArgs() to handle double[], float[] and long[]
+
+Version 1.7 -> 1.8
+------------------
+
+ - fixed bug using the wrong field modifiers for setter (Bill Janssen)
+ - added missing calls for generating wrappers for ancestors of Exception
+ - added missing call for generating wrappers for String
+ - added note about --classpath to README
+
+Version 1.6 -> 1.7
+------------------
+ - fixed memory leak when calling inherited methods via callSuper()
+ - added support for building on Solaris with Sun Studio C++ (Solaris 11)
+ - fixed leak of local refs of jstring when converting to an array of String
+ - automated finalization of extensions via proxy for breaking ref cycle
+ - added Py_CLEAR and Py_VISIT macros for Python 2.3.5 compilation
+
+Earlier versions (changes included in PyLucene versions < 2.3)
+--------------------------------------------------------------
+ - see http://svn.osafoundation.org/pylucene/trunk/jcc/CHANGES
