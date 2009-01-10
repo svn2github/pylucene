@@ -91,6 +91,7 @@ protected:
 public:
     JavaVM *vm;
     std::multimap<int, countedRef> refs;
+    int handlers;
 
     class exception {
     public:
@@ -270,14 +271,18 @@ class PythonGIL {
 class PythonThreadState {
   private:
     PyThreadState *state;
+    int handler;
   public:
-    PythonThreadState()
+    PythonThreadState(int handler=0)
     {
         state = PyEval_SaveThread();
+        this->handler = handler;
+        env->handlers += handler;
     }
     ~PythonThreadState()
     {
         PyEval_RestoreThread(state);
+        env->handlers -= handler;
     }
 };
 

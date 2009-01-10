@@ -20,7 +20,7 @@
 #define OBJ_CALL(action)                                                \
     {                                                                   \
         try {                                                           \
-            PythonThreadState state;                                    \
+            PythonThreadState state(1);                                 \
             action;                                                     \
         } catch (JCCEnv::pythonError) {                                 \
             return NULL;                                                \
@@ -32,7 +32,7 @@
 #define INT_CALL(action)                                                \
     {                                                                   \
         try {                                                           \
-            PythonThreadState state;                                    \
+            PythonThreadState state(1);                                 \
             action;                                                     \
         } catch (JCCEnv::pythonError) {                                 \
             return -1;                                                  \

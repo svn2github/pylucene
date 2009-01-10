@@ -279,7 +279,9 @@ void JCCEnv::reportException()
 
     if (throwable)
     {
-        //vm_env->ExceptionDescribe();
+        if (!env->handlers)
+            vm_env->ExceptionDescribe();
+
         vm_env->ExceptionClear();
 
 #ifdef PYTHON

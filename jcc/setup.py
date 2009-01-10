@@ -14,6 +14,7 @@
 
 import os, sys, platform, subprocess
 
+jcc_ver = '2.1'
 python_ver = '%d.%d.%d' %(sys.version_info[0:3])
 machine = platform.machine()
 
@@ -21,7 +22,6 @@ if machine.startswith("iPod") or machine.startswith("iPhone"):
     platform = 'ipod'
 else:
     platform = sys.platform
-
 
 # Add or edit the entry corresponding to your system in the INCLUDES, CFLAGS
 # DEBUG_CFLAGS, LFLAGS and JAVAC dictionaries below. These entries are used
@@ -236,8 +236,8 @@ def main(debug):
         if platform in ('darwin', 'ipod'):
             kwds["extra_link_args"] = \
                 lflags + ['-install_name', '@rpath/libjcc.dylib',
-                          '-current_version', '2.0',
-                          '-compatibility_version', '2.0']
+                          '-current_version', jcc_ver,
+                          '-compatibility_version', jcc_ver]
         elif platform == 'linux2':
             kwds["extra_link_args"] = \
                 lflags + ['-lpython%s.%s' %(sys.version_info[0:2])]
@@ -276,7 +276,7 @@ def main(debug):
 
     args = {
         'name': 'JCC',
-        'version': '2.1',
+        'version': jcc_ver,
         'description': 'a C++ code generator for calling Java from C++/Python',
         'long_description': open('DESCRIPTION').read(),
         'author': 'Andi Vajda',
