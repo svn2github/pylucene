@@ -4,6 +4,7 @@ For bug <NUM>, see http://bugzilla.osafoundation.org/show_bug.cgi?id=<NUM>
 Version 2.1 ->
 ------------------
  - JCC now a subproject of the Apache PyLucene project
+ - fixed bug where thread's JNIEnv was not set before calling findClass()
  - 
 
 Version 2.0 -> 2.1

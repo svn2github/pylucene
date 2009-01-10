@@ -305,14 +305,14 @@ def extension(env, out, indent, cls, names, name, count, method):
         line(out, indent, '}')
         return
 
+    line(out, indent, 'PythonGIL gil(jenv);')
+
     returnType = method.getReturnType()
     returnName = returnType.getName()
     if returnName != 'void':
         line(out, indent, '%s value%s;',
              typename(returnType, cls, False),
              not returnType.isPrimitive() and '((jobject) NULL)' or '')
-
-    line(out, indent, 'PythonGIL gil(jenv);')
 
     sigs = []
     decrefs = []
