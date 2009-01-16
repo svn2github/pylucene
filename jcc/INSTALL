@@ -18,14 +18,14 @@
   Building JCC
   ------------
 
-  JCC is a Python extension written in Python and C++. it requires a Java
+  JCC is a Python extension written in Python and C++. It requires a Java
   Runtime Environment to operate as it uses Java's reflection APIs to do 
-  its work. It is built and installed via distutils.
+  its work. It is built and installed via distutils or setuptools.
 
   1. Edit setup.py and review that values in the INCLUDE, CFLAGS,
      DEBUG_CFLAGS, LFLAGS and JAVAC are correct for your system. These
      values are also going to be compiled into JCC's config.py file and are
-     going to be used by JCC when invoking disutils or setuptools to compile
+     going to be used by JCC when invoking distutils or setuptools to compile
      extensions its generating code for.
 
   2. At the command line, enter:

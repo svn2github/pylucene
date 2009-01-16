@@ -41,7 +41,7 @@
   Requirements
   ------------
 
-  To build PyLucene with JCC a Java Development Kit (JDK) and ant [1] are
+  To build PyLucene with JCC a Java Development Kit (JDK) and Ant [1] are
   required; use of the resulting PyLucene requires only a Java Runtime
   Environment (JRE).
 
