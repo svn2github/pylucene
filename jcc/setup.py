@@ -1,5 +1,3 @@
-#   Copyright (c) 2007-2008 Open Source Applications Foundation
-#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -254,8 +252,8 @@ def main(debug):
 
         args = _javac[:]
         args.extend(('-d', 'jcc/classes'))
-        args.append('java/org/osafoundation/jcc/PythonVM.java')
-        args.append('java/org/osafoundation/jcc/PythonException.java')
+        args.append('java/org/apache/jcc/PythonVM.java')
+        args.append('java/org/apache/jcc/PythonException.java')
         if not os.path.exists('jcc/classes'):
             os.makedirs('jcc/classes')
         try:
@@ -265,8 +263,8 @@ def main(debug):
         process.wait()
         if process.returncode != 0:
             raise OSError, process.stderr.read()
-        package_data.append('classes/org/osafoundation/jcc/PythonVM.class')
-        package_data.append('classes/org/osafoundation/jcc/PythonException.class')
+        package_data.append('classes/org/apache/jcc/PythonVM.class')
+        package_data.append('classes/org/apache/jcc/PythonException.class')
 
     extensions.append(Extension('jcc._jcc',
                                 extra_compile_args=cflags,
@@ -280,7 +278,7 @@ def main(debug):
         'description': 'a C++ code generator for calling Java from C++/Python',
         'long_description': open('DESCRIPTION').read(),
         'author': 'Andi Vajda',
-        'author_email': 'vajda@osafoundation.org',
+        'author_email': 'vajda@apache.org',
         'classifiers': ['Development Status :: 5 - Production/Stable',
                         'Environment :: Console',
                         'Intended Audience :: Developers',

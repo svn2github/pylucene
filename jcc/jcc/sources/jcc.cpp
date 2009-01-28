@@ -1,6 +1,4 @@
-/*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
+/* ====================================================================
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -12,6 +10,7 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
+ * ====================================================================
  */
 
 #include <stdio.h>
@@ -389,7 +388,7 @@ extern "C" {
 #ifdef _jcc_lib
     static void raise_error(JNIEnv *vm_env, const char *message)
     {
-        jclass cls = vm_env->FindClass("org/osafoundation/jcc/PythonException");
+        jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
         vm_env->ThrowNew(cls, message);
     }
 
@@ -405,7 +404,7 @@ extern "C" {
         return JNI_VERSION_1_4;
     }
 
-    JNIEXPORT void JNICALL Java_org_osafoundation_jcc_PythonVM_init(JNIEnv *vm_env, jobject self, jstring programName, jobjectArray args)
+    JNIEXPORT void JNICALL Java_org_apache_jcc_PythonVM_init(JNIEnv *vm_env, jobject self, jstring programName, jobjectArray args)
     {
         const char *str = vm_env->GetStringUTFChars(programName, JNI_FALSE);
 #ifdef linux
@@ -447,7 +446,7 @@ extern "C" {
         PyEval_ReleaseLock();
     }
 
-    JNIEXPORT jobject JNICALL Java_org_osafoundation_jcc_PythonVM_instantiate(JNIEnv *vm_env, jobject self, jstring moduleName, jstring className)
+    JNIEXPORT jobject JNICALL Java_org_apache_jcc_PythonVM_instantiate(JNIEnv *vm_env, jobject self, jstring moduleName, jstring className)
     {
         PythonGIL gil(vm_env);
 
@@ -605,7 +604,7 @@ extern "C" {
 #ifdef _jcc_lib
 static void registerNatives(JNIEnv *vm_env)
 {
-    jclass cls = vm_env->FindClass("org/osafoundation/jcc/PythonException");
+    jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
     JNINativeMethod methods[] = {
         { "getErrorInfo", "()V", (void *) PythonException_getErrorInfo },
         { "clear", "()V", (void *) PythonException_clear },

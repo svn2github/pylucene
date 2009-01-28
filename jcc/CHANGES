@@ -5,7 +5,7 @@ Version 2.1 ->
 ------------------
  - JCC now a subproject of the Apache PyLucene project
  - fixed bug where thread's JNIEnv was not set before calling findClass()
- - unhandled java exception is printed out via ExceptionDescribe()
+ - unhandled java exception now is printed out via ExceptionDescribe()
  - 
 
 Version 2.0 -> 2.1

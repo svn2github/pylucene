@@ -1,6 +1,4 @@
-/*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
+/* ====================================================================
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -12,6 +10,7 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
+ * ====================================================================
  */
 
 #include <map>
@@ -81,7 +80,7 @@ JCCEnv::JCCEnv(JavaVM *vm, JNIEnv *vm_env)
     _sys = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/System"));
     _obj = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Object"));
 #ifdef _jcc_lib
-    _thr = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("org/osafoundation/jcc/PythonException"));
+    _thr = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("org/apache/jcc/PythonException"));
 #else
     _thr = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/RuntimeException"));
 #endif
