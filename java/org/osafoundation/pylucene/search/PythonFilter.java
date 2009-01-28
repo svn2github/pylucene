@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,15 +13,21 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.store;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.store.BufferedIndexInput;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.index.IndexReader;
+import java.util.BitSet;
 
-public class PythonIndexInput extends BufferedIndexInput {
+/**
+ * @author Andi Vajda
+ */
+
+public class PythonFilter extends Filter {
 
     private long pythonObject;
 
-    public PythonIndexInput()
+    public PythonFilter()
     {
     }
 
@@ -42,16 +46,6 @@ public class PythonIndexInput extends BufferedIndexInput {
         pythonDecRef();
     }
 
-    public native Object clone();
-    public native void close();
     public native void pythonDecRef();
-    public native long length();
-    public native byte[] readInternal(int length, long pos);
-    public native void seekInternal(long pos);
-
-    protected void readInternal(byte[] b, int offset, int length)
-    {
-        byte[] data = readInternal(length, getFilePointer());
-        System.arraycopy(data, 0, b, offset, data.length);
-    }
+    public native BitSet bits(IndexReader reader);
 }

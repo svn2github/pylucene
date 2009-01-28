@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,15 +13,19 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.store;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.store.Lock;
+import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.index.Term;
+import java.util.Collection;
 
-public class PythonLock extends Lock {
+
+public class PythonSimilarity extends Similarity {
 
     private long pythonObject;
 
-    public PythonLock()
+    public PythonSimilarity()
     {
     }
 
@@ -43,8 +45,22 @@ public class PythonLock extends Lock {
     }
 
     public native void pythonDecRef();
-    public native boolean isLocked();
-    public native boolean obtain();
-    public native boolean obtain(long lockWaitTimeout);
-    public native void release();
+    public native float coord(int overlap, int maxOverlap);
+    public native float idfTerm(Term term, Searcher searcher);
+    public native float idfTerms(Collection terms, Searcher searcher);
+    public native float idf(int docFreq, int numDocs);
+    public native float lengthNorm(String fieldName, int numTokens);
+    public native float queryNorm(float sumOfSquaredWeights);
+    public native float sloppyFreq(int distance);
+    public native float tf(float freq);
+
+    public float idf(Term term, Searcher searcher)
+    {
+        return idfTerm(term, searcher);
+    }
+
+    public float idf(Collection terms, Searcher searcher)
+    {
+        return idfTerms(terms, searcher);
+    }
 }

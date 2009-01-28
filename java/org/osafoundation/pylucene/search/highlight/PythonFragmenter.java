@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,21 +13,17 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.analysis;
+package org.apache.pylucene.search.highlight;
 
-import org.apache.lucene.analysis.TokenFilter;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.analysis.Token;
-import java.io.IOException;
 
-
-public class PythonTokenFilter extends TokenFilter {
+public class PythonFragmenter implements Fragmenter {
 
     private long pythonObject;
 
-    public PythonTokenFilter(TokenStream tokenStream)
+    public PythonFragmenter()
     {
-        super(tokenStream);
     }
 
     public void pythonExtension(long pythonObject)
@@ -48,6 +42,6 @@ public class PythonTokenFilter extends TokenFilter {
     }
 
     public native void pythonDecRef();
-    public native Token next()
-        throws IOException;
+    public native boolean isNewFragment(Token nextToken);
+    public native void start(String originalText);
 }

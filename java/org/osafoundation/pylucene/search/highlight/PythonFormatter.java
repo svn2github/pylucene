@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,21 +13,18 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.analysis;
+package org.apache.pylucene.search.highlight;
 
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.Token;
-import java.io.IOException;
-import java.io.Reader;
+import org.apache.lucene.search.highlight.Formatter;
+import org.apache.lucene.search.highlight.TokenGroup;
 
 
-public class PythonTokenizer extends Tokenizer {
+public class PythonFormatter implements Formatter {
 
     private long pythonObject;
 
-    public PythonTokenizer(Reader reader)
+    public PythonFormatter()
     {
-        super(reader);
     }
 
     public void pythonExtension(long pythonObject)
@@ -48,7 +43,6 @@ public class PythonTokenizer extends Tokenizer {
     }
 
     public native void pythonDecRef();
-
-    public native Token next()
-        throws IOException;
+    public native String highlightTerm(String originalText,
+                                       TokenGroup tokenGroup);
 }

@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,18 +13,17 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.analysis;
+package org.apache.pylucene.analysis;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Token;
-import java.io.IOException;
+import java.io.Reader;
 
-
-public class PythonTokenStream extends TokenStream {
+public class PythonAnalyzer extends Analyzer {
 
     private long pythonObject;
 
-    public PythonTokenStream()
+    public PythonAnalyzer()
     {
     }
 
@@ -46,7 +43,5 @@ public class PythonTokenStream extends TokenStream {
     }
 
     public native void pythonDecRef();
-    public native Token next();
-    public native void reset();
-    public native void close();
+    public native TokenStream tokenStream(String fieldName, Reader reader);
 }

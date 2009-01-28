@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,21 +13,21 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.search;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.search.Similarity;
-import org.apache.lucene.search.SimilarityDelegator;
-import org.apache.lucene.search.Searcher;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.SortComparatorSource;
+import org.apache.lucene.search.SortComparator;
+import org.apache.lucene.search.ScoreDocComparator;
+import java.io.IOException;
 
 
-public class PythonSimilarityDelegator extends SimilarityDelegator {
+public class PythonSortComparator extends SortComparator {
 
     private long pythonObject;
 
-    public PythonSimilarityDelegator(Similarity delegee)
+    public PythonSortComparator()
     {
-        super(delegee);
     }
 
     public void pythonExtension(long pythonObject)
@@ -48,12 +46,7 @@ public class PythonSimilarityDelegator extends SimilarityDelegator {
     }
 
     public native void pythonDecRef();
-    public native float lengthNorm(String fieldName, int numTokens);
-    public native float queryNorm(float sumOfSquaredWeights);
-    public native float tf(float freq);
-    public native float sloppyFreq(int distance);
-    public native float idf(int docFreq, int numDocs);
-    public native float coord(int overlap, int maxOverlap);
-    public native float scorePayload(String fieldName, byte[] payload,
-                                     int offset, int length);
+    public native ScoreDocComparator newComparator(IndexReader reader,
+                                                   String fieldName);
+    public native Comparable getComparable(String termText);
 }

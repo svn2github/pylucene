@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,20 +13,21 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.search;
+package org.apache.pylucene.analysis;
 
-import org.apache.lucene.search.HitCollector;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.Token;
+import java.io.IOException;
+import java.io.Reader;
 
-/**
- * @author Andi Vajda
- */
 
-public class PythonHitCollector extends HitCollector {
+public class PythonTokenizer extends Tokenizer {
 
     private long pythonObject;
 
-    public PythonHitCollector()
+    public PythonTokenizer(Reader reader)
     {
+        super(reader);
     }
 
     public void pythonExtension(long pythonObject)
@@ -47,5 +46,7 @@ public class PythonHitCollector extends HitCollector {
     }
 
     public native void pythonDecRef();
-    public native void collect(int doc, float score);
+
+    public native Token next()
+        throws IOException;
 }

@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,20 +13,19 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.search;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.SortComparatorSource;
-import org.apache.lucene.search.SortComparator;
-import org.apache.lucene.search.ScoreDocComparator;
-import java.io.IOException;
+import org.apache.lucene.search.HitCollector;
 
+/**
+ * @author Andi Vajda
+ */
 
-public class PythonSortComparator extends SortComparator {
+public class PythonHitCollector extends HitCollector {
 
     private long pythonObject;
 
-    public PythonSortComparator()
+    public PythonHitCollector()
     {
     }
 
@@ -48,7 +45,5 @@ public class PythonSortComparator extends SortComparator {
     }
 
     public native void pythonDecRef();
-    public native ScoreDocComparator newComparator(IndexReader reader,
-                                                   String fieldName);
-    public native Comparable getComparable(String termText);
+    public native void collect(int doc, float score);
 }

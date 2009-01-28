@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,20 +13,20 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.analysis;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.analysis.CharTokenizer;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.SortComparatorSource;
+import org.apache.lucene.search.ScoreDocComparator;
 import java.io.IOException;
-import java.io.Reader;
 
 
-public class PythonCharTokenizer extends CharTokenizer {
+public class PythonSortComparatorSource implements SortComparatorSource {
 
     private long pythonObject;
 
-    public PythonCharTokenizer(Reader reader)
+    public PythonSortComparatorSource()
     {
-        super(reader);
     }
 
     public void pythonExtension(long pythonObject)
@@ -47,6 +45,6 @@ public class PythonCharTokenizer extends CharTokenizer {
     }
 
     public native void pythonDecRef();
-    public native boolean isTokenChar(char c);
-    public native char normalize(char c);
+    public native ScoreDocComparator newComparator(IndexReader reader,
+                                                   String fieldName);
 }

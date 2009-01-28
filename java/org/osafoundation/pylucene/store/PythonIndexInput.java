@@ -1,6 +1,4 @@
 /* ====================================================================
- *   Copyright (c) 2004-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -15,18 +13,15 @@
  * ====================================================================
  */
 
-package org.osafoundation.lucene.search;
+package org.apache.pylucene.store;
 
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreDocComparator;
-import java.io.IOException;
+import org.apache.lucene.store.BufferedIndexInput;
 
-
-public class PythonScoreDocComparator implements ScoreDocComparator {
+public class PythonIndexInput extends BufferedIndexInput {
 
     private long pythonObject;
 
-    public PythonScoreDocComparator()
+    public PythonIndexInput()
     {
     }
 
@@ -45,8 +40,16 @@ public class PythonScoreDocComparator implements ScoreDocComparator {
         pythonDecRef();
     }
 
+    public native Object clone();
+    public native void close();
     public native void pythonDecRef();
-    public native int compare(ScoreDoc i, ScoreDoc j);
-    public native int sortType();
-    public native Comparable sortValue(ScoreDoc i);
+    public native long length();
+    public native byte[] readInternal(int length, long pos);
+    public native void seekInternal(long pos);
+
+    protected void readInternal(byte[] b, int offset, int length)
+    {
+        byte[] data = readInternal(length, getFilePointer());
+        System.arraycopy(data, 0, b, offset, data.length);
+    }
 }
