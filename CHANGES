@@ -3,7 +3,8 @@ For bug <NUM>, see http://bugzilla.osafoundation.org/show_bug.cgi?id=<NUM>
 
 Version 2.4.0 ->
 ----------------------
- - PyLucene now a subproject of the Apache Lucene project
+ - PyLucene with JCC now a subproject of the Apache Lucene project
+ - documentation moved to http://lucene.apache.org/pylucene
  - 
 
 Version 2.3.2 -> 2.4.0
