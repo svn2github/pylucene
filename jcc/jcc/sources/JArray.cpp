@@ -162,13 +162,13 @@ static PyObject *_format(U *self, PyObject *(*fn)(PyObject *))
 template<typename U>
 static PyObject *repr(U *self)
 {
-    return _format(self, PyObject_Repr);
+    return _format(self, (PyObject *(*)(PyObject *)) PyObject_Repr);
 }
 
 template<typename U>
 static PyObject *str(U *self)
 {
-    return _format(self, PyObject_Str);
+    return _format(self, (PyObject *(*)(PyObject *)) PyObject_Str);
 }
 
 template<typename U>

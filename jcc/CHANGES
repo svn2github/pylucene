@@ -6,6 +6,7 @@ Version 2.1 ->
  - JCC now a subproject of the Apache PyLucene project
  - fixed bug where thread's JNIEnv was not set before calling findClass()
  - unhandled java exception now is printed out via ExceptionDescribe()
+ - added cast to placate Solaris compiler error in JArray.cpp
  - 
 
 Version 2.0 -> 2.1
