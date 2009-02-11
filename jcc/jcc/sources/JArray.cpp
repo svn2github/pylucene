@@ -913,113 +913,163 @@ static jarray_type<jshort> jarray_jshort;
 
 PyObject *JArray<jobject>::wrap(PyObject *(*wrapfn)(const jobject&))
 {
-    _t_jobjectarray<jobject> *obj =
-        PyObject_New(_t_jobjectarray<jobject>, &jarray_jobject.type_object);
+    if (this$ != NULL)
+    {
+        _t_jobjectarray<jobject> *obj =
+            PyObject_New(_t_jobjectarray<jobject>, &jarray_jobject.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jobject>));
-    obj->array = *this;
-    obj->wrapfn = wrapfn;
+        memset(&(obj->array), 0, sizeof(JArray<jobject>));
+        obj->array = *this;
+        obj->wrapfn = wrapfn;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jstring>::wrap()
 {
-    _t_jarray<jstring> *obj =
-        PyObject_New(_t_jarray<jstring>, &jarray_jstring.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jstring> *obj =
+            PyObject_New(_t_jarray<jstring>, &jarray_jstring.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jstring>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jstring>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jboolean>::wrap()
 {
-    _t_jarray<jboolean> *obj =
-        PyObject_New(_t_jarray<jboolean>, &jarray_jboolean.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jboolean> *obj =
+            PyObject_New(_t_jarray<jboolean>, &jarray_jboolean.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jboolean>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jboolean>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jbyte>::wrap()
 {
-    _t_jarray<jbyte> *obj =
-        PyObject_New(_t_jarray<jbyte>, &jarray_jbyte.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jbyte> *obj =
+            PyObject_New(_t_jarray<jbyte>, &jarray_jbyte.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jbyte>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jbyte>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jchar>::wrap()
 {
-    _t_jarray<jchar> *obj =
-        PyObject_New(_t_jarray<jchar>, &jarray_jchar.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jchar> *obj =
+            PyObject_New(_t_jarray<jchar>, &jarray_jchar.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jchar>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jchar>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jdouble>::wrap()
 {
-    _t_jarray<jdouble> *obj =
-        PyObject_New(_t_jarray<jdouble>, &jarray_jdouble.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jdouble> *obj =
+            PyObject_New(_t_jarray<jdouble>, &jarray_jdouble.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jdouble>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jdouble>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jfloat>::wrap()
 {
-    _t_jarray<jfloat> *obj =
-        PyObject_New(_t_jarray<jfloat>, &jarray_jfloat.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jfloat> *obj =
+            PyObject_New(_t_jarray<jfloat>, &jarray_jfloat.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jfloat>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jfloat>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jint>::wrap()
 {
-    _t_jarray<jint> *obj =
-        PyObject_New(_t_jarray<jint>, &jarray_jint.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jint> *obj =
+            PyObject_New(_t_jarray<jint>, &jarray_jint.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jint>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jint>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jlong>::wrap()
 {
-    _t_jarray<jlong> *obj =
-        PyObject_New(_t_jarray<jlong>, &jarray_jlong.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jlong> *obj =
+            PyObject_New(_t_jarray<jlong>, &jarray_jlong.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jlong>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jlong>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray<jshort>::wrap()
 {
-    _t_jarray<jshort> *obj =
-        PyObject_New(_t_jarray<jshort>, &jarray_jshort.type_object);
+    if (this$ != NULL)
+    {
+        _t_jarray<jshort> *obj =
+            PyObject_New(_t_jarray<jshort>, &jarray_jshort.type_object);
 
-    memset(&(obj->array), 0, sizeof(JArray<jshort>));
-    obj->array = *this;
+        memset(&(obj->array), 0, sizeof(JArray<jshort>));
+        obj->array = *this;
 
-    return (PyObject *) obj;
+        return (PyObject *) obj;
+    }
+
+    Py_RETURN_NONE;
 }
 
 PyObject *JArray_Type(PyObject *self, PyObject *arg)
