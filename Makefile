@@ -142,10 +142,6 @@ from-orig: $(LUCENE)-orig
 	mkdir -p $(LUCENE)
 	tar -C $(LUCENE)-orig -cf - . | tar -C $(LUCENE) -xvf -
 
-patches.regex:
-	diff -u lucene-java-$(LUCENE_VER)/contrib/regex/src/java/org/apache/lucene/search/regex/RegexQuery.java lucene-java-$(LUCENE_VER)-patched/contrib/regex/src/java/org/apache/lucene/search/regex/RegexQuery.java > $@; true
-	diff -u lucene-java-$(LUCENE_VER)/contrib/regex/src/java/org/apache/lucene/search/regex/SpanRegexQuery.java lucene-java-$(LUCENE_VER)-patched/contrib/regex/src/java/org/apache/lucene/search/regex/SpanRegexQuery.java >> $@; true
-
 lucene:
 	rm -f $(LUCENE_JAR)
 	$(MAKE) $(LUCENE_JAR)

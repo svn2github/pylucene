@@ -293,7 +293,7 @@ static Py_ssize_t seq_length(U *self)
     if (self->array.this$)
         return self->array.length;
 
-    return -1;
+    return 0;
 }
 
 template<typename U>
