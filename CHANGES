@@ -5,6 +5,7 @@ Version 2.4.0 ->
 ----------------------
  - PyLucene with JCC now a subproject of the Apache Lucene project
  - documentation moved to http://lucene.apache.org/pylucene
+ - added java.util.Arrays to the build to bridge the Java array/collection gap
  - 
 
 Version 2.3.2 -> 2.4.0

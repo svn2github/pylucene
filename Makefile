@@ -182,6 +182,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
            --package java.util \
+                     java.util.Arrays \
                      java.text.SimpleDateFormat \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
