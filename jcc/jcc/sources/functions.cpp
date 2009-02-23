@@ -152,8 +152,8 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                           PyObject *obj = PySequence_GetItem(arg, 0);
                           int ok =
                               (obj == Py_None ||
-                               PyObject_TypeCheck(obj, &ObjectType) &&
-                               cls->isInstance(((t_Object *) obj)->object));
+                               (PyObject_TypeCheck(obj, &ObjectType) &&
+                                cls->isInstance(((t_Object *) obj)->object)));
 
                           Py_DECREF(obj);
                           if (ok)

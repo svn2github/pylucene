@@ -8,6 +8,7 @@ Version 2.1 ->
  - unhandled java exception now is printed out via ExceptionDescribe()
  - added cast to placate Solaris compiler error in JArray.cpp
  - JArray Python wrappers should return None when passed a null array
+ - added JDK variable to setup.py to better parameterize build configuration
  - 
 
 Version 2.0 -> 2.1

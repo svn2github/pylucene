@@ -21,25 +21,38 @@ if machine.startswith("iPod") or machine.startswith("iPhone"):
 else:
     platform = sys.platform
 
-# Add or edit the entry corresponding to your system in the INCLUDES, CFLAGS
-# DEBUG_CFLAGS, LFLAGS and JAVAC dictionaries below. These entries are used
-# to build JCC _and_ by JCC to drive compiling and linking via distutils or
-# setuptools the extensions it generated code for. The key for your system
-# is determined by the platform variable defined above.
+# Add or edit the entry corresponding to your system in the JDK, INCLUDES,
+# CFLAGS, DEBUG_CFLAGS, LFLAGS and JAVAC dictionaries below. 
+# These entries are used to build JCC _and_ by JCC to drive compiling and
+# linking via distutils or setuptools the extensions it generated code for.
+#
+# The key for your system is determined by the platform variable defined
+# above.
 #
 # Instead of editing the entries below, you may also override these
-# dictionaries with JCC_INCLUDES, JCC_CFLAGS, JCC_DEBUG_CFLAGS, JCC_LFLAGS
-# and JCC_JAVAC environment variables using os.pathsep as value separator.
+# dictionaries with JCC_JDK, JCC_INCLUDES, JCC_CFLAGS, JCC_DEBUG_CFLAGS,
+# JCC_LFLAGS and JCC_JAVAC environment variables using os.pathsep as value
+# separator.
+
+JDK = {
+    'darwin': '/System/Library/Frameworks/JavaVM.framework/Versions/Current',
+    'ipod': '/usr/include/gcc',
+    'linux2': '/usr/lib/jvm/java-6-openjdk',
+    'sunos5': '/usr/jdk/instances/jdk1.6.0',
+    'win32': 'o:/Java/jdk1.6.0_02',
+}
+if 'JCC_JDK' in os.environ:
+    JDK[platform] = os.environ['JCC_JDK']
 
 INCLUDES = {
-    'darwin': ['/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers'],
-    'ipod': ['/usr/include/gcc/darwin/default'],
-    'linux2': ['/usr/lib/jvm/java-6-openjdk/include',
-               '/usr/lib/jvm/java-6-openjdk/include/linux'],
-    'sunos5': ['/usr/jdk/instances/jdk1.6.0/include',
-               '/usr/jdk/instances/jdk1.6.0/include/solaris'],
-    'win32': ['o:/Java/jdk1.6.0_02/include',
-              'o:/Java/jdk1.6.0_02/include/win32'],
+    'darwin': ['%(darwin)s/Headers' %(JDK)],
+    'ipod': ['%(ipod)s/darwin/default' %(JDK)],
+    'linux2': ['%(linux2)s/include' %(JDK),
+               '%(linux2)s/include/linux' %(JDK)],
+    'sunos5': ['%(sunos5)s/include' %(JDK),
+               '%(sunos5)s/include/solaris' %(JDK)],
+    'win32': ['%(win32)s/include' %(JDK),
+              '%(win32)s/include/win32' %(JDK)],
 }
 
 CFLAGS = {
@@ -64,19 +77,19 @@ LFLAGS = {
     'darwin': ['-framework', 'JavaVM', '-framework', 'Python'],
     'ipod': ['-ljvm', '-lpython%s.%s' %(sys.version_info[0:2]),
              '-L/usr/lib/gcc/arm-apple-darwin9/4.0.1'],
-    'linux2/i386': ['-L/usr/lib/jvm/java-6-sun/jre/lib/i386', '-ljava',
-                    '-L/usr/lib/jvm/java-6-sun/jre/lib/i386/client', '-ljvm',
-                    '-Wl,-rpath=/usr/lib/jvm/java-6-sun/jre/lib/i386:/usr/lib/jvm/java-6-sun/jre/lib/i386/client'],
-    'linux2/i686': ['-L/usr/lib/jvm/java-6-sun/jre/lib/i386', '-ljava',
-                    '-L/usr/lib/jvm/java-6-sun/jre/lib/i386/client', '-ljvm',
-                    '-Wl,-rpath=/usr/lib/jvm/java-6-sun/jre/lib/i386:/usr/lib/jvm/java-6-sun/jre/lib/i386/client'],
-    'linux2/x86_64': ['-L/usr/lib/jvm/java-6-openjdk/jre/lib/amd64', '-ljava',
-                      '-L/usr/lib/jvm/java-6-openjdk/jre/lib/amd64/server', '-ljvm',
-                      '-Wl,-rpath=/usr/lib/jvm/java-6-openjdk/jre/lib/amd64:/usr/lib/jvm/java-6-openjdk/jre/lib/amd64/server'],
-    'sunos5': ['-L/usr/jdk/instances/jdk1.6.0/jre/lib/i386', '-ljava',
-               '-L/usr/jdk/instances/jdk1.6.0/jre/lib/i386/client', '-ljvm',
-               '-R/usr/jdk/instances/jdk1.6.0/jre/lib/i386:/usr/jdk/instances/jre/lib/i386/client'],
-    'win32': ['/LIBPATH:o:/Java/jdk1.6.0_02/lib', 'jvm.lib'],
+    'linux2/i386': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',
+                    '-L%(linux2)s/jre/lib/i386/client' %(JDK), '-ljvm',
+                    '-Wl,-rpath=%(linux2)s/jre/lib/i386:%(linux2)s/jre/lib/i386/client' %(JDK)],
+    'linux2/i686': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',
+                    '-L%(linux2)s/jre/lib/i386/client' %(JDK), '-ljvm',
+                    '-Wl,-rpath=%(linux2)s/jre/lib/i386:%(linux2)s/jre/lib/i386/client' %(JDK)],
+    'linux2/x86_64': ['-L%(linux2)s/jre/lib/amd64' %(JDK), '-ljava',
+                      '-L%(linux2)s/jre/lib/amd64/server' %(JDK), '-ljvm',
+                      '-Wl,-rpath=%(linux2)s/jre/lib/amd64:%(linux2)s/jre/lib/amd64/server' %(JDK)],
+    'sunos5': ['-L%(sunos5)s/jre/lib/i386' %(JDK), '-ljava',
+               '-L%(sunos5)s/jre/lib/i386/client' %(JDK), '-ljvm',
+               '-R%(sunos5)s/jre/lib/i386:%(sunos5)s/jre/lib/i386/client' %(JDK)],
+    'win32': ['/LIBPATH:%(win32)s/lib' %(JDK), 'jvm.lib'],
 }
 
 if platform == 'linux2':

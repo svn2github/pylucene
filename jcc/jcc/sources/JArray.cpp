@@ -1075,7 +1075,7 @@ PyObject *JArray<jshort>::wrap()
 PyObject *JArray_Type(PyObject *self, PyObject *arg)
 {
     PyObject *type_name = NULL, *type;
-    char *name = NULL;
+    char const *name = NULL;
 
     if (PyType_Check(arg))
     {
