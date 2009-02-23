@@ -196,6 +196,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
            --sequence org.apache.lucene.search.Hits 'length:()I' 'doc:(I)Lorg/apache/lucene/document/Document;' \
            --version $(LUCENE_VER) \
+           --module collections.py \
            --files $(NUM_FILES)
 
 generate: jars
