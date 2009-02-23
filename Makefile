@@ -96,7 +96,7 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #NUM_FILES=2
 
 # Windows   (Win32, Python 2.5.1, Java 1.6, ant 1.7.0)
-#PREFIX_PYTHON=/cygdrive/o/Python-2.5.2
+#PREFIX_PYTHON=/cygdrive/o/Python-2.5.2/PCbuild
 #ANT=JAVA_HOME=o:\\Java\\jdk1.6.0_02 /cygdrive/o/java/apache-ant-1.7.0/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/python.exe
 #JCC=$(PYTHON) -m jcc --shared

@@ -14,6 +14,9 @@ from lucene import PythonSet, PythonIterator, JavaError
 
 
 class JavaSet(PythonSet):
+    """
+    This class implements java.util.Set around a Python set instance it wraps.
+    """
 
     def __init__(self, _set):
         super(JavaSet, self).__init__()
@@ -21,6 +24,9 @@ class JavaSet(PythonSet):
 
     def __contains__(self, obj):
         return obj in self._set
+
+    def __len__(self):
+        return len(self._set)
 
     def __iter__(self):
         return iter(self._set)
