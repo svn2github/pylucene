@@ -37,6 +37,23 @@ static int t_fp_clear(t_fp *self);
 static PyObject *t_fp_repr(t_fp *self);
 static PyObject *t_fp_iter(t_fp *self);
 
+static Py_ssize_t t_fp_map_length(t_fp *self);
+static PyObject *t_fp_map_get(t_fp *self, PyObject *key);
+static int t_fp_map_set(t_fp *self, PyObject *key, PyObject *value);
+
+static Py_ssize_t t_fp_seq_length(t_fp *self);
+static PyObject *t_fp_seq_get(t_fp *self, Py_ssize_t n);
+static int t_fp_seq_contains(t_fp *self, PyObject *value);
+static PyObject *t_fp_seq_concat(t_fp *self, PyObject *arg);
+static PyObject *t_fp_seq_repeat(t_fp *self, Py_ssize_t n);
+static PyObject *t_fp_seq_getslice(t_fp *self, Py_ssize_t low, Py_ssize_t high);
+static int t_fp_seq_set(t_fp *self, Py_ssize_t i, PyObject *value);
+static int t_fp_seq_setslice(t_fp *self, Py_ssize_t low,
+                             Py_ssize_t high, PyObject *arg);
+static PyObject *t_fp_seq_inplace_concat(t_fp *self, PyObject *arg);
+static PyObject *t_fp_seq_inplace_repeat(t_fp *self, Py_ssize_t n);
+
+
 PyTypeObject FinalizerClassType = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
@@ -79,6 +96,25 @@ PyTypeObject FinalizerClassType = {
     0,                                   /* tp_new */
 };
 
+static PyMappingMethods t_fp_as_mapping = {
+    (lenfunc)t_fp_map_length,            /* mp_length          */
+    (binaryfunc)t_fp_map_get,            /* mp_subscript       */
+    (objobjargproc)t_fp_map_set,         /* mp_ass_subscript   */
+};
+
+static PySequenceMethods t_fp_as_sequence = {
+    (lenfunc)t_fp_seq_length,                 /* sq_length */
+    (binaryfunc)t_fp_seq_concat,              /* sq_concat */
+    (ssizeargfunc)t_fp_seq_repeat,            /* sq_repeat */
+    (ssizeargfunc)t_fp_seq_get,               /* sq_item */
+    (ssizessizeargfunc)t_fp_seq_getslice,     /* sq_slice */
+    (ssizeobjargproc)t_fp_seq_set,            /* sq_ass_item */
+    (ssizessizeobjargproc)t_fp_seq_setslice,  /* sq_ass_slice */
+    (objobjproc)t_fp_seq_contains,            /* sq_contains */
+    (binaryfunc)t_fp_seq_inplace_concat,      /* sq_inplace_concat */
+    (ssizeargfunc)t_fp_seq_inplace_repeat,    /* sq_inplace_repeat */
+};
+
 PyTypeObject FinalizerProxyType = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
@@ -92,8 +128,8 @@ PyTypeObject FinalizerProxyType = {
     0,                                   /* tp_compare */
     (reprfunc)t_fp_repr,                 /* tp_repr */
     0,                                   /* tp_as_number */
-    0,                                   /* tp_as_sequence */
-    0,                                   /* tp_as_mapping */
+    &t_fp_as_sequence,                   /* tp_as_sequence */
+    &t_fp_as_mapping,                    /* tp_as_mapping */
     0,                                   /* tp_hash  */
     0,                                   /* tp_call */
     0,                                   /* tp_str */
@@ -176,6 +212,75 @@ static PyObject *t_fp_getattro(t_fp *self, PyObject *name)
 static int t_fp_setattro(t_fp *self, PyObject *name, PyObject *value)
 {
     return PyObject_SetAttr(self->object, name, value);
+}
+
+static Py_ssize_t t_fp_map_length(t_fp *self)
+{
+    return PyMapping_Size(self->object);
+}
+
+static PyObject *t_fp_map_get(t_fp *self, PyObject *key)
+{
+    return PyObject_GetItem(self->object, key);
+}
+
+static int t_fp_map_set(t_fp *self, PyObject *key, PyObject *value)
+{
+    if (value == NULL)
+        return PyObject_DelItem(self->object, key);
+
+    return PyObject_SetItem(self->object, key, value);
+}
+
+static Py_ssize_t t_fp_seq_length(t_fp *self)
+{
+    return PySequence_Length(self->object);
+}
+
+static PyObject *t_fp_seq_get(t_fp *self, Py_ssize_t n)
+{
+    return PySequence_GetItem(self->object, n);
+}
+
+static int t_fp_seq_contains(t_fp *self, PyObject *value)
+{
+    return PySequence_Contains(self->object, value);
+}
+
+static PyObject *t_fp_seq_concat(t_fp *self, PyObject *arg)
+{
+    return PySequence_Concat(self->object, arg);
+}
+
+static PyObject *t_fp_seq_repeat(t_fp *self, Py_ssize_t n)
+{
+    return PySequence_Repeat(self->object, n);
+}
+
+static PyObject *t_fp_seq_getslice(t_fp *self, Py_ssize_t low, Py_ssize_t high)
+{
+    return PySequence_GetSlice(self->object, low, high);
+}
+
+static int t_fp_seq_set(t_fp *self, Py_ssize_t i, PyObject *value)
+{
+    return PySequence_SetItem(self->object, i, value);
+}
+
+static int t_fp_seq_setslice(t_fp *self, Py_ssize_t low,
+                             Py_ssize_t high, PyObject *arg)
+{
+    return PySequence_SetSlice(self->object, low, high, arg);
+}
+
+static PyObject *t_fp_seq_inplace_concat(t_fp *self, PyObject *arg)
+{
+    return PySequence_InPlaceConcat(self->object, arg);
+}
+
+static PyObject *t_fp_seq_inplace_repeat(t_fp *self, Py_ssize_t n)
+{
+    return PySequence_InPlaceRepeat(self->object, n);
 }
 
 

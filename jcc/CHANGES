@@ -9,6 +9,7 @@ Version 2.1 ->
  - added cast to placate Solaris compiler error in JArray.cpp
  - JArray Python wrappers should return None when passed a null array
  - added JDK variable to setup.py to better parameterize build configuration
+ - added support for proxying mapping and sequence protocols on FinalizerProxy
  - 
 
 Version 2.0 -> 2.1
