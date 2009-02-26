@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -20,16 +18,16 @@
 namespace java {
     namespace lang {
 
-        extern PyTypeObject ObjectType;
-        extern PyTypeObject StringType;
-        extern PyTypeObject ClassType;
-        extern PyTypeObject ThrowableType;
-        extern PyTypeObject ExceptionType;
-        extern PyTypeObject RuntimeExceptionType;
-        extern PyTypeObject BooleanType;
-        extern PyTypeObject IntegerType;
-        extern PyTypeObject LongType;
-        extern PyTypeObject DoubleType;
+        extern PyTypeObject Object$$Type;
+        extern PyTypeObject String$$Type;
+        extern PyTypeObject Class$$Type;
+        extern PyTypeObject Throwable$$Type;
+        extern PyTypeObject Exception$$Type;
+        extern PyTypeObject RuntimeException$$Type;
+        extern PyTypeObject Boolean$$Type;
+        extern PyTypeObject Integer$$Type;
+        extern PyTypeObject Long$$Type;
+        extern PyTypeObject Double$$Type;
         
         namespace reflect {
             void __install__(PyObject *module);

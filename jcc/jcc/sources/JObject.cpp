@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -51,7 +49,7 @@ static PyGetSetDef t_JObject_properties[] = {
     { NULL, NULL, NULL, NULL, NULL }
 };
 
-PyTypeObject JObjectType = {
+PyTypeObject JObject$$Type = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
     "jcc.JObject",                       /* tp_name */
@@ -118,7 +116,7 @@ static PyObject *t_JObject_richcmp(t_JObject *self, PyObject *arg, int op)
     switch (op) {
       case Py_EQ:
       case Py_NE:
-        if (PyObject_TypeCheck(arg, &JObjectType))
+        if (PyObject_TypeCheck(arg, &JObject$$Type))
             b = self->object == ((t_JObject *) arg)->object;
         if (op == Py_EQ)
             Py_RETURN_BOOL(b);

@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -20,7 +18,7 @@
 #include "java/lang/RuntimeException.h"
 #include "macros.h"
 
-extern PyTypeObject JObjectType, JCCEnvType, ConstVariableDescriptorType;
+extern PyTypeObject JObject$$Type, JCCEnv$$Type, ConstVariableDescriptor$$Type;
 
 PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds);
 

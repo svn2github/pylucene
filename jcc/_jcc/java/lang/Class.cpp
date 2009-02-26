@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -402,7 +400,7 @@ namespace java {
 
         static PyObject *t_Class_isAssignableFrom(t_Class *self, PyObject *arg)
         {
-            if (!PyObject_TypeCheck(arg, &ClassType))
+            if (!PyObject_TypeCheck(arg, &Class$$Type))
             {
                 PyErr_SetObject(PyExc_TypeError, arg);
                 return NULL;

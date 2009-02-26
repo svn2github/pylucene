@@ -90,7 +90,7 @@ public:
     JObject object;
 };
 
-extern PyTypeObject JObjectType;
+extern PyTypeObject JObject$$Type;
 
 #endif /* PYTHON */
 

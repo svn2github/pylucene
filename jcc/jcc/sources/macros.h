@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -58,7 +56,7 @@
 
 #define DECLARE_TYPE(name, t_name, base, javaClass,                         \
                      init, iter, iternext, getset, mapping, sequence)       \
-PyTypeObject name##Type = {                                                 \
+PyTypeObject name##$$Type = {                                               \
     PyObject_HEAD_INIT(NULL)                                                \
     /* ob_size            */   0,                                           \
     /* tp_name            */   #name,                                       \
@@ -90,7 +88,7 @@ PyTypeObject name##Type = {                                                 \
     /* tp_methods         */   t_name##__methods_,                          \
     /* tp_members         */   0,                                           \
     /* tp_getset          */   getset,                                      \
-    /* tp_base            */   &base##Type,                                 \
+    /* tp_base            */   &base##$$Type,                               \
     /* tp_dict            */   0,                                           \
     /* tp_descr_get       */   0,                                           \
     /* tp_descr_set       */   0,                                           \
@@ -103,7 +101,8 @@ PyObject *t_name::wrap_Object(const javaClass& object)                  \
 {                                                                       \
     if (!!object)                                                       \
     {                                                                   \
-        t_name *self = (t_name *) name##Type.tp_alloc(&name##Type, 0);  \
+        t_name *self =                                                  \
+            (t_name *) name##$$Type.tp_alloc(&name##$$Type, 0);         \
         if (self)                                                       \
             self->object = object;                                      \
         return (PyObject *) self;                                       \
@@ -114,7 +113,8 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
 {                                                                       \
     if (!!object)                                                       \
     {                                                                   \
-        t_name *self = (t_name *) name##Type.tp_alloc(&name##Type, 0);  \
+        t_name *self =                                                  \
+            (t_name *) name##$$Type.tp_alloc(&name##$$Type, 0);         \
         if (self)                                                       \
             self->object = javaClass(object);                           \
         return (PyObject *) self;                                       \
@@ -124,19 +124,19 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
 
 
 
-#define INSTALL_TYPE(name, module)                                   \
-    if (PyType_Ready(&name##Type) == 0)                              \
-    {                                                                \
-        Py_INCREF(&name##Type);                                      \
-        PyModule_AddObject(module, #name, (PyObject *) &name##Type); \
+#define INSTALL_TYPE(name, module)                                     \
+    if (PyType_Ready(&name##$$Type) == 0)                              \
+    {                                                                  \
+        Py_INCREF(&name##$$Type);                                      \
+        PyModule_AddObject(module, #name, (PyObject *) &name##$$Type); \
     }
 
-#define INSTALL_EXTENSION(name, module)                              \
-    if (PyType_Ready(&name##Type) == 0)                              \
-    {                                                                \
-        Py_INCREF(&name##Type);                                      \
-        name##Type.ob_type = &FinalizerClassType;                    \
-        PyModule_AddObject(module, #name, (PyObject *) &name##Type); \
+#define INSTALL_EXTENSION(name, module)                                \
+    if (PyType_Ready(&name##$$Type) == 0)                              \
+    {                                                                  \
+        Py_INCREF(&name##$$Type);                                      \
+        name##$$Type.ob_type = &FinalizerClass$$Type;                  \
+        PyModule_AddObject(module, #name, (PyObject *) &name##$$Type); \
     }
 
 

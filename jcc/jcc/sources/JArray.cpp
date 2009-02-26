@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2008-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -415,7 +413,7 @@ static PyObject *cast_(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O", &arg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &ObjectType))
+    if (!PyObject_TypeCheck(arg, &Object$$Type))
     {
         PyErr_SetObject(PyExc_TypeError, arg);
         return NULL;
@@ -452,7 +450,7 @@ static PyObject *instance_(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O", &arg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &ObjectType))
+    if (!PyObject_TypeCheck(arg, &Object$$Type))
         Py_RETURN_FALSE;
 
     Class argCls = ((t_Object *) arg)->object.getClass();
@@ -602,7 +600,7 @@ public:
             (richcmpfunc) (PyObject *(*)(U *, PyObject *, int)) richcompare<U>;
         type_object.tp_iter = (getiterfunc) (PyObject *(*)(U *)) iter<U>;
         type_object.tp_methods = methods;
-        type_object.tp_base = &ObjectType;
+        type_object.tp_base = &Object$$Type;
         type_object.tp_init =
             (initproc) (int (*)(U *, PyObject *, PyObject *)) init<T,U>;
         type_object.tp_new = (newfunc) _new;
@@ -640,11 +638,11 @@ template<> int init< jobject,_t_jobjectarray<jobject> >(_t_jobjectarray<jobject>
 
     if (clsObj == NULL)
         cls = env->findClass("java/lang/Object");
-    else if (PyObject_TypeCheck(clsObj, &ClassType))
+    else if (PyObject_TypeCheck(clsObj, &Class$$Type))
         cls = (jclass) ((t_Class *) clsObj)->object.this$;
     else if (PyType_Check(clsObj))
     {
-        if (PyType_IsSubtype((PyTypeObject *) clsObj, &JObjectType))
+        if (PyType_IsSubtype((PyTypeObject *) clsObj, &JObject$$Type))
         {
             PyObject *cobj = PyObject_GetAttrString(clsObj, "wrapfn_");
 
@@ -734,7 +732,7 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
     if (!PyArg_ParseTuple(args, "O|O", &arg, &clsArg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &ObjectType))
+    if (!PyObject_TypeCheck(arg, &Object$$Type))
     {
         PyErr_SetObject(PyExc_TypeError, arg);
         return NULL;
@@ -755,7 +753,7 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
             PyErr_SetObject(PyExc_TypeError, clsArg);
             return NULL;
         }
-        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &JObjectType))
+        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &JObject$$Type))
         {
             PyErr_SetObject(PyExc_ValueError, clsArg);
             return NULL;
@@ -803,7 +801,7 @@ template<> PyObject *instance_<jobject>(PyTypeObject *type,
     if (!PyArg_ParseTuple(args, "O|O", &arg, &clsArg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &ObjectType))
+    if (!PyObject_TypeCheck(arg, &Object$$Type))
         Py_RETURN_FALSE;
 
     Class argCls = ((t_Object *) arg)->object.getClass();
@@ -818,7 +816,7 @@ template<> PyObject *instance_<jobject>(PyTypeObject *type,
             PyErr_SetObject(PyExc_TypeError, clsArg);
             return NULL;
         }
-        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &JObjectType))
+        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &JObject$$Type))
         {
             PyErr_SetObject(PyExc_ValueError, clsArg);
             return NULL;
@@ -853,7 +851,7 @@ template<> PyObject *assignable_<jobject>(PyTypeObject *type,
     if (!PyArg_ParseTuple(args, "O|O", &arg, &clsArg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &ObjectType))
+    if (!PyObject_TypeCheck(arg, &Object$$Type))
         Py_RETURN_FALSE;
 
     Class argCls = ((t_Object *) arg)->object.getClass();
@@ -868,7 +866,7 @@ template<> PyObject *assignable_<jobject>(PyTypeObject *type,
             PyErr_SetObject(PyExc_TypeError, clsArg);
             return NULL;
         }
-        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &JObjectType))
+        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &JObject$$Type))
         {
             PyErr_SetObject(PyExc_ValueError, clsArg);
             return NULL;
@@ -1141,58 +1139,58 @@ PyObject *JArray_Type(PyObject *self, PyObject *arg)
     return type;
 }
 
-PyTypeObject *JArrayObjectType;
-PyTypeObject *JArrayStringType;
-PyTypeObject *JArrayBoolType;
-PyTypeObject *JArrayByteType;
-PyTypeObject *JArrayCharType;
-PyTypeObject *JArrayDoubleType;
-PyTypeObject *JArrayFloatType;
-PyTypeObject *JArrayIntType;
-PyTypeObject *JArrayLongType;
-PyTypeObject *JArrayShortType;
+PyTypeObject *JArrayObject$$Type;
+PyTypeObject *JArrayString$$Type;
+PyTypeObject *JArrayBool$$Type;
+PyTypeObject *JArrayByte$$Type;
+PyTypeObject *JArrayChar$$Type;
+PyTypeObject *JArrayDouble$$Type;
+PyTypeObject *JArrayFloat$$Type;
+PyTypeObject *JArrayInt$$Type;
+PyTypeObject *JArrayLong$$Type;
+PyTypeObject *JArrayShort$$Type;
 
 void _install_jarray(PyObject *module)
 {
     jarray_jobject.install("JArray_object", "object",
                             "__JArray_object_iterator", module);
-    JArrayObjectType = &jarray_jobject.type_object;
+    JArrayObject$$Type = &jarray_jobject.type_object;
 
     jarray_jstring.install("JArray_string", "string",
                             "__JArray_string_iterator", module);
-    JArrayStringType = &jarray_jstring.type_object;
+    JArrayString$$Type = &jarray_jstring.type_object;
 
     jarray_jboolean.install("JArray_bool", "bool",
                             "__JArray_bool_iterator", module);
-    JArrayBoolType = &jarray_jboolean.type_object;
+    JArrayBool$$Type = &jarray_jboolean.type_object;
 
     jarray_jbyte.install("JArray_byte", "byte",
                          "__JArray_byte_iterator", module);
-    JArrayByteType = &jarray_jbyte.type_object;
+    JArrayByte$$Type = &jarray_jbyte.type_object;
 
     jarray_jchar.install("JArray_char", "char",
                          "__JArray_char_iterator", module);
-    JArrayCharType = &jarray_jchar.type_object;
+    JArrayChar$$Type = &jarray_jchar.type_object;
 
     jarray_jdouble.install("JArray_double", "double",
                            "__JArray_double_iterator", module);
-    JArrayDoubleType = &jarray_jdouble.type_object;
+    JArrayDouble$$Type = &jarray_jdouble.type_object;
 
     jarray_jfloat.install("JArray_float", "float",
                           "__JArray_float_iterator", module);
-    JArrayFloatType = &jarray_jfloat.type_object;
+    JArrayFloat$$Type = &jarray_jfloat.type_object;
 
     jarray_jint.install("JArray_int", "int",
                         "__JArray_int_iterator", module);
-    JArrayIntType = &jarray_jint.type_object;
+    JArrayInt$$Type = &jarray_jint.type_object;
 
     jarray_jlong.install("JArray_long", "long",
                          "__JArray_long_iterator", module);
-    JArrayLongType = &jarray_jlong.type_object;
+    JArrayLong$$Type = &jarray_jlong.type_object;
 
     jarray_jshort.install("JArray_short", "short",
                           "__JArray_short_iterator", module);
-    JArrayShortType = &jarray_jshort.type_object;
+    JArrayShort$$Type = &jarray_jshort.type_object;
 }
 
 #endif /* PYTHON */

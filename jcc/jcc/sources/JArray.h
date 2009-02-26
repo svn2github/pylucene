@@ -24,16 +24,16 @@
 extern jobjectArray fromPySequence(jclass cls, PyObject *sequence);
 extern PyObject *PyErr_SetJavaError(jthrowable throwable);
 
-extern PyTypeObject *JArrayObjectType;
-extern PyTypeObject *JArrayStringType;
-extern PyTypeObject *JArrayBoolType;
-extern PyTypeObject *JArrayByteType;
-extern PyTypeObject *JArrayCharType;
-extern PyTypeObject *JArrayDoubleType;
-extern PyTypeObject *JArrayFloatType;
-extern PyTypeObject *JArrayIntType;
-extern PyTypeObject *JArrayLongType;
-extern PyTypeObject *JArrayShortType;
+extern PyTypeObject *JArrayObject$$Type;
+extern PyTypeObject *JArrayString$$Type;
+extern PyTypeObject *JArrayBool$$Type;
+extern PyTypeObject *JArrayByte$$Type;
+extern PyTypeObject *JArrayChar$$Type;
+extern PyTypeObject *JArrayDouble$$Type;
+extern PyTypeObject *JArrayFloat$$Type;
+extern PyTypeObject *JArrayInt$$Type;
+extern PyTypeObject *JArrayLong$$Type;
+extern PyTypeObject *JArrayShort$$Type;
 
 #endif
 
@@ -121,7 +121,7 @@ template<> class JArray<jobject> : public java::lang::Object {
             if (obj == NULL)
                 break;
 
-            if (!PyObject_TypeCheck(obj, &JObjectType))
+            if (!PyObject_TypeCheck(obj, &JObject$$Type))
             {
                 PyErr_SetObject(PyExc_TypeError, obj);
                 break;
@@ -203,7 +203,7 @@ template<> class JArray<jobject> : public java::lang::Object {
 
             if (n >= 0 && n < length)
             {
-                if (!PyObject_TypeCheck(obj, &JObjectType))
+                if (!PyObject_TypeCheck(obj, &JObject$$Type))
                 {
                     PyErr_SetObject(PyExc_TypeError, obj);
                     return -1;

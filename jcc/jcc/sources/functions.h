@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -171,8 +169,8 @@ PyObject *get_extension_nextElement(PyObject *self);
 jobjectArray fromPySequence(jclass cls, PyObject *sequence);
 PyObject *castCheck(PyObject *obj, jclass cls, int reportError);
 
-extern PyTypeObject FinalizerClassType;
-extern PyTypeObject FinalizerProxyType;
+extern PyTypeObject FinalizerClass$$Type;
+extern PyTypeObject FinalizerProxy$$Type;
 
 typedef struct {
     PyObject_HEAD

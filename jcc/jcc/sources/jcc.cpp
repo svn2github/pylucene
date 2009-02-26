@@ -1,4 +1,4 @@
-/* ====================================================================
+/*
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -10,7 +10,6 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- * ====================================================================
  */
 
 #include <stdio.h>
@@ -62,7 +61,7 @@ static PyMethodDef t_jccenv_methods[] = {
     { NULL, NULL, 0, NULL }
 };
 
-_DLL_EXPORT PyTypeObject JCCEnvType = {
+_DLL_EXPORT PyTypeObject JCCEnv$$Type = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
     "jcc.JCCEnv",                        /* tp_name */
@@ -250,7 +249,7 @@ _DLL_EXPORT PyObject *getVMEnv(PyObject *self)
 {
     if (env)
     {
-        t_jccenv *jccenv = (t_jccenv *) JCCEnvType.tp_alloc(&JCCEnvType, 0);
+        t_jccenv *jccenv = (t_jccenv *) JCCEnv$$Type.tp_alloc(&JCCEnv$$Type, 0);
         jccenv->env = env;
 
         return (PyObject *) jccenv;
@@ -372,7 +371,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         for (unsigned int i = 0; i < nOptions; i++)
             delete vm_options[i].optionString;
 
-        t_jccenv *jccenv = (t_jccenv *) JCCEnvType.tp_alloc(&JCCEnvType, 0);
+        t_jccenv *jccenv = (t_jccenv *) JCCEnv$$Type.tp_alloc(&JCCEnv$$Type, 0);
         jccenv->env = new JCCEnv(vm, vm_env);
 
 #ifdef _jcc_lib

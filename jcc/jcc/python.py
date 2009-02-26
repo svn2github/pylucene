@@ -1,3 +1,4 @@
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -9,6 +10,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+#
 
 import os, sys, platform, shutil, _jcc, py_compile
 
@@ -228,7 +230,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension):
     if isExtension and name == 'clone' and Modifier.isNative(modifiers):
         line(out)
         line(out, indent, '%s object(result.this$);', typename(cls, cls, False))
-        line(out, indent, 'if (PyObject_TypeCheck(arg, &FinalizerProxyType) &&')
+        line(out, indent, 'if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type) &&')
         line(out, indent, '    PyObject_TypeCheck(((t_fp *) arg)->object, self->ob_type))')
         line(out, indent, '{')
         line(out, indent + 1, 'PyObject *_arg = ((t_fp *) arg)->object;')
@@ -398,7 +400,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for name in names[:-1]:
         line(out_h, indent, 'namespace %s {', name)
         indent += 1
-    line(out_h, indent, 'extern PyTypeObject %sType;', names[-1])
+    line(out_h, indent, 'extern PyTypeObject %s$$Type;', names[-1])
 
     line(out_h)
     line(out_h, indent, 'class t_%s {', names[-1])
@@ -790,16 +792,16 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if inner in typeset:
             if Modifier.isStatic(inner.getModifiers()):
                 innerName = inner.getName().split('.')[-1]
-                line(out, indent + 1, 'PyDict_SetItemString(%sType.tp_dict, "%s", make_descriptor(&%sType));',
+                line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "%s", make_descriptor(&%s$$Type));',
                      names[-1], innerName[len(names[-1])+1:], innerName)
     line(out, indent, '}')
 
     line(out)
     line(out, indent, 'void t_%s::initialize(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'PyDict_SetItemString(%sType.tp_dict, "class_", make_descriptor(%s::initializeClass));',
+    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass));',
          names[-1], names[-1])
-    line(out, indent + 1, 'PyDict_SetItemString(%sType.tp_dict, "wrapfn_", make_descriptor(t_%s::wrap_jobject));',
+    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(t_%s::wrap_jobject));',
          names[-1], names[-1])
 
     if isExtension:
@@ -826,7 +828,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if fieldName in RESERVED:
             value += '$'
         value = fieldValue(cls, value, fieldType)
-        line(out, indent + 1, 'PyDict_SetItemString(%sType.tp_dict, "%s", make_descriptor(%s));',
+        line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "%s", make_descriptor(%s));',
              names[-1], fieldName, value)
     line(out, indent, '}')
 
@@ -927,7 +929,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     line(out, indent + 1, 'return callSuper(type, "%s"%s, %d);',
                          name, args, cardinality)
                 else:
-                    line(out, indent + 1, 'return callSuper(&%sType, (PyObject *) self, "%s"%s, %d);',
+                    line(out, indent + 1, 'return callSuper(&%s$$Type, (PyObject *) self, "%s"%s, %d);',
                          names[-1], name, args, cardinality)
             else:
                 line(out, indent + 1, 'PyErr_SetArgsError(%s, "%s"%s);',
@@ -1218,7 +1220,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
 
     line(out)
     line(out, 0, 'void __install__(PyObject *module);')
-    line(out, 0, 'extern PyTypeObject JObjectType, ConstVariableDescriptorType, FinalizerClassType, FinalizerProxyType;')
+    line(out, 0, 'extern PyTypeObject JObject$$Type, ConstVariableDescriptor$$Type, FinalizerClass$$Type, FinalizerProxy$$Type;')
     line(out, 0, 'extern void _install_jarray(PyObject *);')
     line(out)
     line(out, 0, '#if defined(_jcc_shared) && (defined(_MSC_VER) || defined(__WIN32))')
@@ -1226,7 +1228,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
     line(out, 0, '#else')
     line(out, 0, '#define _DLL_IMPORT')
     line(out, 0, '#endif')
-    line(out, 0, '_DLL_IMPORT extern PyTypeObject JCCEnvType;')
+    line(out, 0, '_DLL_IMPORT extern PyTypeObject JCCEnv$$Type;')
 
     line(out)
     line(out, 0, 'extern "C" {')
