@@ -11,6 +11,9 @@ Version 2.1 ->
  - added JDK variable to setup.py to better parameterize build configuration
  - added support for proxying mapping and sequence protocols on FinalizerProxy
  - changed Type suffix to $$Type to avoid clashes with like-named Java classes
+ - added 'bool' and 'operator' to list of reserved words
+ - added support for packages and classes named with C++ reserved words
+ - static methods shadowed by non-static methods of same name now '_' suffixed
  - 
 
 Version 2.0 -> 2.1

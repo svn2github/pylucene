@@ -14,8 +14,9 @@
 
 import os, sys, platform, shutil, _jcc, py_compile
 
-from cpp import PRIMITIVES, RESERVED, INDENT, HALF_INDENT
-from cpp import typename, line, signature, find_method, split_pkg, sort
+from cpp import PRIMITIVES, INDENT, HALF_INDENT
+from cpp import cppname, cppnames, typename
+from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier
 from _jcc import findClass
 from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, SHARED
@@ -91,7 +92,7 @@ def construct(out, indent, cls, inCase, constructor, names):
         line(out, indent, '%s a%d%s;',
              typename(params[i], cls, False), i,
              not params[i].isPrimitive() and '((jobject) NULL)' or '')
-    line(out, indent, '%s object((jobject) NULL);', names[-1])
+    line(out, indent, '%s object((jobject) NULL);', cppname(names[-1]))
 
     line(out)
     if count:
@@ -101,7 +102,7 @@ def construct(out, indent, cls, inCase, constructor, names):
         indent += 1
 
     line(out, indent, 'INT_CALL(object = %s(%s));',
-         names[-1], ', '.join(['a%d' %(i) for i in xrange(count)]))
+         cppname(names[-1]), ', '.join(['a%d' %(i) for i in xrange(count)]))
     line(out, indent, 'self->object = object;')
     if inCase:
         line(out, indent, 'break;')
@@ -217,11 +218,10 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension):
         line(out, indent, '{')
         indent += 1
 
-    if name in RESERVED:
-        name += '$'
+    name = cppname(name)
     if Modifier.isStatic(modifiers):
         line(out, indent, 'OBJ_CALL(%s%s::%s(%s));',
-             result, '::'.join(names), name,
+             result, '::'.join(cppnames(names)), name,
              ', '.join(['a%d' %(i) for i in xrange(count)]))
     else:
         line(out, indent, 'OBJ_CALL(%sself->object.%s(%s));',
@@ -292,7 +292,7 @@ def jniargs(params):
 def extension(env, out, indent, cls, names, name, count, method):
 
     line(out, indent, 'jlong ptr = jenv->CallLongMethod(jobj, %s::mids$[%s::mid_pythonExtension_%s]);',
-         names[-1], names[-1], env.strhash('()J'))
+         cppname(names[-1]), cppname(names[-1]), env.strhash('()J'))
     line(out, indent, 'PyObject *obj = (PyObject *) (Py_intptr_t) ptr;')
 
     if name == 'pythonDecRef':
@@ -300,7 +300,7 @@ def extension(env, out, indent, cls, names, name, count, method):
         line(out, indent, 'if (obj != NULL)')
         line(out, indent, '{')
         line(out, indent + 1, 'jenv->CallVoidMethod(jobj, %s::mids$[%s::mid_pythonExtension_%s], (jlong) 0);',
-             names[-1], names[-1], env.strhash('(J)V'))
+             cppname(names[-1]), cppname(names[-1]), env.strhash('(J)V'))
         line(out, indent + 1, 'env->finalizeObject(jenv, obj);')
         line(out, indent, '}')
         return
@@ -398,7 +398,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
 
     indent = 0
     for name in names[:-1]:
-        line(out_h, indent, 'namespace %s {', name)
+        line(out_h, indent, 'namespace %s {', cppname(name))
         indent += 1
     line(out_h, indent, 'extern PyTypeObject %s$$Type;', names[-1])
 
@@ -406,9 +406,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out_h, indent, 'class t_%s {', names[-1])
     line(out_h, indent, 'public:')
     line(out_h, indent + 1, 'PyObject_HEAD')
-    line(out_h, indent + 1, '%s object;', names[-1])
+    line(out_h, indent + 1, '%s object;', cppname(names[-1]))
     line(out_h, indent + 1, 'static PyObject *wrap_Object(const %s&);',
-         names[-1])
+         cppname(names[-1]))
     line(out_h, indent + 1, 'static PyObject *wrap_jobject(const jobject&);')
     line(out_h, indent + 1, 'static void install(PyObject *module);')
     line(out_h, indent + 1, 'static void initialize(PyObject *module);')
@@ -442,7 +442,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out)
     indent = 0
     for name in names[:-1]:
-        line(out, indent, 'namespace %s {', name)
+        line(out, indent, 'namespace %s {', cppname(name))
         indent += 1
 
     if not isExtension:
@@ -481,7 +481,27 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                 extMethods.setdefault(name, []).append(method)
 
             if superMethod or not (isExtension and isNative and not isStatic):
-                allMethods.setdefault(name, []).append(method)
+                if isStatic:
+                    if name in allMethods:
+                        if Modifier.isStatic(allMethods[name][0].getModifiers()):
+                            allMethods[name].append(method)
+                        elif name + '_' in allMethods:
+                            allMethods[name + '_'].append(method)
+                        else:
+                            print >>sys.stderr, "Renaming static method %s on class %s to %s_ since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
+                            allMethods[name + '_'] = [method]
+                    else:
+                        allMethods[name] = [method]
+                else:
+                    if name in allMethods:
+                        if Modifier.isStatic(allMethods[name][0].getModifiers()):
+                            print >>sys.stderr, "Renaming static method %s on class %s to %s_ since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
+                            allMethods[name + '_'] = allMethods[name]
+                            allMethods[name] = [method]
+                        else:
+                            allMethods[name].append(method)
+                    else:
+                        allMethods[name] = [method]
 
             if not (isExtension and isNative):
                 nameLen = len(name)
@@ -522,7 +542,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     if sequence:
         sequenceLenName, sequenceLenSig = sequence[0].split(':')
         sequenceGetName, sequenceGetSig = sequence[1].split(':')
-        
+
     for name, methods in allMethods:
         args, x, cardinality = methodargs(methods, superMethods)
         sort(methods, key=lambda x: len(x.getParameterTypes()))
@@ -775,11 +795,14 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     else:
         tp_as_sequence = '0'
 
+    if len(superNames) > 1:
+        base = '::'.join(('::'.join(cppnames(superNames[:-1])), superNames[-1]))
+    else:
+        base = superNames[-1]
     line(out)
     line(out, indent, 'DECLARE_TYPE(%s, t_%s, %s, %s, %s, %s, %s, %s, %s, %s);',
-         names[-1], names[-1], '::'.join(superNames), names[-1],
-         constructorName, tp_iter, tp_iternext, tp_getset, tp_as_mapping,
-         tp_as_sequence)
+         names[-1], names[-1], base, cppname(names[-1]), constructorName,
+         tp_iter, tp_iternext, tp_getset, tp_as_mapping, tp_as_sequence)
 
     line(out)
     line(out, indent, 'void t_%s::install(PyObject *module)', names[-1])
@@ -800,14 +823,15 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out, indent, 'void t_%s::initialize(PyObject *module)', names[-1])
     line(out, indent, '{')
     line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass));',
-         names[-1], names[-1])
+         names[-1], cppname(names[-1]))
     line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(t_%s::wrap_jobject));',
          names[-1], names[-1])
 
     if isExtension:
-        line(out, indent + 1, 'jclass cls = %s::initializeClass();', names[-1]);
+        line(out, indent + 1, 'jclass cls = %s::initializeClass();',
+             cppname(names[-1]))
     elif fields:
-        line(out, indent + 1, '%s::initializeClass();', names[-1]);
+        line(out, indent + 1, '%s::initializeClass();', cppname(names[-1]))
 
     if isExtension:
         count = 0
@@ -824,9 +848,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for field in fields:
         fieldType = field.getType()
         fieldName = field.getName()
-        value = '%s::%s' %(names[-1], fieldName)
-        if fieldName in RESERVED:
-            value += '$'
+        value = '%s::%s' %(cppname(names[-1]), cppname(fieldName))
         value = fieldValue(cls, value, fieldType)
         line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "%s", make_descriptor(%s));',
              names[-1], fieldName, value)
@@ -836,14 +858,14 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out)
         line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg)', names[-1])
         line(out, indent, '{')
-        line(out, indent + 1, 'if (!(arg = castCheck(arg, %s::initializeClass(), 1)))', names[-1])
+        line(out, indent + 1, 'if (!(arg = castCheck(arg, %s::initializeClass(), 1)))', cppname(names[-1]))
         line(out, indent + 2, 'return NULL;')
-        line(out, indent + 1, 'return t_%s::wrap_Object(%s(((t_%s *) arg)->object.this$));', names[-1], names[-1], names[-1])
+        line(out, indent + 1, 'return t_%s::wrap_Object(%s(((t_%s *) arg)->object.this$));', names[-1], cppname(names[-1]), names[-1])
         line(out, indent, '}')
 
         line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg)', names[-1])
         line(out, indent, '{')
-        line(out, indent + 1, 'if (!castCheck(arg, %s::initializeClass(), 0))', names[-1])
+        line(out, indent + 1, 'if (!castCheck(arg, %s::initializeClass(), 0))', cppname(names[-1]))
         line(out, indent + 2, 'Py_RETURN_FALSE;')
         line(out, indent + 1, 'Py_RETURN_TRUE;')
         line(out, indent, '}')
@@ -892,10 +914,12 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for name, methods in allMethods:
         line(out)
         modifiers = methods[0].getModifiers()
+
         if isExtension and name == 'clone' and Modifier.isNative(modifiers):
             declargs, args, cardinality = ', PyObject *arg', ', arg', 1
         else:
             declargs, args, cardinality = methodargs(methods, superMethods)
+
         static = Modifier.isStatic(modifiers)
         if static:
             line(out, indent, 'static PyObject *t_%s_%s(PyTypeObject *type%s)',
@@ -1143,12 +1167,12 @@ def package(out, allInOne, cppdir, namespace, names):
     if names:
         line(out)
         for name in names:
-            line(out, indent, 'namespace %s {', name)
+            line(out, indent, 'namespace %s {', cppname(name))
             indent += 1
 
     line(out);
     for name, entries in packages:
-        line(out, indent, 'namespace %s {', name)
+        line(out, indent, 'namespace %s {', cppname(name))
         line(out, indent + 1, 'void __install__(PyObject *module);')
         line(out, indent + 1, 'void __initialize__(PyObject *module);')
         line(out, indent, '}')
@@ -1159,7 +1183,7 @@ def package(out, allInOne, cppdir, namespace, names):
     for name in types:
         line(out, indent + 1, 't_%s::install(module);', name)
     for name, entries in packages:
-        line(out, indent + 1, '%s::__install__(module);', name)
+        line(out, indent + 1, '%s::__install__(module);', cppname(name))
     line(out, indent, '}')
 
     line(out)
@@ -1177,7 +1201,7 @@ def package(out, allInOne, cppdir, namespace, names):
     for name in types:
         line(out, indent + 1, 't_%s::initialize(module);', name)
     for name, entries in packages:
-        line(out, indent + 1, '%s::__initialize__(module);', name)
+        line(out, indent + 1, '%s::__initialize__(module);', cppname(name))
     if not names:
         line(out)
         line(out, indent + 1, 'return env;')

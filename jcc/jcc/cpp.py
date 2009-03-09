@@ -70,7 +70,19 @@ PRIMITIVES = { 'boolean': 'Z',
                'void': 'V' }
 
 RESERVED = set(['delete', 'and', 'or', 'not', 'xor', 'union', 'NULL',
-                'register', 'const'])
+                'register', 'const', 'bool', 'operator'])
+
+def cppname(name):
+
+    if name in RESERVED:
+        return name + '$'
+
+    return name
+
+
+def cppnames(names):
+
+    return [cppname(name) for name in names]
 
 
 def typename(cls, current, const):
@@ -89,10 +101,10 @@ def typename(cls, current, const):
         const = False
 
     elif cls == current:
-        name = cls.getName().split('.')[-1]
+        name = cppname(cls.getName().split('.')[-1])
 
     else:
-        name = cls.getName().replace('.', '::')
+        name = '::'.join([cppname(name) for name in cls.getName().split('.')])
 
     if const:
         return "const %s&" %(name)
@@ -209,9 +221,9 @@ def forward(out, namespace, indent):
 
     for name, entries in namespace.iteritems():
         if entries is True:
-            line(out, indent, 'class %s;', name)
+            line(out, indent, 'class %s;', cppname(name))
         else:
-            line(out, indent, 'namespace %s {', name)
+            line(out, indent, 'namespace %s {', cppname(name))
             forward(out, entries, indent + 1)
             line(out, indent, '}')
 
@@ -378,6 +390,7 @@ def jcc(args):
             typeset.add(findClass('java/lang/Double'))
             typeset.add(findClass('java/util/Iterator'))
             typeset.add(findClass('java/util/Enumeration'))
+            packages.add('java.lang')
 
         if moduleName:
             cppdir = os.path.join(output, '_%s' %(moduleName))
@@ -582,15 +595,15 @@ def header(env, out, cls, typeset, packages, excludes):
     indent = 0;
     line(out)
     for name in names[:-1]:
-        line(out, indent, 'namespace %s {', name)
+        line(out, indent, 'namespace %s {', cppname(name))
         indent += 1
 
     line(out)
     if superClsName == 'JObject':
-        line(out, indent, 'class %s : public JObject {', names[-1])
+        line(out, indent, 'class %s : public JObject {', cppname(names[-1]))
     else:
         line(out, indent, 'class %s : public %s {',
-             names[-1], '::'.join(superNames))
+             cppname(names[-1]), '::'.join(cppnames(superNames)))
         
     line(out, indent, 'public:')
     indent += 1
@@ -632,19 +645,18 @@ def header(env, out, cls, typeset, packages, excludes):
     line(out)
 
     line(out, indent, 'explicit %s(jobject obj) : %s(obj) {',
-         names[-1], '::'.join(superNames))
+         cppname(names[-1]), '::'.join(cppnames(superNames)))
     line(out, indent + 1, 'initializeClass();')
     line(out, indent, '}')
     line(out, indent, '%s(const %s& obj) : %s(obj) {}',
-         names[-1], names[-1], '::'.join(superNames))
+         cppname(names[-1]), cppname(names[-1]),
+         '::'.join(cppnames(superNames)))
 
     if fields:
         line(out)
         for field in fields:
             fieldType = field.getType()
-            fieldName = field.getName()
-            if fieldName in RESERVED:
-                fieldName += '$'
+            fieldName = cppname(field.getName())
             if fieldType.isPrimitive():
                 line(out, indent, 'static %s %s;',
                      typename(fieldType, cls, False), fieldName)
@@ -669,7 +681,7 @@ def header(env, out, cls, typeset, packages, excludes):
         for constructor in constructors:
             params = [typename(param, cls, True)
                       for param in constructor.getParameterTypes()]
-            line(out, indent, '%s(%s);', names[-1], ', '.join(params))
+            line(out, indent, '%s(%s);', cppname(names[-1]), ', '.join(params))
 
     if methods:
         line(out)
@@ -683,9 +695,7 @@ def header(env, out, cls, typeset, packages, excludes):
                 const = ' const'
             params = [typename(param, cls, True)
                       for param in method.getParameterTypes()]
-            methodName = method.getName()
-            if methodName in RESERVED:
-                methodName += '$'
+            methodName = cppname(method.getName())
             line(out, indent, '%s%s %s(%s)%s;',
                  prefix, typename(method.getReturnType(), cls, False),
                  methodName, ', '.join(params), const)
@@ -724,30 +734,29 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
     indent = 0
     line(out)
     for name in names[:-1]:
-        line(out, indent, 'namespace %s {', name)
+        line(out, indent, 'namespace %s {', cppname(name))
         indent += 1
 
     line(out)
-    line(out, indent, 'java::lang::Class *%s::class$ = NULL;', names[-1])
-    line(out, indent, 'jmethodID *%s::mids$ = NULL;', names[-1])
+    line(out, indent, 'java::lang::Class *%s::class$ = NULL;',
+         cppname(names[-1]))
+    line(out, indent, 'jmethodID *%s::mids$ = NULL;', cppname(names[-1]))
     if instanceFields:
-        line(out, indent, 'jfieldID *%s::fids$ = NULL;', names[-1])
+        line(out, indent, 'jfieldID *%s::fids$ = NULL;', cppname(names[-1]))
 
     for field in fields:
         fieldType = field.getType()
-        fieldName = field.getName()
-        if fieldName in RESERVED:
-            fieldName += '$'
+        fieldName = cppname(field.getName())
         typeName = typename(fieldType, cls, False)
         if fieldType.isPrimitive():
             line(out, indent, '%s %s::%s = (%s) 0;',
-                 typeName, names[-1], fieldName, typeName)
+                 typeName, cppname(names[-1]), fieldName, typeName)
         else:
             line(out, indent, '%s *%s::%s = NULL;',
-                 typeName, names[-1], fieldName)
+                 typeName, cppname(names[-1]), fieldName)
 
     line(out)
-    line(out, indent, 'jclass %s::initializeClass()', names[-1])
+    line(out, indent, 'jclass %s::initializeClass()', cppname(names[-1]))
     line(out, indent, '{')
     line(out, indent + 1, 'if (!class$)')
     line(out, indent + 1, '{')
@@ -803,15 +812,14 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             fieldName = field.getName()
             if fieldType.isPrimitive():
                 line(out, indent + 2,
-                     '%s%s = env->getStatic%sField(cls, "%s");',
-                     fieldName, fieldName in RESERVED and '$' or '',
-                     fieldType.getName().capitalize(), fieldName)
+                     '%s = env->getStatic%sField(cls, "%s");',
+                     cppname(fieldName), fieldType.getName().capitalize(),
+                     fieldName)
             else:
                 line(out, indent + 2,
-                     '%s%s = new %s(env->getStaticObjectField(cls, "%s", "%s"));',
-                     fieldName, fieldName in RESERVED and '$' or '',
-                     typename(fieldType, cls, False), fieldName,
-                     signature(field))
+                     '%s = new %s(env->getStaticObjectField(cls, "%s", "%s"));',
+                     cppname(fieldName), typename(fieldType, cls, False),
+                     fieldName, signature(field))
 
     line(out, indent + 1, '}')
     line(out, indent + 1, 'return (jclass) class$->this$;')
@@ -823,7 +831,8 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
         decls, args = argnames(constructor.getParameterTypes(), cls)
 
         line(out, indent, "%s::%s(%s) : %s(env->newObject(initializeClass, &mids$, mid_init$_%s%s)) {}",
-             names[-1], names[-1], decls, '::'.join(superNames),
+             cppname(names[-1]), cppname(names[-1]), decls,
+             '::'.join(cppnames(superNames)),
              env.strhash(sig), args)
 
     for method in methods:
@@ -849,9 +858,9 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             isStatic = False
             if superMethod is not None:
                 qualifier = 'Nonvirtual'
-                this = 'this$, (jclass) %s::class$->this$' %('::'.join(superNames))
+                this = 'this$, (jclass) %s::class$->this$' %('::'.join(cppnames(superNames)))
                 declaringClass = superMethod.getDeclaringClass()
-                midns = '%s::' %(declaringClass.getName().replace('.', '::'))
+                midns = '%s::' %(typename(declaringClass, cls, False))
             else:
                 qualifier = ''
                 this = 'this$'
@@ -862,9 +871,9 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
         decls, args = argnames(params, cls)
 
         line(out)
-        line(out, indent, '%s %s::%s%s(%s)%s',
-             typename(returnType, cls, False), names[-1], methodName,
-             methodName in RESERVED and '$' or '', decls, const)
+        line(out, indent, '%s %s::%s(%s)%s',
+             typename(returnType, cls, False), cppname(names[-1]),
+             cppname(methodName), decls, const)
         line(out, indent, '{')
         if isStatic:
             line(out, indent + 1, 'jclass cls = initializeClass();');
@@ -887,7 +896,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             fieldName = field.getName()
             line(out)
             line(out, indent, '%s %s::_get_%s() const',
-                 typename(fieldType, cls, False), names[-1], fieldName)
+                 typename(fieldType, cls, False), cppname(names[-1]), fieldName)
             line(out, indent, '{')
             if fieldType.isPrimitive():
                 line(out, indent + 1,
@@ -902,7 +911,8 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             if not Modifier.isFinal(field.getModifiers()):
                 line(out)
                 line(out, indent, 'void %s::_set_%s(%s a0) const',
-                     names[-1], fieldName, typename(fieldType, cls, True))
+                     cppname(names[-1]), fieldName,
+                     typename(fieldType, cls, True))
                 line(out, indent, '{')
                 if fieldType.isPrimitive():
                     line(out, indent + 1,
