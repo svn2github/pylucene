@@ -15,7 +15,7 @@
 
 package org.apache.pylucene.queryParser;
 
-import java.util.Vector;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
@@ -54,7 +54,7 @@ public class PythonQueryParser extends QueryParser {
     }
 
     public native void pythonDecRef();
-    public native Query getBooleanQuery(Vector clauses);
+    public native Query getBooleanQuery(List clauses, boolean disableCoord);
     public native Query getFieldQuery(String field, String queryText);
     public native Query getFieldQuery(String field, String queryText, int slop);
     public native Query getFuzzyQuery(String field, String termText,
