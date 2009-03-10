@@ -1,6 +1,4 @@
 
-For bug <NUM>, see http://bugzilla.osafoundation.org/show_bug.cgi?id=<NUM>
-
 Version 2.1 ->
 ------------------
  - JCC now a subproject of the Apache PyLucene project
@@ -14,6 +12,8 @@ Version 2.1 ->
  - added 'bool' and 'operator' to list of reserved words
  - added support for packages and classes named with C++ reserved words
  - static methods shadowed by non-static methods of same name now '_' suffixed
+ - added 'java.lang' to --package by default
+ - added isCurrentThreadAttached() method to VMEnv
  - 
 
 Version 2.0 -> 2.1
@@ -31,7 +31,7 @@ Version 2.0 -> 2.1
 Version 1.9 -> 2.0
 ------------------
  - fixed bug with failed findClass() import
- - fixed bug 12127
+ - fixed bug http://bugzilla.osafoundation.org/show_bug.cgi?id=12127
  - added -ljvm to linux2 and sunos5 LFLAGS
  - added support for using JCC in reverse (starting from Java VM) (shared only)
  - using PythonException for reporting Python errors (shared only)
