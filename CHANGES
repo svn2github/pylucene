@@ -1,14 +1,11 @@
 
-For bug <NUM>, see http://bugzilla.osafoundation.org/show_bug.cgi?id=<NUM>
-
-Version 2.4.0 ->
+Version 2.4.0 -> 2.4.1
 ----------------------
  - PyLucene with JCC now a subproject of the Apache Lucene project
  - documentation moved to http://lucene.apache.org/pylucene
  - added java.util.Arrays to the build to bridge the Java array/collection gap
  - added collections.py module with JavaSet class, a Python java.util.Set
  - fixed bug in PythonQueryParser overriding wrong method (Aaron Lav)
- - 
 
 Version 2.3.2 -> 2.4.0
 ----------------------
@@ -40,7 +37,6 @@ Version 2.3 -> 2.3.1
 
 Version 2.2 -> 2.3
 ------------------
-
  - PyLucene with JCC introduced
  - added support for Python 2.3.5
  - added support for using clone() with extensions
@@ -52,7 +48,7 @@ Version 2.2 -> 2.3
  - added support for implicitely iterable Enumeration
  - added support for --root and --prefix for jcc invocations (Esteve Fernandez)
  - jcc switched to setuptools by default (and fallback on distutils)
- - fixed bug 11643
+ - fixed bug http://bugzilla.osafoundation.org/show_bug.cgi?id=11643
  - added support for automatic boxing of primitives when Object is expected
  - fixed bug in missing extensions' Iterator and Enumeration methods
  - added JavaSet.py sample using PythonSet and PythonIterator extensions

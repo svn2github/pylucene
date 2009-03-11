@@ -488,14 +488,14 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                         elif name + '_' in allMethods:
                             allMethods[name + '_'].append(method)
                         else:
-                            print >>sys.stderr, "Renaming static method '%s' on class %s to '%s_' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
+                            print >>sys.stderr, "  Warning: renaming static method '%s' on class %s to '%s_' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
                             allMethods[name + '_'] = [method]
                     else:
                         allMethods[name] = [method]
                 else:
                     if name in allMethods:
                         if Modifier.isStatic(allMethods[name][0].getModifiers()):
-                            print >>sys.stderr, "Renaming static method '%s' on class %s to '%s_' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
+                            print >>sys.stderr, "  Warning: renaming static method '%s' on class %s to '%s_' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
                             allMethods[name + '_'] = allMethods[name]
                             allMethods[name] = [method]
                         else:

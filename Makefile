@@ -14,10 +14,10 @@
 # site-packages directory.
 #
 
-VERSION=2.4.0-3
+VERSION=2.4.1-rc1
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=2.4.0
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_4_0
+LUCENE_VER=2.4.1
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_4_1
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
 
@@ -109,8 +109,6 @@ LUCENE=lucene-java-$(LUCENE_VER)
 ifeq ($(DEBUG),1)
 DEBUG_OPT=--debug
 endif
-
-DISTRIB=distrib/PyLucene-$(VERSION)
 
 DEFINES=-DPYLUCENE_VER="\"$(VERSION)\"" -DLUCENE_VER="\"$(LUCENE_VER)\""
 
@@ -229,7 +227,17 @@ test: samples/LuceneInAction/index
 	find test -name 'test_*.py' | xargs -t -n 1 $(PYTHON)
 	ls samples/LuceneInAction/*Test.py | xargs -t -n 1 $(PYTHON)
 
+
+ARCHIVE=pylucene-$(VERSION)-src.tar.gz
+
 distrib:
 	mkdir -p distrib
-	svn export . $(DISTRIB)
-	tar -C distrib -cvzf $(DISTRIB)-src-jcc.tar.gz $(notdir $(DISTRIB))
+	svn export . distrib/pylucene-$(VERSION)
+	cd distrib; tar -cvzf $(ARCHIVE) pylucene-$(VERSION)
+	cd distrib; gpg2 --armor --output $(ARCHIVE).asc --detach-sig $(ARCHIVE)
+	cd distrib; openssl md5 < $(ARCHIVE) > $(ARCHIVE).md5
+
+stage:
+	scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \
+               people.apache.org:public_html/staging_area
+

@@ -1,5 +1,5 @@
 
-Version 2.1 ->
+Version 2.1 -> 2.2
 ------------------
  - JCC now a subproject of the Apache PyLucene project
  - fixed bug where thread's JNIEnv was not set before calling findClass()
@@ -14,7 +14,6 @@ Version 2.1 ->
  - static methods shadowed by non-static methods of same name now '_' suffixed
  - added 'java.lang' to --package by default
  - added isCurrentThreadAttached() method to VMEnv
- - 
 
 Version 2.0 -> 2.1
 ------------------
