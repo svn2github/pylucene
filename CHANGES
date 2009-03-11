@@ -6,6 +6,7 @@ Version 2.4.0 -> 2.4.1
  - added java.util.Arrays to the build to bridge the Java array/collection gap
  - added collections.py module with JavaSet class, a Python java.util.Set
  - fixed bug in PythonQueryParser overriding wrong method (Aaron Lav)
+ - PyLucene built with JCC 2.2
 
 Version 2.3.2 -> 2.4.0
 ----------------------
