@@ -166,7 +166,7 @@ except ImportError:
         enable_shared = False
 
 
-def main(debug):
+def main(debug, build):
 
     _jcc_argsep = os.environ.get('JCC_ARGSEP', os.pathsep)
 
@@ -195,16 +195,17 @@ def main(debug):
     else:
         _javac = JAVAC[platform]
 
-    config = file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'jcc', 'config.py'), 'w')
-    print >>config
-    print >>config, 'INCLUDES=%s' %(_includes)
-    print >>config, 'CFLAGS=%s' %(_cflags)
-    print >>config, 'DEBUG_CFLAGS=%s' %(_debug_cflags)
-    print >>config, 'LFLAGS=%s' %(_lflags)
-    print >>config, 'SHARED=%s' %(enable_shared)
-    print >>config
-    config.close()
+    if build:
+        config = file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   'jcc', 'config.py'), 'w')
+        print >>config
+        print >>config, 'INCLUDES=%s' %(_includes)
+        print >>config, 'CFLAGS=%s' %(_cflags)
+        print >>config, 'DEBUG_CFLAGS=%s' %(_debug_cflags)
+        print >>config, 'LFLAGS=%s' %(_lflags)
+        print >>config, 'SHARED=%s' %(enable_shared)
+        print >>config
+        config.close()
 
     extensions = []
 
@@ -314,4 +315,4 @@ def main(debug):
 
 
 if __name__ == "__main__":
-    main('--debug' in sys.argv)
+    main('--debug' in sys.argv, 'build' in sys.argv)

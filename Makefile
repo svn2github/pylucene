@@ -238,6 +238,6 @@ distrib:
 	cd distrib; openssl md5 < $(ARCHIVE) > $(ARCHIVE).md5
 
 stage:
-	scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \
-               people.apache.org:public_html/staging_area
+	cd distrib; scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \
+                           people.apache.org:public_html/staging_area
 
