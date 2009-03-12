@@ -14,6 +14,7 @@ Version 2.1 -> 2.2
  - static methods shadowed by non-static methods of same name now '_' suffixed
  - added 'java.lang' to --package by default
  - added isCurrentThreadAttached() method to VMEnv
+ - added MANIFEST.in to exclude generated jcc/config.py (Christian Heimes)
 
 Version 2.0 -> 2.1
 ------------------
