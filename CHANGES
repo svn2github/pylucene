@@ -7,6 +7,7 @@ Version 2.4.0 -> 2.4.1
  - added collections.py module with JavaSet class, a Python java.util.Set
  - fixed bug in PythonQueryParser overriding wrong method (Aaron Lav)
  - PyLucene built with JCC 2.2
+ - fixed bug with collections.py shadowing Python 2.6's during build
 
 Version 2.3.2 -> 2.4.0
 ----------------------
