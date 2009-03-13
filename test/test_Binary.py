@@ -15,13 +15,13 @@
 # test PyLucene binary field
 
 from unittest import TestCase, main
-from lucene import Field
+from lucene import Field, JArray
 
 class BinaryTestCase(TestCase):
 
     def binary(self, b):
 
-        c = ''.join([chr(a) for a in b])
+        c = JArray('byte')([chr(a) for a in b])
         field = Field("bin", c, Field.Store.YES)
         v = field.binaryValue()
         assert c == v and b == [ord(a) for a in v]

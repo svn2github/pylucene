@@ -18,7 +18,7 @@ import test_PyLucene
 
 from lucene import \
     PythonLock, PythonIndexInput, PythonIndexOutput, PythonDirectory, \
-    JavaError, IOException
+    JavaError, IOException, JArray
 
 """
 The Directory Implementation here is for testing purposes only, not meant
@@ -96,7 +96,7 @@ class PythonFileStreamInput(PythonIndexInput):
 
     def readInternal(self, length, pos):
         self.fh.seek(pos)
-        return self.fh.read(length)
+        return JArray('byte')(self.fh.read(length))
 
     def seekInternal(self, pos):
         self.fh.seek(pos)

@@ -214,8 +214,6 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                       break;
                   if (PyObject_TypeCheck(arg, JArrayByte$$Type))
                       break;
-                  if (arg == Py_None || PyString_Check(arg))
-                      break;
               }
               else if (PyString_Check(arg) && (PyString_Size(arg) == 1))
                   break;
@@ -229,8 +227,6 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       break;
                   if (PyObject_TypeCheck(arg, JArrayChar$$Type))
-                      break;
-                  if (arg == Py_None || PyUnicode_Check(arg))
                       break;
               }
               else if (PyUnicode_Check(arg) && PyUnicode_GET_SIZE(arg) == 1)

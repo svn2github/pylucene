@@ -15,6 +15,7 @@ Version 2.1 -> 2.2
  - added 'java.lang' to --package by default
  - added isCurrentThreadAttached() method to VMEnv
  - added MANIFEST.in to exclude generated jcc/config.py (Christian Heimes)
+ - passing strings for byte[] or char[] is no longer supported, use JArray
 
 Version 2.0 -> 2.1
 ------------------
