@@ -141,6 +141,9 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                       cls = (*initializeClass)();
                   } catch (JCCEnv::pythonError e) {
                       return -1;
+                  } catch (JCCEnv::exception e) {
+                      PyErr_SetJavaError(e.throwable);
+                      return -1;
                   }
                   break;
               }
@@ -1039,6 +1042,9 @@ PyObject *castCheck(PyObject *obj, jclass (*initializeClass)(),
         try {
             cls = (*initializeClass)();
         } catch (JCCEnv::pythonError e) {
+            return NULL;
+        } catch (JCCEnv::exception e) {
+            PyErr_SetJavaError(e.throwable);
             return NULL;
         }
 

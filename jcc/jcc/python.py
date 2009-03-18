@@ -1142,7 +1142,8 @@ def package(out, allInOne, cppdir, namespace, names):
     if allInOne and not names or not allInOne:
         line(out, 0, '#include <jni.h>')
         line(out, 0, '#include <Python.h>')
-        line(out, 0, '#include "macros.h"')
+        line(out, 0, '#include "JCCEnv.h"')
+        line(out, 0, '#include "functions.h"')
 
     if not names:
         line(out)
@@ -1195,6 +1196,8 @@ def package(out, allInOne, cppdir, namespace, names):
         line(out, indent + 1, 'if (env == NULL)')
         line(out, indent + 2, 'return NULL;')
         line(out)
+        line(out, indent + 1, 'try {');
+        indent += 1
     else:
         line(out, indent, 'void __initialize__(PyObject *module)')
         line(out, indent, '{')
@@ -1203,8 +1206,13 @@ def package(out, allInOne, cppdir, namespace, names):
     for name, entries in packages:
         line(out, indent + 1, '%s::__initialize__(module);', cppname(name))
     if not names:
-        line(out)
         line(out, indent + 1, 'return env;')
+        indent -= 1
+        line(out, indent + 1, '} catch (JCCEnv::exception e) {')
+        line(out, indent + 2, 'PyErr_SetJavaError(e.throwable);')
+        line(out, indent + 2, 'return NULL;')
+        line(out, indent + 1, '}')
+
     line(out, indent, '}')
 
     while indent:
