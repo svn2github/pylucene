@@ -127,6 +127,7 @@ public:
         return (JNIEnv *) pthread_getspecific(VM_ENV);
     }
 #endif
+    virtual void set_vm(JavaVM *vm, JNIEnv *vm_env);
     virtual void set_vm_env(JNIEnv *vm_env);
 
     virtual jclass findClass(const char *className);

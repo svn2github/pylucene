@@ -16,6 +16,7 @@ Version 2.1 -> 2.2
  - added isCurrentThreadAttached() method to VMEnv
  - added MANIFEST.in to exclude generated jcc/config.py (Christian Heimes)
  - passing strings for byte[] or char[] is no longer supported, use JArray
+ - failure to call initVM() now reported with error instead of crash
 
 Version 2.0 -> 2.1
 ------------------

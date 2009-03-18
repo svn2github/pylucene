@@ -25,7 +25,7 @@
 
 #include "JObject.h"
 #include "JCCEnv.h"
-
+#include "macros.h"
 
 _DLL_EXPORT JCCEnv *env;
 
@@ -64,7 +64,7 @@ static PyMethodDef t_jccenv_methods[] = {
     { NULL, NULL, 0, NULL }
 };
 
-_DLL_EXPORT PyTypeObject JCCEnv$$Type = {
+PyTypeObject JCCEnv$$Type = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
     "jcc.JCCEnv",                        /* tp_name */
@@ -261,7 +261,7 @@ static PyObject *t_jccenv__dumpRefs(PyObject *self,
 
 _DLL_EXPORT PyObject *getVMEnv(PyObject *self)
 {
-    if (env)
+    if (env->vm != NULL)
     {
         t_jccenv *jccenv = (t_jccenv *) JCCEnv$$Type.tp_alloc(&JCCEnv$$Type, 0);
         jccenv->env = env;
@@ -275,6 +275,21 @@ _DLL_EXPORT PyObject *getVMEnv(PyObject *self)
 #ifdef _jcc_lib
 static void registerNatives(JNIEnv *vm_env);
 #endif
+
+_DLL_EXPORT PyObject *initJCC(PyObject *module)
+{
+    if (env == NULL)
+    {
+        PyEval_InitThreads();
+        INSTALL_TYPE(JCCEnv, module);
+
+        env = new JCCEnv(NULL, NULL);
+
+        Py_RETURN_TRUE;
+    }
+
+    Py_RETURN_FALSE;
+}
 
 _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -292,7 +307,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                                      &vmargs))
         return NULL;
 
-    if (env)
+    if (env->vm)
     {
         if (initialheap || maxheap || maxstack || vmargs)
         {
@@ -382,11 +397,13 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
             return NULL;
         }
 
+        env->set_vm(vm, vm_env);
+
         for (unsigned int i = 0; i < nOptions; i++)
             delete vm_options[i].optionString;
 
         t_jccenv *jccenv = (t_jccenv *) JCCEnv$$Type.tp_alloc(&JCCEnv$$Type, 0);
-        jccenv->env = new JCCEnv(vm, vm_env);
+        jccenv->env = env;
 
 #ifdef _jcc_lib
         registerNatives(vm_env);

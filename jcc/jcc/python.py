@@ -61,7 +61,7 @@ def parseArgs(params, current):
             return array + 's'
         if clsName == 'java.lang.Object':
             return array + 'o'
-        return array + 'j'
+        return array + 'k'
 
     def checkarg(cls):
         while cls.isArray():
@@ -69,7 +69,7 @@ def parseArgs(params, current):
         if (cls.isPrimitive() or
             cls.getName() in ('java.lang.String', 'java.lang.Object')):
             return ''
-        return ', %s::getclass$()' %(typename(cls, current, False))
+        return ', %s::initializeClass' %(typename(cls, current, False))
 
     def callarg(cls, i):
         return ', &a%d' %(i)
@@ -858,14 +858,14 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out)
         line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg)', names[-1])
         line(out, indent, '{')
-        line(out, indent + 1, 'if (!(arg = castCheck(arg, %s::initializeClass(), 1)))', cppname(names[-1]))
+        line(out, indent + 1, 'if (!(arg = castCheck(arg, %s::initializeClass, 1)))', cppname(names[-1]))
         line(out, indent + 2, 'return NULL;')
         line(out, indent + 1, 'return t_%s::wrap_Object(%s(((t_%s *) arg)->object.this$));', names[-1], cppname(names[-1]), names[-1])
         line(out, indent, '}')
 
         line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg)', names[-1])
         line(out, indent, '{')
-        line(out, indent + 1, 'if (!castCheck(arg, %s::initializeClass(), 0))', cppname(names[-1]))
+        line(out, indent + 1, 'if (!castCheck(arg, %s::initializeClass, 0))', cppname(names[-1]))
         line(out, indent + 2, 'Py_RETURN_FALSE;')
         line(out, indent + 1, 'Py_RETURN_TRUE;')
         line(out, indent, '}')
@@ -1243,17 +1243,10 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
         package(None, False, cppdir, namespaces, ())
 
     line(out)
+    line(out, 0, 'PyObject *initJCC(PyObject *module);')
     line(out, 0, 'void __install__(PyObject *module);')
     line(out, 0, 'extern PyTypeObject JObject$$Type, ConstVariableDescriptor$$Type, FinalizerClass$$Type, FinalizerProxy$$Type;')
     line(out, 0, 'extern void _install_jarray(PyObject *);')
-    line(out)
-    line(out, 0, '#if defined(_jcc_shared) && (defined(_MSC_VER) || defined(__WIN32))')
-    line(out, 0, '#define _DLL_IMPORT __declspec(dllimport)')
-    line(out, 0, '#else')
-    line(out, 0, '#define _DLL_IMPORT')
-    line(out, 0, '#endif')
-    line(out, 0, '_DLL_IMPORT extern PyTypeObject JCCEnv$$Type;')
-
     line(out)
     line(out, 0, 'extern "C" {')
 
@@ -1263,10 +1256,9 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
     line(out, 2, 'PyObject *module = Py_InitModule3("%s", jcc_funcs, "");',
          extname);
     line(out)
-    line(out, 2, 'PyEval_InitThreads();')
+    line(out, 2, 'initJCC(module);')
     line(out)
     line(out, 2, 'INSTALL_TYPE(JObject, module);')
-    line(out, 2, 'INSTALL_TYPE(JCCEnv, module);')
     line(out, 2, 'INSTALL_TYPE(ConstVariableDescriptor, module);')
     line(out, 2, 'INSTALL_TYPE(FinalizerClass, module);')
     line(out, 2, 'INSTALL_TYPE(FinalizerProxy, module);')

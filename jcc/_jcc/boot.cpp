@@ -18,8 +18,9 @@
 #include "java/lang/RuntimeException.h"
 #include "macros.h"
 
-extern PyTypeObject JObject$$Type, JCCEnv$$Type, ConstVariableDescriptor$$Type;
+extern PyTypeObject JObject$$Type, ConstVariableDescriptor$$Type;
 
+PyObject *initJCC(PyObject *module);
 PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds);
 
 namespace java {
@@ -49,8 +50,9 @@ extern "C" {
     {
         PyObject *m = Py_InitModule3("_jcc", jcc_funcs, "_jcc");
 
+        initJCC(m);
+
         INSTALL_TYPE(JObject, m);
-        INSTALL_TYPE(JCCEnv, m);
         INSTALL_TYPE(ConstVariableDescriptor, m);
         java::lang::__install__(m);
     }

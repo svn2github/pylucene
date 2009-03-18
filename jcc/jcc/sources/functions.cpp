@@ -55,6 +55,8 @@ PyObject *findClass(PyObject *self, PyObject *args)
 
         if (cls)
             return t_Class::wrap_Object(Class(cls));
+    } catch (JCCEnv::pythonError e) {
+        return NULL;
     } catch (JCCEnv::exception e) {
         PyErr_SetJavaError(e.throwable);
         return NULL;
@@ -124,10 +126,25 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               break;
           }
 
-          case 'j':           /* Java object */
+          case 'j':           /* Java object, with class$    */
+          case 'k':           /* Java object, with initializeClass */
           {
-              Class *cls = va_arg(list, Class *);
-              
+              jclass cls = NULL;
+
+              switch (types[pos]) {
+                case 'j':
+                  cls = (jclass) va_arg(list, Class *)->this$;
+                  break;
+                case 'k':
+                  try {
+                      jclass (*initializeClass)() = va_arg(list, jclass (*)());
+                      cls = (*initializeClass)();
+                  } catch (JCCEnv::pythonError e) {
+                      return -1;
+                  }
+                  break;
+              }
+
               if (arg == Py_None)
                   break;
 
@@ -151,7 +168,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                           int ok =
                               (obj == Py_None ||
                                (PyObject_TypeCheck(obj, &Object$$Type) &&
-                                cls->isInstance(((t_Object *) obj)->object)));
+                                env->get_vm_env()->IsInstanceOf(((t_Object *) obj)->object.this$, cls)));
 
                           Py_DECREF(obj);
                           if (ok)
@@ -162,13 +179,13 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   }
               }
               else if (PyObject_TypeCheck(arg, &Object$$Type) &&
-                       cls->isInstance(((t_Object *) arg)->object))
+                       env->get_vm_env()->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                   break;
               else if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type))
               {
                   arg = ((t_fp *) arg)->object;
                   if (PyObject_TypeCheck(arg, &Object$$Type) &&
-                      cls->isInstance(((t_Object *) arg)->object))
+                      env->get_vm_env()->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                       break;
               }
 
@@ -454,8 +471,18 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           }
 
           case 'j':           /* Java object except String and Object */
+          case 'k':           /* Java object, with initializeClass    */
           {
-              Class *cls = va_arg(check, Class *);
+              jclass cls = NULL;
+
+              switch (types[pos]) {
+                case 'j':
+                  cls = (jclass) va_arg(check, Class *)->this$;
+                  break;
+                case 'k':
+                  jclass (*initializeClass)() = va_arg(check, jclass (*)());
+                  cls = (*initializeClass)();
+              }
 
               if (array)
               {
@@ -466,7 +493,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   else if (PyObject_TypeCheck(arg, JArrayObject$$Type))
                       *array = ((t_jarray<jobject> *) arg)->array;
                   else 
-                      *array = JArray<jobject>((jclass) cls->this$, arg);
+                      *array = JArray<jobject>(cls, arg);
 
                   if (PyErr_Occurred())
                       return -1;
@@ -796,31 +823,40 @@ PyObject *j2p(const String& js)
 
 PyObject *PyErr_SetArgsError(char *name, PyObject *args)
 {
-    PyObject *err = Py_BuildValue("(sO)", name, args);
+    if (!PyErr_Occurred())
+    {
+        PyObject *err = Py_BuildValue("(sO)", name, args);
 
-    PyErr_SetObject(PyExc_InvalidArgsError, err);
-    Py_DECREF(err);
+        PyErr_SetObject(PyExc_InvalidArgsError, err);
+        Py_DECREF(err);
+    }
 
     return NULL;
 }
 
 PyObject *PyErr_SetArgsError(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *type = (PyObject *) self->ob_type;
-    PyObject *err = Py_BuildValue("(OsO)", type, name, args);
+    if (!PyErr_Occurred())
+    {
+        PyObject *type = (PyObject *) self->ob_type;
+        PyObject *err = Py_BuildValue("(OsO)", type, name, args);
 
-    PyErr_SetObject(PyExc_InvalidArgsError, err);
-    Py_DECREF(err);
+        PyErr_SetObject(PyExc_InvalidArgsError, err);
+        Py_DECREF(err);
+    }
 
     return NULL;
 }
 
 PyObject *PyErr_SetArgsError(PyTypeObject *type, char *name, PyObject *args)
 {
-    PyObject *err = Py_BuildValue("(OsO)", type, name, args);
+    if (!PyErr_Occurred())
+    {
+        PyObject *err = Py_BuildValue("(OsO)", type, name, args);
 
-    PyErr_SetObject(PyExc_InvalidArgsError, err);
-    Py_DECREF(err);
+        PyErr_SetObject(PyExc_InvalidArgsError, err);
+        Py_DECREF(err);
+    }
 
     return NULL;
 }
@@ -981,7 +1017,8 @@ PyObject *callSuper(PyTypeObject *type, PyObject *self,
     return value;
 }
 
-PyObject *castCheck(PyObject *obj, jclass cls, int reportError)
+PyObject *castCheck(PyObject *obj, jclass (*initializeClass)(),
+                    int reportError)
 {
     if (PyObject_TypeCheck(obj, &FinalizerProxy$$Type))
         obj = ((t_fp *) obj)->object;
@@ -994,12 +1031,24 @@ PyObject *castCheck(PyObject *obj, jclass cls, int reportError)
     }
 
     jobject jobj = ((t_Object *) obj)->object.this$;
-    
-    if (jobj && !env->get_vm_env()->IsInstanceOf(jobj, cls))
+
+    if (jobj)
     {
-        if (reportError)
-            PyErr_SetObject(PyExc_TypeError, obj);
-        return NULL;
+        jclass cls;
+
+        try {
+            cls = (*initializeClass)();
+        } catch (JCCEnv::pythonError e) {
+            return NULL;
+        }
+
+        if (!env->get_vm_env()->IsInstanceOf(jobj, cls))
+        {
+            if (reportError)
+                PyErr_SetObject(PyExc_TypeError, obj);
+
+            return NULL;
+        }
     }
 
     return obj;

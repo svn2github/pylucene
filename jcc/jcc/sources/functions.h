@@ -167,7 +167,8 @@ PyObject *get_extension_next(PyObject *self);
 PyObject *get_extension_nextElement(PyObject *self);
 
 jobjectArray fromPySequence(jclass cls, PyObject *sequence);
-PyObject *castCheck(PyObject *obj, jclass cls, int reportError);
+PyObject *castCheck(PyObject *obj, jclass (*initializeClass)(),
+                    int reportError);
 
 extern PyTypeObject FinalizerClass$$Type;
 extern PyTypeObject FinalizerProxy$$Type;

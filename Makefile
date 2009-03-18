@@ -14,7 +14,7 @@
 # site-packages directory.
 #
 
-VERSION=2.4.1-rc4
+VERSION=2.4.1-rc5
 LUCENE_SVN_VER=HEAD
 LUCENE_VER=2.4.1
 LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_4_1

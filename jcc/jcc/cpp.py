@@ -637,16 +637,11 @@ def header(env, out, cls, typeset, packages, excludes):
         line(out, indent, 'static jfieldID *fids$;');
     line(out, indent, 'static jclass initializeClass();');
     line(out)
-    line(out, indent, 'static inline java::lang::Class *getclass$() {')
-    line(out, indent + 1, 'initializeClass();')
-    line(out, indent + 1, 'return class$;');
-    line(out, indent, '}')
-
-    line(out)
 
     line(out, indent, 'explicit %s(jobject obj) : %s(obj) {',
          cppname(names[-1]), '::'.join(cppnames(superNames)))
-    line(out, indent + 1, 'initializeClass();')
+    line(out, indent + 1, 'if (obj != NULL)');
+    line(out, indent + 2, 'initializeClass();')
     line(out, indent, '}')
     line(out, indent, '%s(const %s& obj) : %s(obj) {}',
          cppname(names[-1]), cppname(names[-1]),

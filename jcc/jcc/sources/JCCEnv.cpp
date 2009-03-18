@@ -18,7 +18,6 @@
 
 #include "JCCEnv.h"
 
-extern JCCEnv *env;
 
 #if defined(_MSC_VER) || defined(__WIN32)
 _DLL_EXPORT DWORD VM_ENV = 0;
@@ -72,9 +71,16 @@ JCCEnv::JCCEnv(JavaVM *vm, JNIEnv *vm_env)
     }
 #endif
 
+    if (vm != NULL)
+        set_vm(vm, vm_env);
+    else
+        this->vm = NULL;
+}
+
+void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
+{
     this->vm = vm;
     set_vm_env(vm_env);
-    env = this;
 
     _sys = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/System"));
     _obj = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Object"));
@@ -126,8 +132,20 @@ jclass JCCEnv::findClass(const char *className)
 {
     jclass cls = NULL;
 
-    if (env)
+    if (env->vm)
         cls = get_vm_env()->FindClass(className);
+#ifdef PYTHON
+    else
+    {
+        PythonGIL gil;
+
+        PyErr_SetString(PyExc_RuntimeError, "initVM() must be called first");
+        throw pythonError(NULL);
+    }
+#else
+    else
+        throw exception(NULL);
+#endif
 
     reportException();
 

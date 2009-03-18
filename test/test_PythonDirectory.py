@@ -147,7 +147,7 @@ class PythonFileDirectory(PythonDirectory):
 
     def createOutput(self, name):
         file_path = os.path.join(self.path, name)
-        fh = open(file_path, "w")
+        fh = open(file_path, "wb")
         stream = PythonFileStreamOutput(name, fh)
         self._streams.append(stream)
         return stream
@@ -180,7 +180,7 @@ class PythonFileDirectory(PythonDirectory):
     def openInput(self, name, bufferSize=0):
         file_path = os.path.join(self.path, name)
         try:
-            fh = open(file_path, 'r')
+            fh = open(file_path, "rb")
         except IOError:
             raise JavaError, IOException(name)
         stream = PythonFileStreamInput(name, fh, os.path.getsize(file_path))
