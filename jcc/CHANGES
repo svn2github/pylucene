@@ -18,6 +18,7 @@ Version 2.1 -> 2.2
  - passing strings for byte[] or char[] is no longer supported, use JArray
  - failure to call initVM() now reported with error instead of crash
  - failure to find class now reported with error instead of crash
+ - failure to call attachCurrentThread() now reported with error, not crash
 
 Version 2.0 -> 2.1
 ------------------

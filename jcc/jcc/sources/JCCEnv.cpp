@@ -71,7 +71,7 @@ JCCEnv::JCCEnv(JavaVM *vm, JNIEnv *vm_env)
     }
 #endif
 
-    if (vm != NULL)
+    if (vm)
         set_vm(vm, vm_env);
     else
         this->vm = NULL;
@@ -132,8 +132,25 @@ jclass JCCEnv::findClass(const char *className)
 {
     jclass cls = NULL;
 
-    if (env->vm)
-        cls = get_vm_env()->FindClass(className);
+    if (vm)
+    {
+        JNIEnv *vm_env = get_vm_env();
+
+        if (vm_env)
+            cls = vm_env->FindClass(className);
+#ifdef PYTHON
+        else
+        {
+            PythonGIL gil;
+
+            PyErr_SetString(PyExc_RuntimeError, "attachCurrentThread() must be called first");
+            throw pythonError(NULL);
+        }
+#else
+        else
+            throw exception(NULL);
+#endif
+    }
 #ifdef PYTHON
     else
     {
@@ -239,14 +256,30 @@ jobject JCCEnv::deleteGlobalRef(jobject obj, int id)
 jobject JCCEnv::newObject(jclass (*initializeClass)(), jmethodID **mids,
                           int m, ...)
 {
-    jclass cls;
+    jclass cls = (*initializeClass)();
+    JNIEnv *vm_env = get_vm_env();
     jobject obj;
-    va_list ap;
 
-    va_start(ap, m);
-    cls = (*initializeClass)();
-    obj = get_vm_env()->NewObjectV(cls, (*mids)[m], ap);
-    va_end(ap);
+    if (vm_env)
+    {
+        va_list ap;
+
+        va_start(ap, m);
+        obj = vm_env->NewObjectV(cls, (*mids)[m], ap);
+        va_end(ap);
+    }
+#ifdef PYTHON
+    else
+    {
+        PythonGIL gil;
+
+        PyErr_SetString(PyExc_RuntimeError, "attachCurrentThread() must be called first");
+        throw pythonError(NULL);
+    }
+#else
+    else
+        throw exception(NULL);
+#endif
 
     reportException();
 
@@ -611,7 +644,8 @@ jstring JCCEnv::fromPyString(PyObject *object)
 {
     if (object == Py_None)
         return NULL;
-    else if (PyUnicode_Check(object))
+
+    if (PyUnicode_Check(object))
     {
         if (sizeof(Py_UNICODE) == sizeof(jchar))
         {

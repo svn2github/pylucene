@@ -110,6 +110,20 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
     va_start(check, types);
 #endif
 
+    if (!env->vm)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "initVM() must be called first");
+        return -1;
+    }
+
+    JNIEnv *vm_env = env->get_vm_env();
+
+    if (!vm_env)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "attachCurrentThread() must be called first");
+        return -1;
+    }
+
     unsigned int pos = 0;
     int array = 0;
 
@@ -171,7 +185,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                           int ok =
                               (obj == Py_None ||
                                (PyObject_TypeCheck(obj, &Object$$Type) &&
-                                env->get_vm_env()->IsInstanceOf(((t_Object *) obj)->object.this$, cls)));
+                                vm_env->IsInstanceOf(((t_Object *) obj)->object.this$, cls)));
 
                           Py_DECREF(obj);
                           if (ok)
@@ -182,13 +196,13 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   }
               }
               else if (PyObject_TypeCheck(arg, &Object$$Type) &&
-                       env->get_vm_env()->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
+                       vm_env->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                   break;
               else if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type))
               {
                   arg = ((t_fp *) arg)->object;
                   if (PyObject_TypeCheck(arg, &Object$$Type) &&
-                      env->get_vm_env()->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
+                      vm_env->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                       break;
               }
 
