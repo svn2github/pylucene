@@ -14,7 +14,7 @@
 # site-packages directory.
 #
 
-VERSION=2.4.1-rc6
+VERSION=2.4.1-rc7
 LUCENE_SVN_VER=HEAD
 LUCENE_VER=2.4.1
 LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_4_1
@@ -229,10 +229,13 @@ test: samples/LuceneInAction/index
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
+SITE=../site/build/site/en
 
 distrib:
 	mkdir -p distrib
 	svn export . distrib/pylucene-$(VERSION)
+	mkdir distrib/pylucene-$(VERSION)/doc
+	tar -C $(SITE) -cf - . | tar -C distrib/pylucene-$(VERSION)/doc -xvf -
 	cd distrib; tar -cvzf $(ARCHIVE) pylucene-$(VERSION)
 	cd distrib; gpg2 --armor --output $(ARCHIVE).asc --detach-sig $(ARCHIVE)
 	cd distrib; openssl md5 < $(ARCHIVE) > $(ARCHIVE).md5
@@ -240,4 +243,3 @@ distrib:
 stage:
 	cd distrib; scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \
                            people.apache.org:public_html/staging_area
-

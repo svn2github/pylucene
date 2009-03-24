@@ -9,6 +9,7 @@ Version 2.4.0 -> 2.4.1
  - PyLucene built with JCC 2.2
  - fixed bug with collections.py shadowing Python 2.6's during build
  - passing strings for byte[] or char[] is no longer supported, use JArray
+ - added copy of PyLucene web site to distribution for offline viewing
 
 Version 2.3.2 -> 2.4.0
 ----------------------
