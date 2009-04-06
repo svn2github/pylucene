@@ -290,7 +290,7 @@ public:
     int flags;
     union {
         PyObject *value;
-        jclass (*initializeClass)(void);
+        getclassfn initializeClass;
     } access;
 };
     
@@ -373,7 +373,7 @@ PyObject *make_descriptor(PyTypeObject *value)
     return (PyObject *) self;
 }
 
-PyObject *make_descriptor(jclass (*initializeClass)(void))
+PyObject *make_descriptor(getclassfn initializeClass)
 {
     t_descriptor *self = (t_descriptor *)
         ConstVariableDescriptor$$Type.tp_alloc(&ConstVariableDescriptor$$Type, 0);

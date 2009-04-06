@@ -30,6 +30,8 @@ typedef intobjargproc ssizeobjargproc;
 typedef intintobjargproc ssizessizeobjargproc;
 #endif
 
+typedef jclass (*getclassfn)(void);
+
 PyObject *PyErr_SetArgsError(char *name, PyObject *args);
 PyObject *PyErr_SetArgsError(PyObject *self, char *name, PyObject *args);
 PyObject *PyErr_SetArgsError(PyTypeObject *type, char *name, PyObject *args);
@@ -72,7 +74,7 @@ PyObject *j2p(const java::lang::String& js);
 java::lang::String p2j(PyObject *object);
 
 PyObject *make_descriptor(PyTypeObject *value);
-PyObject *make_descriptor(jclass (*initializeClass)(void));
+PyObject *make_descriptor(getclassfn initializeClass);
 PyObject *make_descriptor(PyObject *value);
 PyObject *make_descriptor(PyObject *(*wrapfn)(const jobject &));
 PyObject *make_descriptor(jboolean value);
@@ -167,7 +169,7 @@ PyObject *get_extension_next(PyObject *self);
 PyObject *get_extension_nextElement(PyObject *self);
 
 jobjectArray fromPySequence(jclass cls, PyObject *sequence);
-PyObject *castCheck(PyObject *obj, jclass (*initializeClass)(),
+PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError);
 
 extern PyTypeObject FinalizerClass$$Type;

@@ -343,6 +343,9 @@ def jcc(args):
             elif arg == '--compiler':
                 i += 1
                 compiler = args[i]
+            elif arg == '--reserved':
+                i += 1
+                RESERVED.update(args[i].split(','))
             else:
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
