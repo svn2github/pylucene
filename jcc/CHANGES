@@ -1,4 +1,10 @@
 
+Version 2.2 ->
+------------------
+ - fixed Solaris compilation issue with using va_arg() with function pointers
+ - added --reserved command line arg to extend list of words to mangle
+ - 
+
 Version 2.1 -> 2.2
 ------------------
  - JCC now a subproject of the Apache PyLucene project
