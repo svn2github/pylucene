@@ -278,13 +278,17 @@ static void registerNatives(JNIEnv *vm_env);
 
 _DLL_EXPORT PyObject *initJCC(PyObject *module)
 {
-    if (env == NULL)
+    static int _once_only = 1;
+
+    if (_once_only)
     {
         PyEval_InitThreads();
         INSTALL_TYPE(JCCEnv, module);
 
-        env = new JCCEnv(NULL, NULL);
+        if (env == NULL)
+            env = new JCCEnv(NULL, NULL);
 
+        _once_only = 0;
         Py_RETURN_TRUE;
     }
 

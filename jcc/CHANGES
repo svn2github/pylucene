@@ -3,6 +3,7 @@ Version 2.2 ->
 ------------------
  - fixed Solaris compilation issue with using va_arg() with function pointers
  - added --reserved command line arg to extend list of words to mangle
+ - fixed bug with initJCC not being run when Python VM embedded in JVM
  - 
 
 Version 2.1 -> 2.2
