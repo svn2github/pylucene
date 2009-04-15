@@ -265,6 +265,7 @@ def jcc(args):
     use_distutils = False
     shared = False
     dist = False
+    wininst = False
     compiler = None
 
     i = 1
@@ -340,6 +341,10 @@ def jcc(args):
             elif arg == '--bdist':
                 from python import compile
                 dist = True
+            elif arg == '--wininst':
+                from python import compile
+                wininst = True
+                dist = True
             elif arg == '--compiler':
                 i += 1
                 compiler = args[i]
@@ -366,7 +371,7 @@ def jcc(args):
             compile(env, os.path.dirname(args[0]), output, moduleName,
                     install, dist, debug, jars, version,
                     prefix, root, install_dir, use_distutils,
-                    shared, compiler, modules)
+                    shared, compiler, modules, wininst)
     else:
         for className in classNames:
             cls = findClass(className.replace('.', '/'))
@@ -477,7 +482,7 @@ def jcc(args):
                 compile(env, os.path.dirname(args[0]), output, moduleName,
                         install, dist, debug, jars, version,
                         prefix, root, install_dir, use_distutils,
-                        shared, compiler, modules)
+                        shared, compiler, modules, wininst)
 
 
 def header(env, out, cls, typeset, packages, excludes):

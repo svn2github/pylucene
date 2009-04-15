@@ -1278,7 +1278,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
 
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, use_distutils,
-            shared, compiler, modules):
+            shared, compiler, modules, wininst):
 
     try:
         if use_distutils:
@@ -1402,7 +1402,9 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         script_args.append('--install-lib=%s' % install_dir)
 
     if dist:
-        if with_setuptools:
+        if wininst:
+            script_args.append('bdist_wininst')
+        elif with_setuptools:
             script_args.append('bdist_egg')
         else:
             script_args.append('bdist')
