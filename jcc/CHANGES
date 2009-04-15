@@ -5,6 +5,7 @@ Version 2.2 ->
  - added --reserved command line arg to extend list of words to mangle
  - fixed bug with initJCC not being run when Python VM embedded in JVM
  - added --wininst to enable use of bdist_wininst with distutils (Jonas Maurus)
+ - added --help to describe command line options (Jonas Maurus)
  - 
 
 Version 2.1 -> 2.2
