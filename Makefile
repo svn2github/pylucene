@@ -168,7 +168,7 @@ $(INSTANTIATED_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/instantiated; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(EXTENSIONS_JAR): $(LUCENE_JAR)
-	$(ANT) -Dlucene.dir=$(LUCENE)
+	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
 JARS=$(LUCENE_JAR) $(SNOWBALL_JAR) $(HIGHLIGHTER_JAR) $(ANALYZERS_JAR) \
      $(REGEX_JAR) $(QUERIES_JAR) $(INSTANTIATED_JAR) $(EXTENSIONS_JAR)
