@@ -39,6 +39,12 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --mapping CLASS METHODSIGNATURE1 METHODSIGNATURE2
                             - Generate a pythonic map protocol wrapper for CLASS
 
+    --rename CLASS1=NAME1,CLASS2=NAME2,...
+                            - Rename one or more Python wrapper classes to
+                              avoid name clashes due to the flattening of
+                              the Java package namespaces as mapped into
+                              Python
+
     If you're planning to use pythonic wrappers you should read the relevant
     documentation first:
       http://lucene.apache.org/pylucene/jcc/documentation/readme.html#python

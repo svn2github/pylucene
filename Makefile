@@ -193,6 +193,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
            --sequence org.apache.lucene.search.Hits 'length:()I' 'doc:(I)Lorg/apache/lucene/document/Document;' \
+           --rename org.apache.lucene.search.highlight.SpanScorer=HighlighterSpanScorer \
            --version $(LUCENE_VER) \
            --module python/collections.py \
            --files $(NUM_FILES)

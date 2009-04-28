@@ -171,6 +171,8 @@ PyObject *get_extension_nextElement(PyObject *self);
 jobjectArray fromPySequence(jclass cls, PyObject *sequence);
 PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError);
+void installType(PyTypeObject *type, PyObject *module, char *name,
+                 int isExtension);
 
 extern PyTypeObject FinalizerClass$$Type;
 extern PyTypeObject FinalizerProxy$$Type;

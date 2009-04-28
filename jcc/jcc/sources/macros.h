@@ -123,19 +123,10 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
 }                                                                       \
 
 
-
 #define INSTALL_TYPE(name, module)                                     \
     if (PyType_Ready(&name##$$Type) == 0)                              \
     {                                                                  \
         Py_INCREF(&name##$$Type);                                      \
-        PyModule_AddObject(module, #name, (PyObject *) &name##$$Type); \
-    }
-
-#define INSTALL_EXTENSION(name, module)                                \
-    if (PyType_Ready(&name##$$Type) == 0)                              \
-    {                                                                  \
-        Py_INCREF(&name##$$Type);                                      \
-        name##$$Type.ob_type = &FinalizerClass$$Type;                  \
         PyModule_AddObject(module, #name, (PyObject *) &name##$$Type); \
     }
 

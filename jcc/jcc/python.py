@@ -390,7 +390,7 @@ def extension(env, out, indent, cls, names, name, count, method):
 
 def python(env, out_h, out, cls, superCls, names, superNames,
            constructors, methods, protectedMethods, fields, instanceFields,
-           mapping, sequence, declares, typeset, excludes, moduleName):
+           mapping, sequence, rename, declares, typeset, excludes, moduleName):
 
     line(out_h)
     line(out_h, 0, '#include <Python.h>')
@@ -807,10 +807,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out)
     line(out, indent, 'void t_%s::install(PyObject *module)', names[-1])
     line(out, indent, '{')
-    if isExtension:
-        line(out, indent + 1, 'INSTALL_EXTENSION(%s, module);', names[-1])
-    else:
-        line(out, indent + 1, 'INSTALL_TYPE(%s, module);', names[-1])
+    line(out, indent + 1, 'installType(&%s$$Type, module, "%s", %d);',
+         names[-1], rename or names[-1], isExtension and 1 or 0)
     for inner in cls.getDeclaredClasses():
         if inner in typeset:
             if Modifier.isStatic(inner.getModifiers()):

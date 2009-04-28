@@ -1153,3 +1153,18 @@ jobjectArray fromPySequence(jclass cls, PyObject *sequence)
 
     return array;
 }
+
+void installType(PyTypeObject *type, PyObject *module, char *name,
+                 int isExtension)
+{
+    if (PyType_Ready(type) == 0)
+    {
+        Py_INCREF(type);
+        if (isExtension)
+        {
+            type->ob_type = &FinalizerClass$$Type;
+            Py_INCREF(&FinalizerClass$$Type);
+        }
+        PyModule_AddObject(module, name, (PyObject *) type);
+    }
+}

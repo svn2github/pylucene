@@ -257,6 +257,7 @@ def jcc(args):
     version = ''
     mappings = {}
     sequences = {}
+    renames = {}
     env = None
     wrapperFiles = 1
     prefix = None
@@ -320,6 +321,10 @@ def jcc(args):
             elif arg == '--sequence':
                 sequences[args[i + 1]] = (args[i + 2], args[i + 3])
                 i += 3
+            elif arg == '--rename':
+                i += 1
+                renames.update(dict([arg.split('=')
+                                     for arg in args[i].split(',')]))
             elif arg == '--files':
                 i += 1
                 wrapperFiles = args[i]
@@ -452,6 +457,7 @@ def jcc(args):
                            constructors, methods, protectedMethods,
                            fields, instanceFields,
                            mappings.get(className), sequences.get(className),
+                           renames.get(className),
                            declares, typeset, excludes, moduleName)
 
                 line(out_h)

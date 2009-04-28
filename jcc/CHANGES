@@ -6,6 +6,7 @@ Version 2.2 ->
  - fixed bug with initJCC not being run when Python VM embedded in JVM
  - added --wininst to enable use of bdist_wininst with distutils (Jonas Maurus)
  - added --help to describe command line options (Jonas Maurus)
+ - added support for --rename to workaround python flattened namespace clashes
  - 
 
 Version 2.1 -> 2.2

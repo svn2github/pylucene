@@ -1,4 +1,9 @@
 
+Version 2.4.1 ->
+----------------------
+ - renamed the Highlighter's SpanScorer class to HighlighterSpanScorer
+ - 
+
 Version 2.4.0 -> 2.4.1
 ----------------------
  - PyLucene with JCC now a subproject of the Apache Lucene project
