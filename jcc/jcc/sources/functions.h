@@ -93,20 +93,19 @@ PyObject *callSuper(PyTypeObject *type,
 PyObject *callSuper(PyTypeObject *type, PyObject *self,
                     const char *name, PyObject *args, int cardinality);
 
-template<class T> PyObject *get_iterator(PyObject *self)
+template<class T> PyObject *get_iterator(T *self)
 {
     java::util::Iterator iterator((jobject) NULL);
 
-    OBJ_CALL(iterator = (((T *) self)->object.iterator()));
+    OBJ_CALL(iterator = self->object.iterator());
     return java::util::t_Iterator::wrap_Object(iterator);
 }
 
-template<class U, class V> PyObject *get_iterator_next(PyObject *self)
+template<class T, class U, class V> PyObject *get_iterator_next(T *self)
 {
-    java::util::t_Iterator *iterator = (java::util::t_Iterator *) self;
     jboolean hasNext;
 
-    OBJ_CALL(hasNext = iterator->object.hasNext());
+    OBJ_CALL(hasNext = self->object.hasNext());
     if (!hasNext)
     {
         PyErr_SetNone(PyExc_StopIteration);
@@ -114,7 +113,7 @@ template<class U, class V> PyObject *get_iterator_next(PyObject *self)
     }
 
     V next((jobject) NULL);
-    OBJ_CALL(next = iterator->object.next());
+    OBJ_CALL(next = self->object.next());
 
     jclass cls = java::lang::String::initializeClass();
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
@@ -123,12 +122,11 @@ template<class U, class V> PyObject *get_iterator_next(PyObject *self)
     return U::wrap_Object(next);
 }
 
-template<class U, class V> PyObject *get_enumeration_nextElement(PyObject *self)
+template<class T, class U, class V> PyObject *get_enumeration_nextElement(T *self)
 {
-    java::util::t_Enumeration *enumeration = (java::util::t_Enumeration *) self;
     jboolean hasMoreElements;
 
-    OBJ_CALL(hasMoreElements = enumeration->object.hasMoreElements());
+    OBJ_CALL(hasMoreElements = self->object.hasMoreElements());
     if (!hasMoreElements)
     {
         PyErr_SetNone(PyExc_StopIteration);
@@ -136,7 +134,7 @@ template<class U, class V> PyObject *get_enumeration_nextElement(PyObject *self)
     }
 
     V next((jobject) NULL);
-    OBJ_CALL(next = enumeration->object.nextElement());
+    OBJ_CALL(next = self->object.nextElement());
 
     jclass cls = java::lang::String::initializeClass();
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
@@ -145,12 +143,11 @@ template<class U, class V> PyObject *get_enumeration_nextElement(PyObject *self)
     return U::wrap_Object(next);
 }
 
-template<class T, class U, class V> PyObject *get_next(PyObject *self)
+template<class T, class U, class V> PyObject *get_next(T *self)
 {
-    T *iterator = (T *) self;
     V next((jobject) NULL);
 
-    OBJ_CALL(next = iterator->object.next());
+    OBJ_CALL(next = self->object.next());
     if (!next)
     {
         PyErr_SetNone(PyExc_StopIteration);

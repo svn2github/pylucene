@@ -711,7 +711,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if iteratorExt:
             tp_iter = 'get_extension_iterator'
         else:
-            tp_iter = 'get_iterator<t_%s>' %(names[-1])
+            tp_iter = '((PyObject *(*)(t_%s *)) get_iterator<t_%s>)' %(names[-1], names[-1])
         tp_iternext = '0'
     elif nextMethod and iterator.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
@@ -720,7 +720,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextExt:
             tp_iternext = 'get_extension_next'
         else:
-            tp_iternext = '(get_iterator_next<%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_iterator_next<java::util::t_Iterator,%s%st_%s,%s>)' %(ns, sep, n, returnName)
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextElementMethod.getReturnType(), cls, False)
@@ -728,7 +728,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
         else:
-            tp_iternext = '(get_enumeration_nextElement<%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_nextElement<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
     elif nextMethod:
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextMethod.getReturnType(), cls, False)
@@ -736,7 +736,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextExt:
             tp_iternext = 'get_extension_next'
         else:
-            tp_iternext = '(get_next<t_%s,%s%st_%s,%s>)' %(names[-1], ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(t_%s *)) get_next<t_%s,%s%st_%s,%s>)' %(names[-1], names[-1], ns, sep, n, returnName)
     else:
         tp_iter = '0'
         tp_iternext = '0'
