@@ -2,6 +2,8 @@
 Version 2.4.1 ->
 ----------------------
  - renamed the Highlighter's SpanScorer class to HighlighterSpanScorer
+ - fixed bug in Makefile's test target which tested installed build
+ - PyLucene built with JCC 2.3
  - 
 
 Version 2.4.0 -> 2.4.1

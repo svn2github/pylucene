@@ -14,7 +14,7 @@
 # site-packages directory.
 #
 
-VERSION=2.4.1-1
+VERSION=2.4.1-2
 LUCENE_SVN_VER=HEAD
 LUCENE_VER=2.4.1
 LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_4_1
@@ -46,8 +46,8 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #JCC=$(PYTHON) -m jcc --shared
 #NUM_FILES=2
 
-# Mac OS X  (Python 2.6, Java 1.5)
-#PREFIX_PYTHON=/Users/vajda/tmp/Python-2.6/install
+# Mac OS X  (Python 2.6.2, Java 1.5)
+#PREFIX_PYTHON=/Users/vajda/tmp/Python-2.6.2/install
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/Python.framework/Versions/2.6/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared
@@ -57,14 +57,14 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.2-py2.3-macosx-10.4-i386.egg/jcc/__init__.py
+#JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-i386.egg/jcc/__init__.py
 #NUM_FILES=2
 
 # Mac OS X  (Python 2.3.5, Java 1.5, setuptools 0.6c7, PPC Mac OS X 10.4)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.2-py2.3-macosx-10.4-ppc.egg/jcc/__init__.py
+#JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-ppc.egg/jcc/__init__.py
 #NUM_FILES=2
 
 # Linux     (Ubuntu 6.06, Python 2.4, Java 1.5, no setuptools)
@@ -221,12 +221,18 @@ realclean: clean
 	rm -rf $(LUCENE)
 
 
-samples/LuceneInAction/index:
-	cd samples/LuceneInAction; $(PYTHON) index.py
+BUILD_TEST=$(PYLUCENE)/build/test
 
-test: samples/LuceneInAction/index
-	find test -name 'test_*.py' | xargs -t -n 1 $(PYTHON)
-	ls samples/LuceneInAction/*Test.py | xargs -t -n 1 $(PYTHON)
+install-test:
+	mkdir -p $(BUILD_TEST)
+	export PYTHONPATH=$(BUILD_TEST); $(GENERATE) --install $(DEBUG_OPT) --install-dir $(BUILD_TEST)
+
+samples/LuceneInAction/index:
+	export PYTHONPATH=$(BUILD_TEST); cd samples/LuceneInAction; $(PYTHON) index.py
+
+test: install-test samples/LuceneInAction/index
+	export PYTHONPATH=$(BUILD_TEST); find test -name 'test_*.py' | xargs -t -n 1 $(PYTHON)
+	export PYTHONPATH=$(BUILD_TEST); ls samples/LuceneInAction/*Test.py | xargs -t -n 1 $(PYTHON)
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
