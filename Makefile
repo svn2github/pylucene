@@ -225,14 +225,14 @@ BUILD_TEST=$(PYLUCENE)/build/test
 
 install-test:
 	mkdir -p $(BUILD_TEST)
-	export PYTHONPATH=$(BUILD_TEST); $(GENERATE) --install $(DEBUG_OPT) --install-dir $(BUILD_TEST)
+	PYTHONPATH=$(BUILD_TEST) $(GENERATE) --install $(DEBUG_OPT) --install-dir $(BUILD_TEST)
 
 samples/LuceneInAction/index:
-	export PYTHONPATH=$(BUILD_TEST); cd samples/LuceneInAction; $(PYTHON) index.py
+	cd samples/LuceneInAction; PYTHONPATH=$(BUILD_TEST) $(PYTHON) index.py
 
 test: install-test samples/LuceneInAction/index
-	export PYTHONPATH=$(BUILD_TEST); find test -name 'test_*.py' | xargs -t -n 1 $(PYTHON)
-	export PYTHONPATH=$(BUILD_TEST); ls samples/LuceneInAction/*Test.py | xargs -t -n 1 $(PYTHON)
+	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
