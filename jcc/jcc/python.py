@@ -728,7 +728,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_nextElement<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_next<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
     elif nextMethod:
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextMethod.getReturnType(), cls, False)

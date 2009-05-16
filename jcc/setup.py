@@ -12,7 +12,7 @@
 
 import os, sys, platform, subprocess
 
-jcc_ver = '2.2'
+jcc_ver = '2.3'
 python_ver = '%d.%d.%d' %(sys.version_info[0:3])
 machine = platform.machine()
 
@@ -74,7 +74,7 @@ DEBUG_CFLAGS = {
 }
 
 LFLAGS = {
-    'darwin': ['-framework', 'JavaVM', '-framework', 'Python'],
+    'darwin': ['-framework', 'JavaVM'],
     'ipod': ['-ljvm', '-lpython%s.%s' %(sys.version_info[0:2]),
              '-L/usr/lib/gcc/arm-apple-darwin9/4.0.1'],
     'linux2/i386': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',

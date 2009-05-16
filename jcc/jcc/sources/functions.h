@@ -122,7 +122,7 @@ template<class T, class U, class V> PyObject *get_iterator_next(T *self)
     return U::wrap_Object(next);
 }
 
-template<class T, class U, class V> PyObject *get_enumeration_nextElement(T *self)
+template<class T, class U, class V> PyObject *get_enumeration_next(T *self)
 {
     jboolean hasMoreElements;
 
