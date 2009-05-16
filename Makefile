@@ -221,7 +221,11 @@ realclean: clean
 	rm -rf $(LUCENE)
 
 
-BUILD_TEST=$(PYLUCENE)/build/test
+BUILD_TEST:=$(PYLUCENE)/build/test
+
+ifeq ($(findstring CYGWIN,$(shell uname)),CYGWIN)
+BUILD_TEST:=`cygpath -aw $(BUILD_TEST)`
+endif
 
 install-test:
 	mkdir -p $(BUILD_TEST)
@@ -231,7 +235,7 @@ samples/LuceneInAction/index:
 	cd samples/LuceneInAction; PYTHONPATH=$(BUILD_TEST) $(PYTHON) index.py
 
 test: install-test samples/LuceneInAction/index
-	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON); true
 	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 
 
