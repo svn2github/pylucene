@@ -1,4 +1,9 @@
 
+Version 2.3 ->
+------------------
+ - added 'typeof' to reserved word list
+ - 
+
 Version 2.2 -> 2.3
 ------------------
  - fixed Solaris compilation issue with using va_arg() with function pointers
