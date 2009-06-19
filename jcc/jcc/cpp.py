@@ -46,11 +46,23 @@ else:
 
 
 class JavaError(Exception):
+
     def getJavaException(self):
+
         return self.args[0]
+
+    def __str__(self):
+
+        writer = StringWriter()
+        self.getJavaException().printStackTrace(PrintWriter(writer))
+
+        return '\n'.join((super(JavaError, self).__str__(),
+                          "Java stacktrace:", str(writer)))
+
 
 class InvalidArgsError(Exception):
     pass
+
 
 _jcc._setExceptionTypes(JavaError, InvalidArgsError)
 from _jcc import *
@@ -403,6 +415,8 @@ def jcc(args):
             typeset.add(findClass('java/lang/Double'))
             typeset.add(findClass('java/util/Iterator'))
             typeset.add(findClass('java/util/Enumeration'))
+            typeset.add(findClass('java/io/StringWriter'))
+            typeset.add(findClass('java/io/PrintWriter'))
             packages.add('java.lang')
 
         if moduleName:

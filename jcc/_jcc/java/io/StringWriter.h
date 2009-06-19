@@ -12,48 +12,39 @@
  *   limitations under the License.
  */
 
-#ifndef _Throwable_H
-#define _Throwable_H
+#ifndef _StringWriter_H
+#define _StringWriter_H
 
 #include <Python.h>
-#include "java/lang/Object.h"
 #include "java/lang/Class.h"
-#include "JArray.h"
+#include "java/io/Writer.h"
 
 namespace java {
-
     namespace io {
-        class PrintWriter;
-    }
 
-    namespace lang {
-        class String;
-
-        class Throwable : public Object {
+        class StringWriter : public Writer {
         public:
-            static Class *class$;
+            static java::lang::Class *class$;
             static jmethodID *_mids;
             static jclass initializeClass();
 
-            explicit Throwable(jobject obj) : Object(obj) {
+            explicit StringWriter(jobject obj) : Writer(obj) {
                 initializeClass();
             }
-
-            void printStackTrace() const;
-            void printStackTrace(java::io::PrintWriter) const;
-            String getMessage() const;
+            StringWriter();
+            StringWriter(const StringWriter& obj) : Writer(obj) {}
         };
 
-        extern PyTypeObject Throwable$$Type;
+        extern PyTypeObject StringWriter$$Type;
 
-        class t_Throwable {
+        class t_StringWriter {
         public:
             PyObject_HEAD
-            Throwable object;
-            static PyObject *wrap_Object(const Throwable& object);
+            StringWriter object;
+            static PyObject *wrap_Object(const StringWriter& object);
             static PyObject *wrap_jobject(const jobject& object);
         };
     }
 }
 
-#endif /* _Throwable_H */
+#endif /* _StringWriter_H */

@@ -27,6 +27,9 @@ namespace java {
     namespace lang {
         void __install__(PyObject *m);
     }
+    namespace io {
+        void __install__(PyObject *m);
+    }
 }
 
 PyObject *__initialize__(PyObject *module, PyObject *args, PyObject *kwds)
@@ -55,5 +58,6 @@ extern "C" {
         INSTALL_TYPE(JObject, m);
         INSTALL_TYPE(ConstVariableDescriptor, m);
         java::lang::__install__(m);
+        java::io::__install__(m);
     }
 }

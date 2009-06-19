@@ -16,25 +16,26 @@
 #include "JCCEnv.h"
 #include "java/lang/Object.h"
 #include "java/lang/Class.h"
-#include "java/lang/Exception.h"
+#include "java/io/Writer.h"
 
 namespace java {
-    namespace lang {
+    namespace io {
 
         enum {
             max_mid
         };
 
-        Class *Exception::class$ = NULL;
-        jmethodID *Exception::_mids = NULL;
+        java::lang::Class *Writer::class$ = NULL;
+        jmethodID *Writer::_mids = NULL;
 
-        jclass Exception::initializeClass()
+        jclass Writer::initializeClass()
         {
             if (!class$)
             {
-                jclass cls = env->findClass("java/lang/Exception");
+                jclass cls = env->findClass("java/io/Writer");
 
-                class$ = (Class *) new JObject(cls);
+                _mids = new jmethodID[max_mid];
+                class$ = (java::lang::Class *) new JObject(cls);
             }
 
             return (jclass) class$->this$;
@@ -48,13 +49,13 @@ namespace java {
 #include "macros.h"
 
 namespace java {
-    namespace lang {
+    namespace io {
 
-        static PyMethodDef t_Exception__methods_[] = {
+        static PyMethodDef t_Writer__methods_[] = {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Exception, t_Exception, Throwable, Exception,
+        DECLARE_TYPE(Writer, t_Writer, java::lang::Object, Writer,
                      abstract_init, 0, 0, 0, 0, 0);
     }
 }
