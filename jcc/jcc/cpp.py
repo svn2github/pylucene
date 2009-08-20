@@ -258,6 +258,7 @@ def jcc(args):
     jars = []
     classpath = []
     libpath = []
+    vmargs = ['-Djava.awt.headless=true']
     moduleName = None
     modules = []
     build = False
@@ -303,6 +304,9 @@ def jcc(args):
             elif arg == '--libpath':
                 i += 1
                 libpath.append(args[i])
+            elif arg == '--vmarg':
+                i += 1
+                vmargs.append(args[i])
             elif arg == '--python':
                 from python import python, module
                 i += 1
@@ -377,12 +381,11 @@ def jcc(args):
             classNames.add(arg)
         i += 1
 
-    vmargs = '-Djava.awt.headless=true'
     if libpath:
-        vmargs += ' -Djava.library.path=' + os.pathsep.join(libpath)
+        vmargs.append('-Djava.library.path=' + os.pathsep.join(libpath))
 
     env = initVM(os.pathsep.join(classpath) or None,
-                 maxstack='512k', vmargs=vmargs)
+                 maxstack='512k', vmargs=' '.join(vmargs))
 
     typeset = set()
     excludes = set(excludes)

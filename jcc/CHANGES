@@ -6,6 +6,7 @@ Version 2.3 ->
  - fixed local string ref leaks in JArray<jstring>.get/toSequence (Aric Coady)
  - added --libpath parameter to specify -Djava.library.path
  - classes listed with --exclude are no longer loaded (except for dependencies)
+ - added --vmarg to add Java VM initialization parameters (Christian Kofler)
  - 
 
 Version 2.2 -> 2.3

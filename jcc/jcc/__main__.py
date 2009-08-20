@@ -19,11 +19,14 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               which dependencies are automatically wrapped
     --classpath [PATH|JAR]  - add [PATH|JAR] to CLASSPATH while generating
                               wrappers 
+    --libpath [PATH]        - add [PATH] to java.library.path while generating
+                              wrappers 
     --module MODULE         - include Python MODULE in the distribution
     --reserved SYMBOL       - mark SYMBOL as a reserved word that will be
                               mangled in the generated C++ code to avoid
                               clashes with C/C++ reserved words or header
                               file definitions
+    --vmarg                 - add extra Java VM initialization parameter
 
   Python wrapper generation options:
     --python NAME           - generate wrappers for use from Python in a module
