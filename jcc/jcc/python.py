@@ -390,7 +390,7 @@ def extension(env, out, indent, cls, names, name, count, method):
 
 def python(env, out_h, out, cls, superCls, names, superNames,
            constructors, methods, protectedMethods, fields, instanceFields,
-           mapping, sequence, rename, declares, typeset, excludes, moduleName):
+           mapping, sequence, rename, declares, typeset, moduleName):
 
     line(out_h)
     line(out_h, 0, '#include <Python.h>')

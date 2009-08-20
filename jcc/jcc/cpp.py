@@ -148,7 +148,8 @@ def known(cls, typeset, declares, packages, excludes):
     while cls.isArray():
         cls = cls.getComponentType()
 
-    if cls in excludes:
+    className = cls.getName()
+    if className in excludes:
         return False
 
     if cls.isPrimitive():
@@ -158,7 +159,7 @@ def known(cls, typeset, declares, packages, excludes):
         declares.add(cls)
         return True
 
-    if split_pkg(cls.getName(), '.')[0] in packages:
+    if split_pkg(className, '.')[0] in packages:
         typeset.add(cls)
         declares.add(cls)
         cls = cls.getSuperclass()
@@ -256,6 +257,7 @@ def jcc(args):
     packages = set()
     jars = []
     classpath = []
+    libpath = []
     moduleName = None
     modules = []
     build = False
@@ -298,6 +300,9 @@ def jcc(args):
             elif arg == '--classpath':
                 i += 1
                 classpath.append(args[i])
+            elif arg == '--libpath':
+                i += 1
+                libpath.append(args[i])
             elif arg == '--python':
                 from python import python, module
                 i += 1
@@ -372,12 +377,15 @@ def jcc(args):
             classNames.add(arg)
         i += 1
 
-    env = initVM(os.pathsep.join(classpath) or None, maxstack='512k',
-                 vmargs='-Djava.awt.headless=true')
+    vmargs = '-Djava.awt.headless=true'
+    if libpath:
+        vmargs += ' -Djava.library.path=' + os.pathsep.join(libpath)
+
+    env = initVM(os.pathsep.join(classpath) or None,
+                 maxstack='512k', vmargs=vmargs)
 
     typeset = set()
-    excludes = set([findClass(className.replace('.', '/'))
-                    for className in excludes])
+    excludes = set(excludes)
 
     if recompile or not build and (install or dist):
         if moduleName is None:
@@ -389,11 +397,11 @@ def jcc(args):
                     shared, compiler, modules, wininst)
     else:
         for className in classNames:
+            if className in excludes:
+                continue
             cls = findClass(className.replace('.', '/'))
             if cls is None:
                 raise ValueError, className
-            if cls in excludes:
-                continue
             if Modifier.isPublic(cls.getModifiers()):
                 typeset.add(cls)
                 cls = cls.getSuperclass()
@@ -462,7 +470,7 @@ def jcc(args):
                                          cls, superCls, constructors,
                                          methods, protectedMethods,
                                          fields, instanceFields, 
-                                         declares, typeset, excludes)
+                                         declares, typeset)
                 if moduleName:
                     python(env, out_h, out_cpp,
                            cls, superCls, names, superNames,
@@ -470,7 +478,7 @@ def jcc(args):
                            fields, instanceFields,
                            mappings.get(className), sequences.get(className),
                            renames.get(className),
-                           declares, typeset, excludes, moduleName)
+                           declares, typeset, moduleName)
 
                 line(out_h)
                 line(out_h, 0, '#endif')
@@ -733,7 +741,7 @@ def header(env, out, cls, typeset, packages, excludes):
 
 
 def code(env, out, cls, superCls, constructors, methods, protectedMethods,
-         fields, instanceFields, declares, typeset, excludes):
+         fields, instanceFields, declares, typeset):
 
     className = cls.getName()
     names = className.split('.')
