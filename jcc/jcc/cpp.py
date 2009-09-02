@@ -426,6 +426,7 @@ def jcc(args):
             typeset.add(findClass('java/util/Enumeration'))
             typeset.add(findClass('java/io/StringWriter'))
             typeset.add(findClass('java/io/PrintWriter'))
+            typeset.add(findClass('java/io/Writer'))
             packages.add('java.lang')
 
         if moduleName:

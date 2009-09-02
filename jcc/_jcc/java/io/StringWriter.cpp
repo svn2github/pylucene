@@ -71,8 +71,6 @@ namespace java {
         static int t_StringWriter_init(t_StringWriter *self,
                                        PyObject *args, PyObject *kwds)
         {
-            char *bytes;
-
             switch (PyTuple_Size(args)) {
               case 0:
                 INT_CALL(self->object = StringWriter());
