@@ -7,6 +7,7 @@ Version 2.3 ->
  - added --libpath parameter to specify -Djava.library.path
  - classes listed with --exclude are no longer loaded (except for dependencies)
  - added --vmarg to add Java VM initialization parameters (Christian Kofler)
+ - added support for passing a directory to --module
  - 
 
 Version 2.2 -> 2.3

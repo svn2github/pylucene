@@ -12,7 +12,7 @@
 #   limitations under the License.
 #
 
-import os, sys, platform, shutil, _jcc, py_compile
+import os, sys, platform, shutil, _jcc
 
 from cpp import PRIMITIVES, INDENT, HALF_INDENT
 from cpp import cppname, cppnames, typename
@@ -1318,15 +1318,34 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         shutil.copy2(jar, modulePath)
         package_data.append(os.path.basename(jar))
 
+    packages = [moduleName]
     if modules:
         for module in modules:
-            pfile = module.split('.')[0] + '.py'
-            shutil.copy2(pfile, modulePath)
-            pfile = os.path.basename(pfile)
-            cfile = pfile + (__debug__ and 'c' or 'o')
-            py_compile.compile(os.path.join(modulePath, pfile),
-                               os.path.join(modulePath, cfile),
-                               doraise=True)
+            if os.path.isdir(module):
+                def copytree(src, dst, is_package):
+                    if is_package:
+                        packages.append('.'.join((moduleName, src.replace(os.path.sep, '.'))))
+                    if not os.path.exists(dst):
+                        os.mkdir(dst)
+                    for name in os.listdir(src):
+                        if name.startswith('.'):
+                            continue
+                        _src = os.path.join(src, name)
+                        if os.path.islink(_src):
+                            continue
+                        _dst = os.path.join(dst, name)
+                        if os.path.isdir(_src):
+                            copytree(_src, _dst, os.path.exists(os.path.join(_src, '__init__.py')))
+                        elif not is_package or name.endswith('.py'):
+                            shutil.copy2(_src, _dst)
+                dst = modulePath
+                if os.path.exists(os.path.join(module, '__init__.py')):
+                    dst = os.path.join(modulePath, os.path.basename(module))
+                    copytree(module, dst, True)
+                else:
+                    copytree(module, dst, False)
+            else:
+                shutil.copy2(module.split('.')[0] + '.py', modulePath)
 
     line(out)
     line(out, 0, 'class JavaError(Exception):')
@@ -1441,7 +1460,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
 
     args = {
         'name': moduleName,
-        'packages': [moduleName],
+        'packages': packages,
         'package_dir': {moduleName: modulePath},
         'package_data': {moduleName: package_data},
         'version': version,
