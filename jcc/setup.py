@@ -56,7 +56,7 @@ INCLUDES = {
 }
 
 CFLAGS = {
-    'darwin': ['-fno-strict-aliasing'],
+    'darwin': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'ipod': ['-Wno-write-strings'],
     'linux2': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'sunos5': ['-features=iddollar',

@@ -13,16 +13,19 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.search.highlight;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.search.highlight.Fragmenter;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.search.FieldCache;
 
-public class PythonFragmenter implements Fragmenter {
+/**
+ * @author Andi Vajda
+ */
+
+public class PythonDoubleParser implements FieldCache.DoubleParser {
 
     private long pythonObject;
 
-    public PythonFragmenter()
+    public PythonDoubleParser()
     {
     }
 
@@ -42,6 +45,5 @@ public class PythonFragmenter implements Fragmenter {
     }
 
     public native void pythonDecRef();
-    public native boolean isNewFragment();
-    public native void start(String originalText, TokenStream tokenStream);
+    public native double parseDouble(String string);
 }

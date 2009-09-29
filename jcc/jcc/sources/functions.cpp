@@ -251,6 +251,9 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               }
               else if (PyString_Check(arg) && (PyString_Size(arg) == 1))
                   break;
+              else if (PyInt_CheckExact(arg))
+                  break;
+
               return -1;
           }
 
@@ -569,10 +572,15 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (PyErr_Occurred())
                       return -1;
               }
-              else
+              else if (PyString_Check(arg))
               {
                   jbyte *a = va_arg(list, jbyte *);
                   *a = (jbyte) PyString_AS_STRING(arg)[0];
+              }
+              else
+              {
+                  jbyte *a = va_arg(list, jbyte *);
+                  *a = (jbyte) PyInt_AsLong(arg);
               }
               break;
           }

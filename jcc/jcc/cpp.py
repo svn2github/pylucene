@@ -281,6 +281,7 @@ def jcc(args):
     dist = False
     wininst = False
     compiler = None
+    arch = []
 
     i = 1
     while i < len(args):
@@ -375,6 +376,9 @@ def jcc(args):
             elif arg == '--reserved':
                 i += 1
                 RESERVED.update(args[i].split(','))
+            elif arg == '--arch':
+                i += 1
+                arch.append(args[i])
             else:
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
@@ -397,7 +401,7 @@ def jcc(args):
             compile(env, os.path.dirname(args[0]), output, moduleName,
                     install, dist, debug, jars, version,
                     prefix, root, install_dir, use_distutils,
-                    shared, compiler, modules, wininst)
+                    shared, compiler, modules, wininst, arch)
     else:
         for className in classNames:
             if className in excludes:
@@ -512,7 +516,7 @@ def jcc(args):
                 compile(env, os.path.dirname(args[0]), output, moduleName,
                         install, dist, debug, jars, version,
                         prefix, root, install_dir, use_distutils,
-                        shared, compiler, modules, wininst)
+                        shared, compiler, modules, wininst, arch)
 
 
 def header(env, out, cls, typeset, packages, excludes):

@@ -13,16 +13,21 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.search.highlight;
+package org.apache.pylucene.search;
 
-import org.apache.lucene.search.highlight.Fragmenter;
-import org.apache.lucene.analysis.TokenStream;
+import java.io.IOException;
+import org.apache.lucene.search.FieldComparator;
+import org.apache.lucene.index.IndexReader;
 
-public class PythonFragmenter implements Fragmenter {
+/**
+ * @author Andi Vajda
+ */
+
+public class PythonFieldComparator extends FieldComparator {
 
     private long pythonObject;
 
-    public PythonFragmenter()
+    public PythonFieldComparator()
     {
     }
 
@@ -42,6 +47,14 @@ public class PythonFragmenter implements Fragmenter {
     }
 
     public native void pythonDecRef();
-    public native boolean isNewFragment();
-    public native void start(String originalText, TokenStream tokenStream);
+
+    public native int compare(int slot1, int slot2);
+    public native void setBottom(final int slot);
+    public native int compareBottom(int doc)
+        throws IOException;
+    public native void copy(int slot, int doc) 
+        throws IOException;
+    public native void setNextReader(IndexReader reader, int docBase)
+        throws IOException;
+    public native Comparable value(int slot);
 }

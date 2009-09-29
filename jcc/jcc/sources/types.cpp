@@ -430,7 +430,7 @@ PyObject *make_descriptor(jbyte value)
 
     if (self)
     {
-        self->access.value = PyString_FromStringAndSize((char *) &value, 1);
+        self->access.value = PyInt_FromLong(value);
         self->flags = DESCRIPTOR_VALUE;
     }
 

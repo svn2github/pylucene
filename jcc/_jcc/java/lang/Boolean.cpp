@@ -37,7 +37,7 @@ namespace java {
             {
                 jclass cls = env->findClass("java/lang/Boolean");
 
-                _mids = new jmethodID[max_mid];
+                _mids = NULL;
                 class$ = (Class *) new JObject(cls);
 
                 FALSE = new Boolean(env->getStaticObjectField(cls, "FALSE", "Ljava/lang/Boolean;"));

@@ -8,6 +8,10 @@ Version 2.3 ->
  - classes listed with --exclude are no longer loaded (except for dependencies)
  - added --vmarg to add Java VM initialization parameters (Christian Kofler)
  - added support for passing a directory to --module
+ - byte values are now returned as signed numbers as opposed to one-char strs
+ - added --arch command line flag to override Mac OS X python config settings
+ - cast_() and instance_() methods now generated on extension classes as well
+ - fixed bug with reporting Python error that occurred in an extension class
  - 
 
 Version 2.2 -> 2.3

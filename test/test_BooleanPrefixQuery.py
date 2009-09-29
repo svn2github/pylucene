@@ -21,49 +21,49 @@ class BooleanPrefixQueryTestCase(TestCase):
     Unit tests ported from Java Lucene
     """
 
+    def getCount(self, r,  q):
+
+        if BooleanQuery.instance_(q):
+            return len(BooleanQuery.cast_(q).getClauses())
+        elif ConstantScoreQuery.instance_(q):
+            iter = ConstantScoreQuery.cast_(q).getFilter().getDocIdSet(r).iterator()
+            count = 0
+            while iter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS:
+                count += 1
+
+            return count
+        else:
+            self.fail("unexpected query " + q)
+
     def testMethod(self):
 
         directory = RAMDirectory()
-        categories = ["food", "foodanddrink",
-                      "foodanddrinkandgoodtimes", "food and drink"]
+        categories = ["food", "foodanddrink", "foodanddrinkandgoodtimes",
+                      "food and drink"]
 
-        rw1 = None
-        rw2 = None
+        try:
+            writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                                 IndexWriter.MaxFieldLength.LIMITED)
+            for category in categories:
+                doc = Document()
+                doc.add(Field("category", category, Field.Store.YES,
+                              Field.Index.NOT_ANALYZED))
+                writer.addDocument(doc)
 
-#        try:
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
-        for category in categories:
-            doc = Document()
-            doc.add(Field("category", category,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
-            writer.addDocument(doc)
-
-        writer.close()
+            writer.close()
       
-        reader = IndexReader.open(directory)
-        query = PrefixQuery(Term("category", "foo"))
+            reader = IndexReader.open(directory)
+            query = PrefixQuery(Term("category", "foo"))
+            rw1 = query.rewrite(reader)
       
-        rw1 = query.rewrite(reader)
-        bq = BooleanQuery()
-        bq.add(query, BooleanClause.Occur.MUST)
+            bq = BooleanQuery()
+            bq.add(query, BooleanClause.Occur.MUST)
       
-        rw2 = bq.rewrite(reader)
-#        except Exception, e:
-#            self.fail(str(e))
+            rw2 = bq.rewrite(reader)
+        except Exception, e:
+            self.fail(e)
 
-        bq1 = None
-        if BooleanQuery.instance_(rw1):
-            bq1 = BooleanQuery.cast_(rw1)
-        else:
-            self.fail('rewrite')
-
-        bq2 = None
-        if BooleanQuery.instance_(rw2):
-            bq2 = BooleanQuery.cast_(rw2)
-        else:
-            self.fail('rewrite')
-
-        self.assertEqual(len(bq1.getClauses()), len(bq2.getClauses()),
+        self.assertEqual(self.getCount(reader, rw1), self.getCount(reader, rw2),
                          "Number of Clauses Mismatch")
 
 

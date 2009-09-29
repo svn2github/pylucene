@@ -334,12 +334,10 @@ void JCCEnv::reportException()
         vm_env->ExceptionClear();
 
 #ifdef PYTHON
-#ifndef _jcc_lib
         PythonGIL gil;
 
         if (PyErr_Occurred())
         {
-#endif
             /* _thr is PythonException ifdef _jcc_lib (shared mode)
              * if not shared mode, _thr is RuntimeException
              */
@@ -347,9 +345,7 @@ void JCCEnv::reportException()
 
             if (vm_env->IsSameObject(cls, _thr))
                 throw pythonError(throwable);
-#ifndef _jcc_lib
         }
-#endif
 #endif
 
         throw exception(throwable);

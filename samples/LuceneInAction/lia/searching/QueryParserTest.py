@@ -16,7 +16,7 @@ from lia.common.LiaTestCase import LiaTestCase
 
 from lucene import \
      WhitespaceAnalyzer, StandardAnalyzer, Term, QueryParser, Locale, \
-     BooleanQuery, FuzzyQuery, IndexSearcher, RangeQuery, TermQuery, \
+     BooleanQuery, FuzzyQuery, IndexSearcher, TermRangeQuery, TermQuery, \
      BooleanClause
 
 
@@ -60,8 +60,7 @@ class QueryParserTest(LiaTestCase):
         parser.setUseOldRangeQuery(True)
 
         query = parser.parse("pubmonth:[200401 TO 200412]")
-
-        self.assert_(RangeQuery.instance_(query))
+        self.assert_(TermRangeQuery.instance_(query))
 
         hits = self.searcher.search(query)
         self.assertHitsIncludeTitle(hits, "Lucene in Action")

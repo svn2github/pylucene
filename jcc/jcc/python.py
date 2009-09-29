@@ -27,7 +27,7 @@ if python_ver < '2.4':
 
 
 RESULTS = { 'boolean': 'Py_RETURN_BOOL(%s);',
-            'byte': 'return PyString_FromStringAndSize((char *) &%s, 1);',
+            'byte': 'return PyInt_FromLong(%s);',
             'char': 'return PyUnicode_FromUnicode((Py_UNICODE *) &%s, 1);',
             'double': 'return PyFloat_FromDouble((double) %s);',
             'float': 'return PyFloat_FromDouble((double) %s);',
@@ -37,7 +37,7 @@ RESULTS = { 'boolean': 'Py_RETURN_BOOL(%s);',
             'java.lang.String': 'return j2p(%s);' }
 
 CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
-             'byte': ('O', 'PyString_FromStringAndSize((char *) &%s, 1)', True),
+             'byte': ('O', 'PyInt_FromLong(%s)', True),
              'char': ('O', 'PyUnicode_FromUnicode((Py_UNICODE *) &%s, 1)', True),
              'double': ('d', '(double) %s', False),
              'float': ('f', '(float) %s', False),
@@ -445,9 +445,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out, indent, 'namespace %s {', cppname(name))
         indent += 1
 
-    if not isExtension:
-        line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg);', names[-1])
-        line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg);', names[-1])
+    line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg);', names[-1])
+    line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg);', names[-1])
 
     if constructors:
         line(out, indent, 'static int t_%s_init_(t_%s *self, PyObject *args, PyObject *kwds);', names[-1], names[-1])
@@ -674,11 +673,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out)
     line(out, indent, 'static PyMethodDef t_%s__methods_[] = {', names[-1])
 
-    if not isExtension:
-        line(out, indent + 1,
-             'DECLARE_METHOD(t_%s, cast_, METH_O | METH_CLASS),', names[-1])
-        line(out, indent + 1,
-             'DECLARE_METHOD(t_%s, instance_, METH_O | METH_CLASS),', names[-1])
+    line(out, indent + 1,
+         'DECLARE_METHOD(t_%s, cast_, METH_O | METH_CLASS),', names[-1])
+    line(out, indent + 1,
+         'DECLARE_METHOD(t_%s, instance_, METH_O | METH_CLASS),', names[-1])
 
     for name, methods in allMethods:
         modifiers = methods[0].getModifiers()
@@ -852,21 +850,20 @@ def python(env, out_h, out, cls, superCls, names, superNames,
              names[-1], fieldName, value)
     line(out, indent, '}')
 
-    if not isExtension:
-        line(out)
-        line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg)', names[-1])
-        line(out, indent, '{')
-        line(out, indent + 1, 'if (!(arg = castCheck(arg, %s::initializeClass, 1)))', cppname(names[-1]))
-        line(out, indent + 2, 'return NULL;')
-        line(out, indent + 1, 'return t_%s::wrap_Object(%s(((t_%s *) arg)->object.this$));', names[-1], cppname(names[-1]), names[-1])
-        line(out, indent, '}')
+    line(out)
+    line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg)', names[-1])
+    line(out, indent, '{')
+    line(out, indent + 1, 'if (!(arg = castCheck(arg, %s::initializeClass, 1)))', cppname(names[-1]))
+    line(out, indent + 2, 'return NULL;')
+    line(out, indent + 1, 'return t_%s::wrap_Object(%s(((t_%s *) arg)->object.this$));', names[-1], cppname(names[-1]), names[-1])
+    line(out, indent, '}')
 
-        line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg)', names[-1])
-        line(out, indent, '{')
-        line(out, indent + 1, 'if (!castCheck(arg, %s::initializeClass, 0))', cppname(names[-1]))
-        line(out, indent + 2, 'Py_RETURN_FALSE;')
-        line(out, indent + 1, 'Py_RETURN_TRUE;')
-        line(out, indent, '}')
+    line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg)', names[-1])
+    line(out, indent, '{')
+    line(out, indent + 1, 'if (!castCheck(arg, %s::initializeClass, 0))', cppname(names[-1]))
+    line(out, indent + 2, 'Py_RETURN_FALSE;')
+    line(out, indent + 1, 'Py_RETURN_TRUE;')
+    line(out, indent, '}')
 
     if constructors:
         line(out)
@@ -1276,7 +1273,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
 
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, use_distutils,
-            shared, compiler, modules, wininst):
+            shared, compiler, modules, wininst, arch):
 
     try:
         if use_distutils:
@@ -1455,6 +1452,21 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             args['extra_link_args'] += [os.path.join(shlibdir, 'jcc', jcclib)]
         else:
             raise NotImplementedError, "shared mode on %s" %(sys.platform)
+
+    if arch and sys.platform == 'darwin':
+        from distutils import sysconfig
+
+        config_vars = sysconfig.get_config_vars()
+        cflags = config_vars['CFLAGS'].split(' ')
+        count = len(cflags)
+        i = 0
+        while i < count - 1:
+            if cflags[i] == '-arch' and cflags[i + 1] not in arch:
+                del cflags[i:i+2]
+                count -= 2
+            else:
+                i += 1
+        config_vars['CFLAGS'] = ' '.join(cflags)
 
     extensions = [Extension('.'.join([moduleName, extname]), **args)]
 

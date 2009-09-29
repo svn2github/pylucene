@@ -14,10 +14,10 @@
 # site-packages directory.
 #
 
-VERSION=2.4.1-2
+VERSION=2.9.0-1
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=2.4.1
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_4_1
+LUCENE_VER=2.9.0
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_9_0
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
 
@@ -30,6 +30,8 @@ LUCENE=lucene-java-$(LUCENE_VER)
 # PREFIX: where programs are normally installed on your system (Unix).
 # PREFIX_PYTHON: where your version of python is installed.
 # JCC: how jcc is invoked, depending on the python version:
+#  - python 2.6:
+#      $(PYTHON) -m jcc.__main__
 #  - python 2.5:
 #      $(PYTHON) -m jcc
 #  - python 2.4:
@@ -39,18 +41,18 @@ LUCENE=lucene-java-$(LUCENE_VER)
 # limit.
 #
 
-# Mac OS X  (Python 2.5, Java 1.5)
+# Mac OS X 10.6 (64-bit Python 2.6, Java 1.6)
+PREFIX_PYTHON=/usr
+ANT=ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+NUM_FILES=2
+
+# Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=2
-
-# Mac OS X  (Python 2.6.2, Java 1.5)
-#PREFIX_PYTHON=/Users/vajda/tmp/Python-2.6.2/install
-#ANT=ant
-#PYTHON=$(PREFIX_PYTHON)/Python.framework/Versions/2.6/bin/python
-#JCC=$(PYTHON) -m jcc.__main__ --shared
 #NUM_FILES=2
 
 # Mac OS X  (Python 2.3.5, Java 1.5, setuptools 0.6c7, Intel Mac OS X 10.4)
@@ -115,7 +117,7 @@ DEFINES=-DPYLUCENE_VER="\"$(VERSION)\"" -DLUCENE_VER="\"$(LUCENE_VER)\""
 LUCENE_JAR=$(LUCENE)/build/lucene-core-$(LUCENE_VER).jar
 SNOWBALL_JAR=$(LUCENE)/build/contrib/snowball/lucene-snowball-$(LUCENE_VER).jar
 HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_VER).jar
-ANALYZERS_JAR=$(LUCENE)/build/contrib/analyzers/lucene-analyzers-$(LUCENE_VER).jar
+ANALYZERS_JAR=$(LUCENE)/build/contrib/analyzers/common/lucene-analyzers-$(LUCENE_VER).jar
 REGEX_JAR=$(LUCENE)/build/contrib/regex/lucene-regex-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
 INSTANTIATED_JAR=$(LUCENE)/build/contrib/instantiated/lucene-instantiated-$(LUCENE_VER).jar
@@ -154,7 +156,7 @@ $(HIGHLIGHTER_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/highlighter; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(ANALYZERS_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/analyzers; $(ANT) -Dversion=$(LUCENE_VER)
+	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(REGEX_JAR): $(LUCENE_JAR)
 	rm -f $(LUCENE)/contrib/regex/src/java/org/apache/lucene/search/regex/JakartaRegexpCapabilities.java
@@ -258,3 +260,6 @@ stage:
 release:
 	cd distrib; scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \
                            people.apache.org:/www/www.apache.org/dist/lucene/pylucene
+
+print-%:
+	@echo $* = $($*)
