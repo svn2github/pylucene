@@ -42,11 +42,11 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #
 
 # Mac OS X 10.6 (64-bit Python 2.6, Java 1.6)
-PREFIX_PYTHON=/usr
-ANT=ant
-PYTHON=$(PREFIX_PYTHON)/bin/python
-JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
-NUM_FILES=2
+#PREFIX_PYTHON=/usr
+#ANT=ant
+#PYTHON=$(PREFIX_PYTHON)/bin/python
+#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+#NUM_FILES=2
 
 # Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
 #PREFIX_PYTHON=/usr
