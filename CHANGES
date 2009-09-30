@@ -6,6 +6,7 @@ Version 2.4.1 -> 2.9.0
  - added Mac OS X 10.6 section to Makefile
  - added FieldCache.Parser Python extension classes
  - added FieldComparator and FieldComparatorSource Python extension classes
+ - added 'memory' contrib module to default build
  - 
 
 Version 2.4.0 -> 2.4.1

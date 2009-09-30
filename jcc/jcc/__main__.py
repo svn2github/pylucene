@@ -60,7 +60,7 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --files N               - split the generated wrapper file into at least
                               N files to workaround C++ compiler file size
                               limitations 
-    --arch                  - Mac OS X only: override the -arch parameters
+    --arch                  - Mac OS X only: filter the -arch parameters
                               Python was configured with to build leaner
                               binaries, faster
 

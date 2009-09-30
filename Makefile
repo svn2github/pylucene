@@ -48,6 +48,13 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
 #NUM_FILES=2
 
+# Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
+#PREFIX_PYTHON=/usr
+#ANT=ant
+#PYTHON=$(PREFIX_PYTHON)/bin/python
+#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64 --arch i386
+#NUM_FILES=2
+
 # Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
 #PREFIX_PYTHON=/usr
 #ANT=ant
@@ -116,8 +123,9 @@ DEFINES=-DPYLUCENE_VER="\"$(VERSION)\"" -DLUCENE_VER="\"$(LUCENE_VER)\""
 
 LUCENE_JAR=$(LUCENE)/build/lucene-core-$(LUCENE_VER).jar
 SNOWBALL_JAR=$(LUCENE)/build/contrib/snowball/lucene-snowball-$(LUCENE_VER).jar
-HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_VER).jar
 ANALYZERS_JAR=$(LUCENE)/build/contrib/analyzers/common/lucene-analyzers-$(LUCENE_VER).jar
+HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_VER).jar
+MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
 REGEX_JAR=$(LUCENE)/build/contrib/regex/lucene-regex-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
 INSTANTIATED_JAR=$(LUCENE)/build/contrib/instantiated/lucene-instantiated-$(LUCENE_VER).jar
@@ -152,11 +160,14 @@ $(LUCENE_JAR): $(LUCENE)
 $(SNOWBALL_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/snowball; $(ANT) -Dversion=$(LUCENE_VER)
 
+$(ANALYZERS_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
+
 $(HIGHLIGHTER_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/highlighter; $(ANT) -Dversion=$(LUCENE_VER)
 
-$(ANALYZERS_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
+$(MEMORY_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/contrib/memory; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(REGEX_JAR): $(LUCENE_JAR)
 	rm -f $(LUCENE)/contrib/regex/src/java/org/apache/lucene/search/regex/JakartaRegexpCapabilities.java
@@ -172,7 +183,8 @@ $(INSTANTIATED_JAR): $(LUCENE_JAR)
 $(EXTENSIONS_JAR): $(LUCENE_JAR)
 	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
-JARS=$(LUCENE_JAR) $(SNOWBALL_JAR) $(HIGHLIGHTER_JAR) $(ANALYZERS_JAR) \
+JARS=$(LUCENE_JAR) $(SNOWBALL_JAR) $(ANALYZERS_JAR) \
+     $(HIGHLIGHTER_JAR) $(MEMORY_JAR) \
      $(REGEX_JAR) $(QUERIES_JAR) $(INSTANTIATED_JAR) $(EXTENSIONS_JAR)
 
 
