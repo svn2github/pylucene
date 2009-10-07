@@ -109,7 +109,7 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #ANT=JAVA_HOME=o:\\Java\\jdk1.6.0_02 /cygdrive/o/java/apache-ant-1.7.0/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/python.exe
 #JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=2
+#NUM_FILES=3
 
 #
 # No edits required below
