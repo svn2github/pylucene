@@ -3,11 +3,11 @@ Version 2.4.1 -> 2.9.0
 ----------------------
  - renamed the Highlighter's SpanScorer class to HighlighterSpanScorer
  - fixed bug in Makefile's test target which tested installed build
- - added Mac OS X 10.6 section to Makefile
- - added FieldCache.Parser Python extension classes
+ - added Mac OS X 10.6 sections to Makefile
+ - added FieldCache.Parser Python extension classes (used in test/test_Sort.py)
  - added FieldComparator and FieldComparatorSource Python extension classes
  - added 'memory' contrib module to default build
- - 
+ - PyLucene built with JCC 2.4
 
 Version 2.4.0 -> 2.4.1
 ----------------------
