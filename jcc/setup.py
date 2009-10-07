@@ -12,7 +12,7 @@
 
 import os, sys, platform, subprocess
 
-jcc_ver = '2.3'
+jcc_ver = '2.4'
 python_ver = '%d.%d.%d' %(sys.version_info[0:3])
 machine = platform.machine()
 
