@@ -34,7 +34,7 @@ using namespace java::util;
 PyObject *PyExc_JavaError = PyExc_ValueError;
 PyObject *PyExc_InvalidArgsError = PyExc_ValueError;
 
-PyObject *_setExceptionTypes(PyObject *self, PyObject *args)
+PyObject *_set_exception_types(PyObject *self, PyObject *args)
 {
     if (!PyArg_ParseTuple(args, "OO",
                           &PyExc_JavaError, &PyExc_InvalidArgsError))
@@ -43,24 +43,24 @@ PyObject *_setExceptionTypes(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-PyObject *_set_initVM_self(PyObject *self, PyObject *args)
+PyObject *_set_function_self(PyObject *self, PyObject *args)
 {
-    PyObject *initVM, *module;
+    PyObject *object, *module;
 
-    if (!PyArg_ParseTuple(args, "OO", &initVM, &module))
+    if (!PyArg_ParseTuple(args, "OO", &object, &module))
         return NULL;
 
-    if (!PyCFunction_Check(initVM))
+    if (!PyCFunction_Check(object))
     {
-        PyErr_SetObject(PyExc_TypeError, initVM);
+        PyErr_SetObject(PyExc_TypeError, object);
         return NULL;
     }
 
-    PyCFunctionObject *fn = (PyCFunctionObject *) initVM;
+    PyCFunctionObject *cfn = (PyCFunctionObject *) object;
 
     Py_INCREF(module);
-    Py_XDECREF(fn->m_self);
-    fn->m_self = module;
+    Py_XDECREF(cfn->m_self);
+    cfn->m_self = module;
 
     Py_RETURN_NONE;
 }

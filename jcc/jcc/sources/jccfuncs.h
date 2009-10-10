@@ -20,8 +20,8 @@
 PyObject *__initialize__(PyObject *module, PyObject *args, PyObject *kwds);
 PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds);
 PyObject *getVMEnv(PyObject *self);
-PyObject *_setExceptionTypes(PyObject *self, PyObject *args);
-PyObject *_set_initVM_self(PyObject *self, PyObject *args);
+PyObject *_set_exception_types(PyObject *self, PyObject *args);
+PyObject *_set_function_self(PyObject *self, PyObject *args);
 PyObject *findClass(PyObject *self, PyObject *args);
 PyObject *JArray_Type(PyObject *self, PyObject *arg);
 
@@ -32,9 +32,9 @@ PyMethodDef jcc_funcs[] = {
       METH_NOARGS, NULL },
     { "findClass", (PyCFunction) findClass,
       METH_VARARGS, NULL },
-    { "_setExceptionTypes", (PyCFunction) _setExceptionTypes,
+    { "_set_exception_types", (PyCFunction) _set_exception_types,
       METH_VARARGS, NULL },
-    { "_set_initVM_self", (PyCFunction) _set_initVM_self,
+    { "_set_function_self", (PyCFunction) _set_function_self,
       METH_VARARGS, NULL },
     { "JArray", (PyCFunction) JArray_Type,
       METH_O, NULL },

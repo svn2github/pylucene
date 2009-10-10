@@ -62,7 +62,7 @@ class InvalidArgsError(Exception):
     pass
 
 
-_jcc._setExceptionTypes(JavaError, InvalidArgsError)
+_jcc._set_exception_types(JavaError, InvalidArgsError)
 from _jcc import *
 
 
