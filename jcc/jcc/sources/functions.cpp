@@ -43,6 +43,28 @@ PyObject *_setExceptionTypes(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyObject *_set_initVM_self(PyObject *self, PyObject *args)
+{
+    PyObject *initVM, *module;
+
+    if (!PyArg_ParseTuple(args, "OO", &initVM, &module))
+        return NULL;
+
+    if (!PyCFunction_Check(initVM))
+    {
+        PyErr_SetObject(PyExc_TypeError, initVM);
+        return NULL;
+    }
+
+    PyCFunctionObject *fn = (PyCFunctionObject *) initVM;
+
+    Py_INCREF(module);
+    Py_XDECREF(fn->m_self);
+    fn->m_self = module;
+
+    Py_RETURN_NONE;
+}
+
 PyObject *findClass(PyObject *self, PyObject *args)
 {
     char *className;

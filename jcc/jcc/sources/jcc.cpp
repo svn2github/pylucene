@@ -45,6 +45,14 @@ static PyObject *t_jccenv_isCurrentThreadAttached(PyObject *self);
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg);
 static PyObject *t_jccenv__dumpRefs(PyObject *self,
                                     PyObject *args, PyObject *kwds);
+static PyObject *t_jccenv__get_jni_version(PyObject *self, void *data);
+static PyObject *t_jccenv__get_java_version(PyObject *self, void *data);
+
+static PyGetSetDef t_jccenv_properties[] = {
+    { "jni_version", (getter) t_jccenv__get_jni_version, NULL, NULL, NULL },
+    { "java_version", (getter) t_jccenv__get_java_version, NULL, NULL, NULL },
+    { NULL, NULL, NULL, NULL, NULL }
+};
 
 static PyMemberDef t_jccenv_members[] = {
     { NULL, 0, 0, 0, NULL }
@@ -95,6 +103,7 @@ PyTypeObject JCCEnv$$Type = {
     0,                                   /* tp_iternext */
     t_jccenv_methods,                    /* tp_methods */
     t_jccenv_members,                    /* tp_members */
+    t_jccenv_properties,                 /* tp_getset */
     0,                                   /* tp_getset */
     0,                                   /* tp_base */
     0,                                   /* tp_dict */
@@ -145,7 +154,7 @@ static PyObject *t_jccenv_attachCurrentThread(PyObject *self, PyObject *args)
         return NULL;
 
     JavaVMAttachArgs attach = {
-        JNI_VERSION_1_2, name, NULL
+        JNI_VERSION_1_4, name, NULL
     };
 
     if (asDaemon)
@@ -259,6 +268,16 @@ static PyObject *t_jccenv__dumpRefs(PyObject *self,
 }
 
 
+static PyObject *t_jccenv__get_jni_version(PyObject *self, void *data)
+{
+    return PyInt_FromLong(env->getJNIVersion());
+}
+
+static PyObject *t_jccenv__get_java_version(PyObject *self, void *data)
+{
+    return env->fromJString(env->getJavaVersion());
+}
+
 _DLL_EXPORT PyObject *getVMEnv(PyObject *self)
 {
     if (env->vm != NULL)
@@ -313,6 +332,8 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (env->vm)
     {
+        PyObject *module_cp = NULL;
+
         if (initialheap || maxheap || maxstack || vmargs)
         {
             PyErr_SetString(PyExc_ValueError,
@@ -320,8 +341,17 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
             return NULL;
         }
 
+        if (classpath == NULL && self != NULL)
+        {
+            module_cp = PyObject_GetAttrString(self, "CLASSPATH");
+            if (module_cp != NULL)
+                classpath = PyString_AsString(module_cp);
+        }
+
         if (classpath && classpath[0])
             env->setClassPath(classpath);
+
+        Py_XDECREF(module_cp);
 
         return getVMEnv(self);
     }
@@ -332,9 +362,17 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         JNIEnv *vm_env;
         JavaVM *vm;
         unsigned int nOptions = 0;
+        PyObject *module_cp = NULL;
 
         vm_args.version = JNI_VERSION_1_4;
         JNI_GetDefaultJavaVMInitArgs(&vm_args);
+
+        if (classpath == NULL && self != NULL)
+        {
+            module_cp = PyObject_GetAttrString(self, "CLASSPATH");
+            if (module_cp != NULL)
+                classpath = PyString_AsString(module_cp);
+        }
 
 #ifdef _jcc_lib
         PyObject *jcc = PyImport_ImportModule("jcc");
@@ -354,6 +392,9 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
             add_option("-Djava.class.path=", classpath,
                        &vm_options[nOptions++]);
 #endif
+
+        Py_XDECREF(module_cp);
+
         if (initialheap)
             add_option("-Xms", initialheap, &vm_options[nOptions++]);
         if (maxheap)

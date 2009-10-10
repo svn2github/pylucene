@@ -97,6 +97,9 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
     _mids[mid_sys_setProperty] =
         vm_env->GetStaticMethodID(_sys, "setProperty",
                                   "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+    _mids[mid_sys_getProperty] =
+        vm_env->GetStaticMethodID(_sys, "getProperty",
+                                  "(Ljava/lang/String;)Ljava/lang/String;");
     _mids[mid_obj_toString] =
         vm_env->GetMethodID(_obj, "toString",
                             "()Ljava/lang/String;");
@@ -127,6 +130,18 @@ void JCCEnv::set_vm_env(JNIEnv *vm_env)
 }
 
 #endif
+
+jint JCCEnv::getJNIVersion()
+{
+    return get_vm_env()->GetVersion();
+}
+
+jstring JCCEnv::getJavaVersion()
+{
+    return (jstring)
+        callStaticObjectMethod(_sys, _mids[mid_sys_getProperty],
+                               get_vm_env()->NewStringUTF("java.version"));
+}
 
 jclass JCCEnv::findClass(const char *className)
 {

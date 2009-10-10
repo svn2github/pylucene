@@ -82,6 +82,7 @@ protected:
     enum {
         mid_sys_identityHashCode,
         mid_sys_setProperty,
+        mid_sys_getProperty,
         mid_obj_toString,
         mid_obj_hashCode,
         mid_obj_getClass,
@@ -129,6 +130,9 @@ public:
 #endif
     virtual void set_vm(JavaVM *vm, JNIEnv *vm_env);
     virtual void set_vm_env(JNIEnv *vm_env);
+
+    virtual jint getJNIVersion();
+    virtual jstring getJavaVersion();
 
     virtual jclass findClass(const char *className);
     virtual void registerNatives(jclass cls, JNINativeMethod *methods, int n);

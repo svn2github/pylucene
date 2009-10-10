@@ -1364,6 +1364,9 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         
     line(out, 0, 'CLASSPATH = [%s]' %(', '.join(['os.path.join(__dir__, "%s")' %(os.path.basename(jar)) for jar in jars])))
     line(out, 0, 'CLASSPATH = os.pathsep.join(CLASSPATH)')
+    line(out, 0, '%s.CLASSPATH = CLASSPATH', extname)
+    line(out, 0, '%s._set_initVM_self(%s.initVM, %s)',
+         extname, extname, extname)
 
     line(out)
     line(out, 0, 'from %s import *', extname)
