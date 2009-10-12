@@ -34,7 +34,7 @@ namespace java {
             {
                 jclass cls = env->findClass("java/io/Writer");
 
-                _mids = new jmethodID[max_mid];
+                _mids = NULL;
                 class$ = (java::lang::Class *) new JObject(cls);
             }
 

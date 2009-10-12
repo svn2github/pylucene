@@ -22,6 +22,10 @@
 #include "java/lang/reflect/Method.h"
 #include "java/lang/reflect/Constructor.h"
 #include "java/lang/reflect/Field.h"
+#ifdef _java_generics
+#include "java/lang/reflect/Type.h"
+#include "java/lang/reflect/TypeVariable.h"
+#endif
 
 namespace java {
     namespace lang {
@@ -46,6 +50,11 @@ namespace java {
             mid_getName,
             mid_getModifiers,
             mid_isInstance,
+#ifdef _java_generics
+            mid_getTypeParameters,
+            mid_getGenericInterfaces,
+            mid_getGenericSuperclass,
+#endif
             max_mid
         };
 
@@ -113,7 +122,17 @@ namespace java {
                 _mids[mid_isInstance] =
                     env->getMethodID(cls, "isInstance",
                                      "(Ljava/lang/Object;)Z");
-
+#ifdef _java_generics
+                _mids[mid_getTypeParameters] =
+                    env->getMethodID(cls, "getTypeParameters",
+                                     "()[Ljava/lang/reflect/TypeVariable;");
+                _mids[mid_getGenericInterfaces] =
+                    env->getMethodID(cls, "getGenericInterfaces",
+                                     "()[Ljava/lang/reflect/Type;");
+                _mids[mid_getGenericSuperclass] =
+                    env->getMethodID(cls, "getGenericSuperclass",
+                                     "()Ljava/lang/reflect/Type;");
+#endif
                 class$ = (Class *) new JObject(cls);
             }
 
@@ -232,6 +251,23 @@ namespace java {
             return env->callBooleanMethod(this$, _mids[mid_isInstance],
                                           obj.this$);
         }
+
+#ifdef _java_generics
+        JArray<TypeVariable> Class::getTypeParameters() const
+        {
+            return JArray<TypeVariable>(env->callObjectMethod(this$, _mids[mid_getTypeParameters]));
+        }
+
+        JArray<Type> Class::getGenericInterfaces() const
+        {
+            return JArray<Type>(env->callObjectMethod(this$, _mids[mid_getGenericInterfaces]));
+        }
+
+        Type Class::getGenericSuperclass() const
+        {
+            return Type(env->callObjectMethod(this$, _mids[mid_getGenericSuperclass]));
+        }
+#endif
     }
 }
 
@@ -261,6 +297,11 @@ namespace java {
         static PyObject *t_Class_getInterfaces(t_Class *self);
         static PyObject *t_Class_getName(t_Class *self);
         static PyObject *t_Class_getModifiers(t_Class *self);
+#ifdef _java_generics
+        static PyObject *t_Class_getTypeParameters(t_Class *self);
+        static PyObject *t_Class_getGenericInterfaces(t_Class *self);
+        static PyObject *t_Class_getGenericSuperclass(t_Class *self);
+#endif
 
         static PyMethodDef t_Class__methods_[] = {
             DECLARE_METHOD(t_Class, forName, METH_O | METH_CLASS),
@@ -280,6 +321,11 @@ namespace java {
             DECLARE_METHOD(t_Class, getInterfaces, METH_NOARGS),
             DECLARE_METHOD(t_Class, getName, METH_NOARGS),
             DECLARE_METHOD(t_Class, getModifiers, METH_NOARGS),
+#ifdef _java_generics
+            DECLARE_METHOD(t_Class, getTypeParameters, METH_NOARGS),
+            DECLARE_METHOD(t_Class, getGenericInterfaces, METH_NOARGS),
+            DECLARE_METHOD(t_Class, getGenericSuperclass, METH_NOARGS),
+#endif
             { NULL, NULL, 0, NULL }
         };
 
@@ -456,5 +502,30 @@ namespace java {
             return PyInt_FromLong(modifiers);            
         }
 
+#ifdef _java_generics
+        static PyObject *t_Class_getTypeParameters(t_Class *self)
+        {
+            JArray<TypeVariable> result((jobject) NULL);
+            OBJ_CALL(result = self->object.getTypeParameters());
+
+            return result.toSequence(t_TypeVariable::wrap_Object);
+        }
+
+        static PyObject *t_Class_getGenericInterfaces(t_Class *self)
+        {
+            JArray<Type> result((jobject) NULL);
+            OBJ_CALL(result = self->object.getGenericInterfaces());
+
+            return result.toSequence(t_Type::wrap_Object);
+        }
+
+        static PyObject *t_Class_getGenericSuperclass(t_Class *self)
+        {
+            Type result((jobject) NULL);
+            OBJ_CALL(result = self->object.getGenericSuperclass());
+
+            return t_Type::wrap_Object(result);
+        }
+#endif
     }
 }

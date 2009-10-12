@@ -25,6 +25,10 @@ namespace java {
             class Method;
             class Constructor;
             class Field;
+#ifdef _java_generics
+            class Type;
+            class TypeVariable;
+#endif
         }
 
         using namespace reflect;
@@ -58,6 +62,11 @@ namespace java {
             String getName() const;
             int getModifiers() const;
             int isInstance(const Object &obj) const;
+#ifdef _java_generics
+            JArray<TypeVariable> getTypeParameters() const;
+            JArray<Type> getGenericInterfaces() const;
+            Type getGenericSuperclass() const;
+#endif
         };
 
         extern PyTypeObject Class$$Type;

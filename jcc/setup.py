@@ -283,6 +283,7 @@ def main(debug):
                                 extra_compile_args=cflags,
                                 extra_link_args=lflags,
                                 include_dirs=includes,
+                                define_macros=[('_java_generics', None)],
                                 sources=sources))
 
     args = {

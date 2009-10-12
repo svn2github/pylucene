@@ -20,6 +20,10 @@
 #include "java/lang/Object.h"
 #include "java/lang/String.h"
 #include "java/lang/reflect/Method.h"
+#ifdef _java_generics
+#include "java/lang/reflect/Type.h"
+#include "java/lang/reflect/TypeVariable.h"
+#endif
 
 namespace java {
     namespace lang {
@@ -32,6 +36,12 @@ namespace java {
                 mid_getParameterTypes,
                 mid_getExceptionTypes,
                 mid_getDeclaringClass,
+#ifdef _java_generics
+                mid_getTypeParameters,
+                mid_getGenericExceptionTypes,
+                mid_getGenericParameterTypes,
+                mid_getGenericReturnType,
+#endif
                 max_mid
             };
 
@@ -64,6 +74,20 @@ namespace java {
                     _mids[mid_getDeclaringClass] =
                         env->getMethodID(cls, "getDeclaringClass",
                                          "()Ljava/lang/Class;");
+#ifdef _java_generics
+                    _mids[mid_getTypeParameters] =
+                        env->getMethodID(cls, "getTypeParameters",
+                                         "()[Ljava/lang/reflect/TypeVariable;");
+                    _mids[mid_getGenericExceptionTypes] =
+                        env->getMethodID(cls, "getGenericExceptionTypes",
+                                         "()[Ljava/lang/reflect/Type;");
+                    _mids[mid_getGenericParameterTypes] =
+                        env->getMethodID(cls, "getGenericParameterTypes",
+                                         "()[Ljava/lang/reflect/Type;");
+                    _mids[mid_getGenericReturnType] =
+                        env->getMethodID(cls, "getGenericReturnType",
+                                         "()Ljava/lang/reflect/Type;");
+#endif
 
                     class$ = (Class *) new JObject(cls);
                 }
@@ -106,6 +130,28 @@ namespace java {
             {
                 return Class(env->callObjectMethod(this$, _mids[mid_getDeclaringClass]));
             }
+
+#ifdef _java_generics
+            JArray<TypeVariable> Method::getTypeParameters() const
+            {
+                return JArray<TypeVariable>(env->callObjectMethod(this$, _mids[mid_getTypeParameters]));
+            }
+
+            JArray<Type> Method::getGenericExceptionTypes() const
+            {
+                return JArray<Type>(env->callObjectMethod(this$, _mids[mid_getGenericExceptionTypes]));
+            }
+
+            JArray<Type> Method::getGenericParameterTypes() const
+            {
+                return JArray<Type>(env->callObjectMethod(this$, _mids[mid_getGenericParameterTypes]));
+            }
+
+            Type Method::getGenericReturnType() const
+            {
+                return Type(env->callObjectMethod(this$, _mids[mid_getGenericReturnType]));
+            }
+#endif
         }
     }
 }
@@ -125,6 +171,12 @@ namespace java {
             static PyObject *t_Method_getParameterTypes(t_Method *self);
             static PyObject *t_Method_getExceptionTypes(t_Method *self);
             static PyObject *t_Method_getDeclaringClass(t_Method *self);
+#ifdef _java_generics
+            static PyObject *t_Method_getTypeParameters(t_Method *self);
+            static PyObject *t_Method_getGenericExceptionTypes(t_Method *self);
+            static PyObject *t_Method_getGenericParameterTypes(t_Method *self);
+            static PyObject *t_Method_getGenericReturnType(t_Method *self);
+#endif
 
             static PyMethodDef t_Method__methods_[] = {
                 DECLARE_METHOD(t_Method, getModifiers, METH_NOARGS),
@@ -133,6 +185,12 @@ namespace java {
                 DECLARE_METHOD(t_Method, getParameterTypes, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getExceptionTypes, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getDeclaringClass, METH_NOARGS),
+#ifdef _java_generics
+                DECLARE_METHOD(t_Method, getTypeParameters, METH_NOARGS),
+                DECLARE_METHOD(t_Method, getGenericExceptionTypes, METH_NOARGS),
+                DECLARE_METHOD(t_Method, getGenericParameterTypes, METH_NOARGS),
+                DECLARE_METHOD(t_Method, getGenericReturnType, METH_NOARGS),
+#endif
                 { NULL, NULL, 0, NULL }
             };
 
@@ -186,6 +244,40 @@ namespace java {
                 OBJ_CALL(cls = self->object.getDeclaringClass());
                 return t_Class::wrap_Object(cls);
             }
+
+#ifdef _java_generics
+            static PyObject *t_Method_getTypeParameters(t_Method *self)
+            {
+                JArray<TypeVariable> result((jobject) NULL);
+                OBJ_CALL(result = self->object.getTypeParameters());
+
+                return result.toSequence(t_TypeVariable::wrap_Object);
+            }
+
+            static PyObject *t_Method_getGenericExceptionTypes(t_Method *self)
+            {
+                JArray<Type> result((jobject) NULL);
+                OBJ_CALL(result = self->object.getGenericExceptionTypes());
+
+                return result.toSequence(t_Type::wrap_Object);
+            }
+
+            static PyObject *t_Method_getGenericParameterTypes(t_Method *self)
+            {
+                JArray<Type> result((jobject) NULL);
+                OBJ_CALL(result = self->object.getGenericParameterTypes());
+
+                return result.toSequence(t_Type::wrap_Object);
+            }
+
+            static PyObject *t_Method_getGenericReturnType(t_Method *self)
+            {
+                Type result((jobject) NULL);
+                OBJ_CALL(result = self->object.getGenericReturnType());
+
+                return t_Type::wrap_Object(result);
+            }
+#endif
         }
     }
 }

@@ -24,6 +24,11 @@ namespace java {
         class String;
 
         namespace reflect {
+#ifdef _java_generics
+            class Type;
+            class TypeVariable;
+#endif
+
             class Constructor : public Object {
             public:
                 static Class *class$;
@@ -38,8 +43,12 @@ namespace java {
                 int getModifiers() const;
                 JArray<Class> getParameterTypes() const;
                 JArray<Class> getExceptionTypes() const;
+#ifdef _java_generics
+                JArray<TypeVariable> getTypeParameters() const;
+                JArray<Type> getGenericExceptionTypes() const;
+                JArray<Type> getGenericParameterTypes() const;
+#endif
             };
-
 
             extern PyTypeObject Constructor$$Type;
 

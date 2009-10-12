@@ -18,6 +18,9 @@
 #include "java/lang/Object.h"
 #include "java/lang/String.h"
 #include "java/lang/reflect/Field.h"
+#ifdef _java_generics
+#include "java/lang/reflect/Type.h"
+#endif
 
 namespace java {
     namespace lang {
@@ -27,6 +30,9 @@ namespace java {
                 mid_getModifiers,
                 mid_getType,
                 mid_getName,
+#ifdef _java_generics
+                mid_getGenericType,
+#endif
                 max_mid
             };
 
@@ -49,6 +55,11 @@ namespace java {
                     _mids[mid_getName] =
                         env->getMethodID(cls, "getName",
                                          "()Ljava/lang/String;");
+#ifdef _java_generics
+                    _mids[mid_getGenericType] =
+                        env->getMethodID(cls, "getGenericType",
+                                         "()Ljava/lang/reflect/Type;");
+#endif
 
                     class$ = (Class *) new JObject(cls);
                 }
@@ -70,6 +81,13 @@ namespace java {
             {
                 return String(env->callObjectMethod(this$, _mids[mid_getName]));
             }
+
+#ifdef _java_generics
+            Type Field::getGenericType() const
+            {
+                return Type(env->callObjectMethod(this$, _mids[mid_getGenericType]));
+            }
+#endif
         }
     }
 }
@@ -86,11 +104,17 @@ namespace java {
             static PyObject *t_Field_getModifiers(t_Field *self);
             static PyObject *t_Field_getType(t_Field *self);
             static PyObject *t_Field_getName(t_Field *self);
+#ifdef _java_generics
+            static PyObject *t_Field_getGenericType(t_Field *self);
+#endif
 
             static PyMethodDef t_Field__methods_[] = {
                 DECLARE_METHOD(t_Field, getModifiers, METH_NOARGS),
                 DECLARE_METHOD(t_Field, getType, METH_NOARGS),
                 DECLARE_METHOD(t_Field, getName, METH_NOARGS),
+#ifdef _java_generics
+                DECLARE_METHOD(t_Field, getGenericType, METH_NOARGS),
+#endif
                 { NULL, NULL, 0, NULL }
             };
 
@@ -120,6 +144,16 @@ namespace java {
                 OBJ_CALL(name = self->object.getName());
                 return j2p(name);
             }
+
+#ifdef _java_generics
+            static PyObject *t_Field_getGenericType(t_Field *self)
+            {
+                Type result((jobject) NULL);
+                OBJ_CALL(result = self->object.getGenericType());
+
+                return t_Type::wrap_Object(result);
+            }
+#endif
         }
     }
 }

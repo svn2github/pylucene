@@ -23,6 +23,10 @@ namespace java {
         class String;
 
         namespace reflect {
+#ifdef _java_generics
+            class Type;
+#endif
+
             class Field : public Object {
             public:
                 static Class *class$;
@@ -37,6 +41,9 @@ namespace java {
                 int getModifiers() const;
                 Class getType() const;
                 String getName() const;
+#ifdef _java_generics
+                Type getGenericType() const;
+#endif
             };
 
             extern PyTypeObject Field$$Type;
