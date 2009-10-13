@@ -30,7 +30,8 @@ class Test_PyLuceneBase(object):
         pass
 
     def getWriter(self, store, analyzer, create=False):
-        writer = IndexWriter(store, analyzer, create)
+        writer = IndexWriter(store, analyzer, create,
+                             IndexWriter.MaxFieldLength.LIMITED)
         #writer.setUseCompoundFile(False)
         return writer
 
@@ -47,15 +48,15 @@ class Test_PyLuceneBase(object):
 
             doc = Document()
             doc.add(Field("title", "value of testing",
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             doc.add(Field("docid", str(1),
-                          Field.Store.NO, Field.Index.UN_TOKENIZED))
+                          Field.Store.NO, Field.Index.NOT_ANALYZED))
             doc.add(Field("owner", "unittester",
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("search_name", "wisdom",
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("meta_words", "rabbits are beautiful",
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
         
             writer.addDocument(doc)
         finally:
@@ -71,15 +72,15 @@ class Test_PyLuceneBase(object):
         
             doc = Document()
             doc.add(Field("title", "value of testing",
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             doc.add(Field("docid", str(1),
-                          Field.Store.NO, Field.Index.UN_TOKENIZED))
+                          Field.Store.NO, Field.Index.NOT_ANALYZED))
             doc.add(Field("owner", "unittester",
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("search_name", "wisdom",
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("meta_words", "rabbits are beautiful",
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
 
             body_text = "hello world" * 20
             body_reader = StringReader(body_text)
@@ -99,15 +100,15 @@ class Test_PyLuceneBase(object):
         
             doc = Document()
             doc.add(Field("title", "value of testing",
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             doc.add(Field("docid", str(1),
-                          Field.Store.NO, Field.Index.UN_TOKENIZED))
+                          Field.Store.NO, Field.Index.NOT_ANALYZED))
             doc.add(Field("owner", "unittester",
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("search_name", "wisdom",
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("meta_words", "rabbits are beautiful",
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
 
             # using a unicode body cause problems, which seems very odd
             # since the python type is the same regardless affter doing
@@ -127,10 +128,10 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         searcher = None
         try:
-            searcher = IndexSearcher(store)
+            searcher = IndexSearcher(store, True)
             query = QueryParser("title", self.getAnalyzer()).parse("value")
-            hits = searcher.search(query)
-            self.assertEqual(hits.length(), 1)
+            topDocs = searcher.search(query, 50)
+            self.assertEqual(topDocs.totalHits, 1)
         finally:
             self.closeStore(store, searcher)
 
@@ -143,14 +144,14 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         searcher = None
         try:
-            searcher = IndexSearcher(store)
+            searcher = IndexSearcher(store, True)
             SHOULD = BooleanClause.Occur.SHOULD
             query = MultiFieldQueryParser.parse("value",
                                                 ["title", "docid"],
                                                 [SHOULD, SHOULD],
                                                 self.getAnalyzer())
-            hits = searcher.search(query)
-            self.assertEquals(1, hits.length())
+            topDocs = searcher.search(query, 50)
+            self.assertEquals(1, topDocs.totalHits)
         finally:
             self.closeStore(store, searcher)
         
@@ -163,14 +164,14 @@ class Test_PyLuceneBase(object):
         reader = None
 
         try:
-            searcher = IndexSearcher(store)
+            searcher = IndexSearcher(store, True)
             query = TermQuery(Term("docid", str(1)))
-            hits = searcher.search(query)
-            self.assertEqual(hits.length(), 1)
+            topDocs = searcher.search(query, 50)
+            self.assertEqual(topDocs.totalHits, 1)
             # be careful with ids they are ephemeral
-            docid = hits.id(0)
+            docid = topDocs.scoreDocs[0].doc
         
-            reader = IndexReader.open(store)
+            reader = IndexReader.open(store, False)
             reader.deleteDocument(docid)
         finally:
             self.closeStore(store, searcher, reader)
@@ -178,10 +179,10 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         searcher = None
         try:
-            searcher = IndexSearcher(store)
+            searcher = IndexSearcher(store, True)
             query = TermQuery(Term("docid", str(1)))
-            hits = searcher.search(query)
-            self.assertEqual(hits.length(), 0)
+            topDocs = searcher.search(query, 50)
+            self.assertEqual(topDocs.totalHits, 0)
         finally:
             self.closeStore(store, searcher)
         
@@ -192,7 +193,7 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         reader = None
         try:
-            reader = IndexReader.open(store)
+            reader = IndexReader.open(store, False)
             reader.deleteDocuments(Term('docid', str(1)))
         finally:
             self.closeStore(store, reader)
@@ -200,10 +201,10 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         searcher = None
         try:
-            searcher = IndexSearcher(store)
+            searcher = IndexSearcher(store, True)
             query = QueryParser("title", self.getAnalyzer()).parse("value")
-            hits = searcher.search(query)
-            self.assertEqual(hits.length(), 0)
+            topDocs = searcher.search(query, 50)
+            self.assertEqual(topDocs.totalHits, 0)
         finally:
             self.closeStore(store, searcher)
         
@@ -219,25 +220,25 @@ class Test_PyLuceneBase(object):
             writer = self.getWriter(store, analyzer, False)
             doc = Document()
             doc.add(Field("title", "value of testing",
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             doc.add(Field("docid", str(2),
-                          Field.Store.NO, Field.Index.UN_TOKENIZED))
+                          Field.Store.NO, Field.Index.NOT_ANALYZED))
             doc.add(Field("owner", "unittester",
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("search_name", "wisdom",
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("meta_words", "rabbits are beautiful",
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
                                    
             writer.addDocument(doc)
         
             doc = Document()
             doc.add(Field("owner", "unittester",
-                          Field.Store.NO, Field.Index.UN_TOKENIZED))
+                          Field.Store.NO, Field.Index.NOT_ANALYZED))
             doc.add(Field("search_name", "wisdom",
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("meta_words", "rabbits are beautiful",
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
             writer.addDocument(doc)        
         finally:
             self.closeStore(store, writer)
@@ -245,7 +246,7 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         reader = None
         try:
-            reader = IndexReader.open(store)
+            reader = IndexReader.open(store, True)
             term_enum = reader.terms(Term("docid", ''))
             docids = []
 
@@ -264,7 +265,7 @@ class Test_PyLuceneBase(object):
         store = self.openStore()
         reader = None
         try:
-            reader = IndexReader.open(store)
+            reader = IndexReader.open(store, True)
             fieldNames = reader.getFieldNames(IndexReader.FieldOption.ALL)
             for fieldName in fieldNames:
                 self.assert_(fieldName in ['owner', 'search_name', 'meta_words',
@@ -299,7 +300,7 @@ class Test_PyLuceneWithFSStore(TestCase, Test_PyLuceneBase):
 
     def openStore(self):
 
-        return FSDirectory.getDirectory(self.STORE_DIR, False)
+        return SimpleFSDirectory(File(self.STORE_DIR))
 
     def closeStore(self, store, *args):
         
@@ -314,13 +315,13 @@ class Test_PyLuceneWithMMapStore(Test_PyLuceneWithFSStore):
 
     def openStore(self):
 
-        return MMapDirectory.getDirectory(self.STORE_DIR, False)
+        return MMapDirectory(File(self.STORE_DIR))
 
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

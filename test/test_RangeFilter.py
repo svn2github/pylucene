@@ -51,22 +51,23 @@ class BaseTestRangeFilter(TestCase):
     def build(self):
 
         # build an index
-        writer = IndexWriter(self.index, SimpleAnalyzer(), True)
+        writer = IndexWriter(self.index, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         seed(101)
         for d in xrange(self.minId, self.maxId + 1):
             doc = Document()
             doc.add(Field("id", self.pad(d),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             r = randint(~self.MAX_INT, self.MAX_INT)
             if self.maxR < r:
                 self.maxR = r
             if r < self.minR:
                 self.minR = r
             doc.add(Field("rand", self.pad(r),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("body", "body",
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
             
         writer.optimize()
@@ -99,7 +100,7 @@ class TestRangeFilter(BaseTestRangeFilter):
 
     def testRangeFilterId(self):
 
-        reader = IndexReader.open(self.index);
+        reader = IndexReader.open(self.index, True);
         search = IndexSearcher(reader)
 
         medId = ((self.maxId - self.minId) / 2)
@@ -117,89 +118,89 @@ class TestRangeFilter(BaseTestRangeFilter):
         # test id, bounded on both ends
         
         result = search.search(q, RangeFilter("id", minIP, maxIP,
-                                              True, True))
-        self.assertEqual(numDocs, result.length(), "find all")
+                                              True, True), 50)
+        self.assertEqual(numDocs, result.totalHits, "find all")
 
         result = search.search(q, RangeFilter("id", minIP, maxIP,
-                                              True, False))
-        self.assertEqual(numDocs - 1, result.length(), "all but last")
+                                              True, False), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "all but last")
 
         result = search.search(q, RangeFilter("id", minIP, maxIP,
-                                              False, True))
-        self.assertEqual(numDocs - 1, result.length(), "all but first")
+                                              False, True), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "all but first")
         
         result = search.search(q, RangeFilter("id", minIP, maxIP,
-                                              False, False))
-        self.assertEqual(numDocs - 2, result.length(), "all but ends")
+                                              False, False), 50)
+        self.assertEqual(numDocs - 2, result.totalHits, "all but ends")
     
         result = search.search(q, RangeFilter("id", medIP, maxIP,
-                                              True, True))
-        self.assertEqual(1 + self.maxId - medId, result.length(), "med and up")
+                                              True, True), 50)
+        self.assertEqual(1 + self.maxId - medId, result.totalHits, "med and up")
         
         result = search.search(q, RangeFilter("id", minIP, medIP,
-                                              True, True))
-        self.assertEqual(1 + medId - self.minId, result.length(), "up to med")
+                                              True, True), 50)
+        self.assertEqual(1 + medId - self.minId, result.totalHits, "up to med")
 
         # unbounded id
 
         result = search.search(q, RangeFilter("id", minIP, None,
-                                              True, False))
-        self.assertEqual(numDocs, result.length(), "min and up")
+                                              True, False), 50)
+        self.assertEqual(numDocs, result.totalHits, "min and up")
 
         result = search.search(q, RangeFilter("id", None, maxIP,
-                                              False, True))
-        self.assertEqual(numDocs, result.length(), "max and down")
+                                              False, True), 50)
+        self.assertEqual(numDocs, result.totalHits, "max and down")
 
         result = search.search(q, RangeFilter("id", minIP, None,
-                                              False, False))
-        self.assertEqual(numDocs - 1, result.length(), "not min, but up")
+                                              False, False), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "not min, but up")
         
         result = search.search(q, RangeFilter("id", None, maxIP,
-                                              False, False))
-        self.assertEqual(numDocs - 1, result.length(), "not max, but down")
+                                              False, False), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "not max, but down")
         
         result = search.search(q, RangeFilter("id",medIP, maxIP,
-                                              True, False))
-        self.assertEqual(self.maxId - medId, result.length(), "med and up, not max")
+                                              True, False), 50)
+        self.assertEqual(self.maxId - medId, result.totalHits, "med and up, not max")
         
         result = search.search(q, RangeFilter("id", minIP, medIP,
-                                              False, True))
-        self.assertEqual(medId - self.minId, result.length(), "not min, up to med")
+                                              False, True), 50)
+        self.assertEqual(medId - self.minId, result.totalHits, "not min, up to med")
 
         # very small sets
 
         result = search.search(q, RangeFilter("id", minIP, minIP,
-                                              False, False))
-        self.assertEqual(0, result.length(), "min, min, False, False")
+                                              False, False), 50)
+        self.assertEqual(0, result.totalHits, "min, min, False, False")
 
         result = search.search(q, RangeFilter("id", medIP, medIP,
-                                              False, False))
-        self.assertEqual(0, result.length(), "med, med, False, False")
+                                              False, False), 50)
+        self.assertEqual(0, result.totalHits, "med, med, False, False")
         result = search.search(q, RangeFilter("id", maxIP, maxIP,
-                                              False, False))
-        self.assertEqual(0, result.length(), "max, max, False, False")
+                                              False, False), 50)
+        self.assertEqual(0, result.totalHits, "max, max, False, False")
                      
         result = search.search(q, RangeFilter("id", minIP, minIP,
-                                              True, True))
-        self.assertEqual(1, result.length(), "min, min, True, True")
+                                              True, True), 50)
+        self.assertEqual(1, result.totalHits, "min, min, True, True")
         result = search.search(q, RangeFilter("id", None, minIP,
-                                              False, True))
-        self.assertEqual(1, result.length(), "nul, min, False, True")
+                                              False, True), 50)
+        self.assertEqual(1, result.totalHits, "nul, min, False, True")
 
         result = search.search(q, RangeFilter("id", maxIP, maxIP,
-                                              True, True))
-        self.assertEqual(1, result.length(), "max, max, True, True")
+                                              True, True), 50)
+        self.assertEqual(1, result.totalHits, "max, max, True, True")
         result = search.search(q, RangeFilter("id", maxIP, None,
-                                              True, False))
-        self.assertEqual(1, result.length(), "max, nul, True, True")
+                                              True, False), 50)
+        self.assertEqual(1, result.totalHits, "max, nul, True, True")
 
         result = search.search(q, RangeFilter("id", medIP, medIP,
-                                              True, True))
-        self.assertEqual(1, result.length(), "med, med, True, True")
+                                              True, True), 50)
+        self.assertEqual(1, result.totalHits, "med, med, True, True")
 
     def testRangeFilterRand(self):
 
-        reader = IndexReader.open(self.index)
+        reader = IndexReader.open(self.index, True)
         search = IndexSearcher(reader)
 
         minRP = self.pad(self.minR)
@@ -214,69 +215,69 @@ class TestRangeFilter(BaseTestRangeFilter):
         # test extremes, bounded on both ends
         
         result = search.search(q, RangeFilter("rand", minRP, maxRP,
-                                              True, True))
-        self.assertEqual(numDocs, result.length(), "find all")
+                                              True, True), 50)
+        self.assertEqual(numDocs, result.totalHits, "find all")
 
         result = search.search(q, RangeFilter("rand", minRP, maxRP,
-                                              True, False))
-        self.assertEqual(numDocs - 1, result.length(), "all but biggest")
+                                              True, False), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "all but biggest")
 
         result = search.search(q, RangeFilter("rand", minRP, maxRP,
-                                              False, True))
-        self.assertEqual(numDocs - 1, result.length(), "all but smallest")
+                                              False, True), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "all but smallest")
         
         result = search.search(q, RangeFilter("rand", minRP, maxRP,
-                                              False, False))
-        self.assertEqual(numDocs - 2, result.length(), "all but extremes")
+                                              False, False), 50)
+        self.assertEqual(numDocs - 2, result.totalHits, "all but extremes")
     
         # unbounded
 
         result = search.search(q, RangeFilter("rand", minRP, None,
-                                              True, False))
-        self.assertEqual(numDocs, result.length(), "smallest and up")
+                                              True, False), 50)
+        self.assertEqual(numDocs, result.totalHits, "smallest and up")
 
         result = search.search(q, RangeFilter("rand", None, maxRP,
-                                              False, True))
-        self.assertEqual(numDocs, result.length(), "biggest and down")
+                                              False, True), 50)
+        self.assertEqual(numDocs, result.totalHits, "biggest and down")
 
         result = search.search(q, RangeFilter("rand", minRP, None,
-                                              False, False))
-        self.assertEqual(numDocs - 1, result.length(), "not smallest, but up")
+                                              False, False), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "not smallest, but up")
         
         result = search.search(q, RangeFilter("rand", None, maxRP,
-                                              False, False))
-        self.assertEqual(numDocs - 1, result.length(), "not biggest, but down")
+                                              False, False), 50)
+        self.assertEqual(numDocs - 1, result.totalHits, "not biggest, but down")
         
         # very small sets
 
         result = search.search(q, RangeFilter("rand", minRP, minRP,
-                                              False, False))
-        self.assertEqual(0, result.length(), "min, min, False, False")
+                                              False, False), 50)
+        self.assertEqual(0, result.totalHits, "min, min, False, False")
 
         result = search.search(q, RangeFilter("rand", maxRP, maxRP,
-                                              False, False))
-        self.assertEqual(0, result.length(), "max, max, False, False")
+                                              False, False), 50)
+        self.assertEqual(0, result.totalHits, "max, max, False, False")
                      
         result = search.search(q, RangeFilter("rand", minRP, minRP,
-                                              True, True))
-        self.assertEqual(1, result.length(), "min, min, True, True")
+                                              True, True), 50)
+        self.assertEqual(1, result.totalHits, "min, min, True, True")
 
         result = search.search(q, RangeFilter("rand", None, minRP,
-                                              False, True))
-        self.assertEqual(1, result.length(), "nul, min, False, True")
+                                              False, True), 50)
+        self.assertEqual(1, result.totalHits, "nul, min, False, True")
 
         result = search.search(q, RangeFilter("rand", maxRP, maxRP,
-                                              True, True))
-        self.assertEqual(1, result.length(), "max, max, True, True")
+                                              True, True), 50)
+        self.assertEqual(1, result.totalHits, "max, max, True, True")
 
         result = search.search(q, RangeFilter("rand", maxRP, None,
-                                              True, False))
-        self.assertEqual(1, result.length(), "max, nul, True, True")
+                                              True, False), 50)
+        self.assertEqual(1, result.totalHits, "max, nul, True, True")
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

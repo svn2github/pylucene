@@ -14,10 +14,10 @@
 # site-packages directory.
 #
 
-VERSION=2.9.0-1
+VERSION=3.0.0-1
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=2.9.0
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_2_9_0
+LUCENE_VER=3.0.0
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/trunk
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
 
@@ -43,6 +43,13 @@ LUCENE=lucene-java-$(LUCENE_VER)
 
 # Mac OS X 10.6 (64-bit Python 2.6, Java 1.6)
 #PREFIX_PYTHON=/usr
+#ANT=ant
+#PYTHON=$(PREFIX_PYTHON)/bin/python
+#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+#NUM_FILES=2
+
+# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.6, Java 1.6)
+#PREFIX_PYTHON=/opt/local
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
@@ -128,7 +135,6 @@ HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_
 MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
 REGEX_JAR=$(LUCENE)/build/contrib/regex/lucene-regex-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
-INSTANTIATED_JAR=$(LUCENE)/build/contrib/instantiated/lucene-instantiated-$(LUCENE_VER).jar
 EXTENSIONS_JAR=build/jar/extensions.jar
 
 
@@ -177,15 +183,12 @@ $(REGEX_JAR): $(LUCENE_JAR)
 $(QUERIES_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/queries; $(ANT) -Dversion=$(LUCENE_VER)
 
-$(INSTANTIATED_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/instantiated; $(ANT) -Dversion=$(LUCENE_VER)
-
 $(EXTENSIONS_JAR): $(LUCENE_JAR)
 	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
 JARS=$(LUCENE_JAR) $(SNOWBALL_JAR) $(ANALYZERS_JAR) \
      $(HIGHLIGHTER_JAR) $(MEMORY_JAR) \
-     $(REGEX_JAR) $(QUERIES_JAR) $(INSTANTIATED_JAR) $(EXTENSIONS_JAR)
+     $(REGEX_JAR) $(QUERIES_JAR) $(EXTENSIONS_JAR)
 
 
 jars: $(JARS)

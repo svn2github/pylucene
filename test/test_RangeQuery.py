@@ -16,14 +16,15 @@ from unittest import TestCase, main
 from lucene import *
 
 
-class PrefixQueryTestCase(TestCase):
+class RangeQueryTestCase(TestCase):
     """
     Unit tests ported from Java Lucene
     """
 
     def _initializeIndex(self, values):
 
-        writer = IndexWriter(self.dir, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(self.dir, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         for value in values:
             self._insertDoc(writer, value)
         writer.close()
@@ -33,16 +34,17 @@ class PrefixQueryTestCase(TestCase):
         doc = Document()
 
         doc.add(Field("id", "id" + str(self.docCount),
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
+                      Field.Store.YES, Field.Index.NOT_ANALYZED))
         doc.add(Field("content", content,
-                      Field.Store.NO, Field.Index.TOKENIZED))
+                      Field.Store.NO, Field.Index.ANALYZED))
 
         writer.addDocument(doc)
         self.docCount += 1
 
     def _addDoc(self, content):
 
-        writer = IndexWriter(self.dir, WhitespaceAnalyzer(), False)
+        writer = IndexWriter(self.dir, WhitespaceAnalyzer(), False,
+                             IndexWriter.MaxFieldLength.LIMITED)
         self._insertDoc(writer, content)
         writer.close()
 
@@ -57,23 +59,23 @@ class PrefixQueryTestCase(TestCase):
                            Term("content", "C"),
                            False)
         self._initializeIndex(["A", "B", "C", "D"])
-        searcher = IndexSearcher(self.dir)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(),
+        searcher = IndexSearcher(self.dir, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits,
                          "A,B,C,D, only B in range")
         searcher.close()
 
         self._initializeIndex(["A", "B", "D"])
-        searcher = IndexSearcher(self.dir)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(),
+        searcher = IndexSearcher(self.dir, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits,
                          "A,B,D, only B in range")
         searcher.close()
 
         self._addDoc("C")
-        searcher = IndexSearcher(self.dir)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(),
+        searcher = IndexSearcher(self.dir, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits,
                          "C added, still only B in range")
         searcher.close()
 
@@ -84,30 +86,30 @@ class PrefixQueryTestCase(TestCase):
                            True)
 
         self._initializeIndex(["A", "B", "C", "D"])
-        searcher = IndexSearcher(self.dir)
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length(),
+        searcher = IndexSearcher(self.dir, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(3, topDocs.totalHits,
                          "A,B,C,D - A,B,C in range")
         searcher.close()
 
         self._initializeIndex(["A", "B", "D"])
-        searcher = IndexSearcher(self.dir)
-        hits = searcher.search(query)
-        self.assertEqual(2, hits.length(),
+        searcher = IndexSearcher(self.dir, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(2, topDocs.totalHits,
                          "A,B,D - A and B in range")
         searcher.close()
 
         self._addDoc("C")
-        searcher = IndexSearcher(self.dir)
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length(),
+        searcher = IndexSearcher(self.dir, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(3, topDocs.totalHits,
                          "C added - A, B, C in range")
         searcher.close()
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

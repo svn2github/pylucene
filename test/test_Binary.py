@@ -21,22 +21,22 @@ class BinaryTestCase(TestCase):
 
     def binary(self, b):
 
-        c = JArray('byte')([chr(a) for a in b])
+        c = JArray('byte')(b)
         field = Field("bin", c, Field.Store.YES)
-        v = field.binaryValue()
-        assert c == v and b == [ord(a) for a in v]
+        v = field.binaryValue
+        assert c == v and b == [a for a in v]
 
     def testBinary(self):
 
         self.binary([66, 90, 104, 57, 49, 65, 89, 38,
-                     83, 89, 105, 56, 95, 75, 0, 0, 14, 215, 128])
+                     83, 89, 105, 56, 95, 75, 0, 0, 14, -41, -128])
         self.binary([])
         self.binary([0, 0, 0])
 
 
 if __name__ == '__main__':
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

@@ -44,7 +44,13 @@ public class PythonTokenStream extends TokenStream {
     }
 
     public native void pythonDecRef();
-    public native Token next();
-    public native void reset();
-    public native void close();
+
+    public native boolean incrementToken()
+        throws IOException;
+    public native void end()
+        throws IOException;
+    public native void reset()
+        throws IOException;
+    public native void close()
+        throws IOException;
 }

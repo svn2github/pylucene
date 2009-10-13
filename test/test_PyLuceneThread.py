@@ -27,20 +27,21 @@ class PyLuceneThreadTestCase(TestCase):
         self.classLoader = Thread.currentThread().getContextClassLoader()
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, StandardAnalyzer(), True)
+        writer = IndexWriter(self.directory, StandardAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         doc1 = Document()
         doc2 = Document()
         doc3 = Document()
         doc4 = Document()
         doc1.add(Field("field", "one",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         doc2.add(Field("field", "two",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         doc3.add(Field("field", "three",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         doc4.add(Field("field", "one",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
 
         writer.addDocument(doc1)
         writer.addDocument(doc2)
@@ -97,13 +98,13 @@ class PyLuceneThreadTestCase(TestCase):
             getVMEnv().attachCurrentThread()
         time.sleep(0.5)
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
         try:
             self.query = PhraseQuery()
             for word, count in self.testData[0:runCount]:
                 query = TermQuery(Term("field", word))
-                result = searcher.search(query)
-                self.assertEqual(result.length(), count)
+                topDocs = searcher.search(query, 50)
+                self.assertEqual(topDocs.totalHits, count)
 
                 self.lock.acquire()
                 self.totalQueries += 1
@@ -114,7 +115,7 @@ class PyLuceneThreadTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

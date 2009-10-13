@@ -56,8 +56,8 @@ class HighlighterTestCase(TestCase):
         highlighter.setTextFragmenter(SimpleFragmenter(40))
         maxNumFragmentsRequired = 2
 
-        for i in range(0, self.hits.length()):
-            text = self.hits.doc(i).get(self.FIELD_NAME)
+        for scoreDoc in self.scoreDocs:
+            text = self.searcher.doc(scoreDoc.doc).get(self.FIELD_NAME)
             tokenStream = self.analyzer.tokenStream(self.FIELD_NAME,
                                                     StringReader(text))
 
@@ -79,14 +79,14 @@ class HighlighterTestCase(TestCase):
         
     def doSearching(self, queryString):
 
-        searcher = IndexSearcher(self.ramDir)
+        self.searcher = IndexSearcher(self.ramDir, True)
         self.query = self.parser.parse(queryString)
         # for any multi-term queries to work (prefix, wildcard, range,
         # fuzzy etc) you must use a rewritten query!
         self.query = self.query.rewrite(self.reader)
 
         print "Searching for:", self.query.toString(self.FIELD_NAME)
-        self.hits = searcher.search(self.query)
+        self.scoreDocs = self.searcher.search(self.query, 100).scoreDocs
         self.numHighlights = 0
 
     def doStandardHighlights(self):
@@ -95,8 +95,8 @@ class HighlighterTestCase(TestCase):
         
         highlighter = Highlighter(formatter, QueryScorer(self.query))
         highlighter.setTextFragmenter(SimpleFragmenter(20))
-        for i in range(0, self.hits.length()):
-            text = self.hits.doc(i).get(self.FIELD_NAME)
+        for scoreDoc in self.scoreDocs:
+            text = self.searcher.doc(scoreDoc.doc).get(self.FIELD_NAME)
             maxNumFragmentsRequired = 2
             fragmentSeparator = "..."
             tokenStream = self.analyzer.tokenStream(self.FIELD_NAME,
@@ -114,22 +114,23 @@ class HighlighterTestCase(TestCase):
         
     def setUp(self):
 
-        self.analyzer=StandardAnalyzer()
+        self.analyzer = StandardAnalyzer()
         self.ramDir = RAMDirectory()
-        writer = IndexWriter(self.ramDir, self.analyzer, True)
+        writer = IndexWriter(self.ramDir, self.analyzer, True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         for text in self.texts:
             self.addDoc(writer, text)
 
         writer.optimize()
         writer.close()
-        self.reader = IndexReader.open(self.ramDir)
+        self.reader = IndexReader.open(self.ramDir, True)
         self.numHighlights = 0;
 
     def addDoc(self, writer, text):
 
         d = Document()
         f = Field(self.FIELD_NAME, text,
-                  Field.Store.YES, Field.Index.TOKENIZED,
+                  Field.Store.YES, Field.Index.ANALYZED,
                   Field.TermVector.YES)
         d.add(f)
         writer.addDocument(d)
@@ -137,7 +138,7 @@ class HighlighterTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

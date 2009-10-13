@@ -24,10 +24,11 @@ class DocBoostTestCase(TestCase):
     def testDocBoost(self):
 
         store = RAMDirectory()
-        writer = IndexWriter(store, SimpleAnalyzer(), True)
+        writer = IndexWriter(store, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
     
-        f1 = Field("field", "word", Field.Store.YES, Field.Index.TOKENIZED)
-        f2 = Field("field", "word", Field.Store.YES, Field.Index.TOKENIZED)
+        f1 = Field("field", "word", Field.Store.YES, Field.Index.ANALYZED)
+        f2 = Field("field", "word", Field.Store.YES, Field.Index.ANALYZED)
         f2.setBoost(2.0)
     
         d1 = Document()
@@ -55,8 +56,8 @@ class DocBoostTestCase(TestCase):
             def collect(self, doc, score):
                 scores[doc] = score
 
-        IndexSearcher(store).search(TermQuery(Term("field", "word")),
-                                    hitCollector())
+        IndexSearcher(store, True).search(TermQuery(Term("field", "word")),
+                                          hitCollector())
     
         lastScore = 0.0
         for score in scores:
@@ -66,7 +67,7 @@ class DocBoostTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

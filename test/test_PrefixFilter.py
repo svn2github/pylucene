@@ -30,12 +30,13 @@ class PrefixFilterTestCase(TestCase):
                       "/Computers/Mac/Two",
                       "/Computers/Windows"]
 
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         for category in categories:
             doc = Document()
             doc.add(Field("category", category,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
 
         writer.close()
@@ -43,63 +44,63 @@ class PrefixFilterTestCase(TestCase):
         # PrefixFilter combined with ConstantScoreQuery
         filter = PrefixFilter(Term("category", "/Computers"))
         query = ConstantScoreQuery(filter)
-        searcher = IndexSearcher(directory)
-        hits = searcher.search(query)
-        self.assertEqual(4, hits.length(),
+        searcher = IndexSearcher(directory, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(4, topDocs.totalHits,
                          "All documents in /Computers category and below")
 
         # test middle of values
         filter = PrefixFilter(Term("category", "/Computers/Mac"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(2, hits.length(), "Two in /Computers/Mac")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(2, topDocs.totalHits, "Two in /Computers/Mac")
 
         # test start of values
         filter = PrefixFilter(Term("category", "/Computers/Linux"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(), "One in /Computers/Linux")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits, "One in /Computers/Linux")
 
         # test end of values
         filter = PrefixFilter(Term("category", "/Computers/Windows"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(), "One in /Computers/Windows")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits, "One in /Computers/Windows")
 
         # test non-existant
         filter = PrefixFilter(Term("category", "/Computers/ObsoleteOS"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length(), "no documents")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits, "no documents")
 
         # test non-existant, before values
         filter = PrefixFilter(Term("category", "/Computers/AAA"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length(), "no documents")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits, "no documents")
 
         # test non-existant, after values
         filter = PrefixFilter(Term("category", "/Computers/ZZZ"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length(), "no documents")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits, "no documents")
 
         # test zero-length prefix
         filter = PrefixFilter(Term("category", ""))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(4, hits.length(), "all documents")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(4, topDocs.totalHits, "all documents")
 
         # test non-existant field
         filter = PrefixFilter(Term("nonexistantfield", "/Computers"))
         query = ConstantScoreQuery(filter)
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length(), "no documents")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits, "no documents")
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

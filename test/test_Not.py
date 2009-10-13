@@ -24,25 +24,26 @@ class NotTestCase(TestCase):
     def testNot(self):
 
         store = RAMDirectory()
-        writer = IndexWriter(store, SimpleAnalyzer(), True)
+        writer = IndexWriter(store, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         d1 = Document()
-        d1.add(Field("field", "a b", Field.Store.YES, Field.Index.TOKENIZED))
+        d1.add(Field("field", "a b", Field.Store.YES, Field.Index.ANALYZED))
 
         writer.addDocument(d1)
         writer.optimize()
         writer.close()
 
-        searcher = IndexSearcher(store)
+        searcher = IndexSearcher(store, True)
         query = QueryParser("field", SimpleAnalyzer()).parse("a NOT b")
 
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits)
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

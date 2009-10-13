@@ -99,7 +99,7 @@ class SortTestCase(TestCase):
                 writer.addDocument(doc)
         # writer.optimize()
         writer.close()
-        s = IndexSearcher(indexStore)
+        s = IndexSearcher(indexStore, True)
         s.setDefaultFieldSortScoring(True, True)
 
         return s
@@ -135,7 +135,7 @@ class SortTestCase(TestCase):
         # print writer.getSegmentCount()
         writer.close()
 
-        return IndexSearcher(indexStore)
+        return IndexSearcher(indexStore, True)
   
     def getRandomNumberString(self, num, low, high):
 
@@ -586,7 +586,7 @@ class SortTestCase(TestCase):
         sort.setSort(SortField("i18n", Locale("da", "dk")))
         self._assertMatches(multiSearcher, self.queryY, sort, "BJDHF")
     
-    def testCustomSorts(self):
+    def _testCustomSorts(self):
         """
         test a custom sort function
         """
@@ -721,11 +721,11 @@ class SortTestCase(TestCase):
 
         # a filter that only allows through the first hit
         class filter(PythonFilter):
-            def bits(_self, reader):
+            def getDocIdSet(_self, reader):
                 bs = BitSet(reader.maxDoc())
                 bs.set(0, reader.maxDoc())
                 bs.set(docs1.scoreDocs[0].doc)
-                return bs
+                return DocIdBitSet(bs)
 
         filt = filter()
 
@@ -1168,7 +1168,7 @@ class SampleComparable(PythonComparable):
 
 if __name__ == "__main__":
     import sys, lucene
-    env = lucene.initVM(lucene.CLASSPATH)
+    env = lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

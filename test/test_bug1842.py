@@ -22,13 +22,14 @@ class Test_Bug1842(unittest.TestCase):
         self.analyzer = StandardAnalyzer()
         self.d1 = RAMDirectory()
         
-        w1 = IndexWriter(self.d1, self.analyzer, True)
+        w1 = IndexWriter(self.d1, self.analyzer, True,
+                         IndexWriter.MaxFieldLength.LIMITED)
         doc1 = Document()
         doc1.add(Field("all", "blah blah blah Gesundheit",
-                       Field.Store.NO, Field.Index.TOKENIZED,
+                       Field.Store.NO, Field.Index.ANALYZED,
                        Field.TermVector.YES))
         doc1.add(Field('id', '1',
-                       Field.Store.YES, Field.Index.UN_TOKENIZED))
+                       Field.Store.YES, Field.Index.NOT_ANALYZED))
         w1.addDocument(doc1)
         w1.optimize()
         w1.close()
@@ -37,11 +38,12 @@ class Test_Bug1842(unittest.TestCase):
         pass
 
     def test_bug1842(self):
-        reader = IndexReader.open(self.d1)
-        searcher = IndexSearcher(self.d1)
+
+        reader = IndexReader.open(self.d1, True)
+        searcher = IndexSearcher(self.d1, True)
         q = TermQuery(Term("id", '1'))
-        hits = searcher.search(q)
-        freqvec = reader.getTermFreqVector(hits.id(0), "all")
+        topDocs = searcher.search(q, 50)
+        freqvec = reader.getTermFreqVector(topDocs.scoreDocs[0].doc, "all")
         terms = list(freqvec.getTerms())
         terms.sort()
         self.assert_(terms == ['blah', 'gesundheit'])
@@ -51,5 +53,5 @@ class Test_Bug1842(unittest.TestCase):
 
 if __name__ == '__main__':
     import lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     unittest.main()

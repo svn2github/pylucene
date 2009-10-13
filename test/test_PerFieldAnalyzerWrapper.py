@@ -28,19 +28,22 @@ class PerFieldAnalyzerTestCase(TestCase):
         analyzer.addAnalyzer("special", SimpleAnalyzer())
 
         tokenStream = analyzer.tokenStream("field", StringReader(text))
-        token = tokenStream.next()
-        self.assertEqual("Qwerty", token.termText(),
+        termAtt = tokenStream.getAttribute(TermAttribute.class_)
+
+        self.assert_(tokenStream.incrementToken())
+        self.assertEqual("Qwerty", termAtt.term(),
                          "WhitespaceAnalyzer does not lowercase")
 
         tokenStream = analyzer.tokenStream("special", StringReader(text))
-        token = tokenStream.next()
-        self.assertEqual("qwerty", token.termText(),
+        termAtt = tokenStream.getAttribute(TermAttribute.class_)
+        self.assert_(tokenStream.incrementToken())
+        self.assertEqual("qwerty", termAtt.term(),
                          "SimpleAnalyzer lowercases")
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

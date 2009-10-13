@@ -56,7 +56,7 @@ class PythonMultiFieldQueryParserTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys
-    initVM(CLASSPATH)
+    initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

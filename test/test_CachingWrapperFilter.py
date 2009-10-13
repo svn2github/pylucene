@@ -24,18 +24,19 @@ class CachingWrapperFilterTestCase(TestCase):
     def testCachingWorks(self):
 
         dir = RAMDirectory()
-        writer = IndexWriter(dir, StandardAnalyzer(), True)
+        writer = IndexWriter(dir, StandardAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         writer.close()
 
-        reader = IndexReader.open(dir)
+        reader = IndexReader.open(dir, True)
 
         class mockFilter(PythonFilter):
             def __init__(self):
                 super(mockFilter, self).__init__()
                 self._wasCalled = False
-            def bits(self, reader):
+            def getDocIdSet(self, reader):
                 self._wasCalled = True;
-                return BitSet()
+                return DocIdBitSet(BitSet())
             def clear(self):
                 self._wasCalled = False
             def wasCalled(self):
@@ -45,12 +46,12 @@ class CachingWrapperFilterTestCase(TestCase):
         cacher = CachingWrapperFilter(filter)
 
         # first time, nested filter is called
-        cacher.bits(reader)
+        cacher.getDocIdSet(reader)
         self.assert_(filter.wasCalled(), "first time")
 
         # second time, nested filter should not be called
         filter.clear()
-        cacher.bits(reader)
+        cacher.getDocIdSet(reader)
         self.assert_(not filter.wasCalled(), "second time")
 
         reader.close()
@@ -58,7 +59,7 @@ class CachingWrapperFilterTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

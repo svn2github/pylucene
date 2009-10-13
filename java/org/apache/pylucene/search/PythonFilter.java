@@ -15,13 +15,12 @@
 
 package org.apache.pylucene.search;
 
+import java.io.IOException;
+
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.index.IndexReader;
-import java.util.BitSet;
+import org.apache.lucene.util.DocIdBitSet;
 
-/**
- * @author Andi Vajda
- */
 
 public class PythonFilter extends Filter {
 
@@ -47,5 +46,6 @@ public class PythonFilter extends Filter {
     }
 
     public native void pythonDecRef();
-    public native BitSet bits(IndexReader reader);
+    public native DocIdBitSet getDocIdSet(IndexReader reader)
+        throws IOException;
 }

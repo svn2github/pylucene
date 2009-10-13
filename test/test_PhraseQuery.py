@@ -24,17 +24,18 @@ class PhraseQueryTestCase(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
     
         doc = Document()
         doc.add(Field("field", "one two three four five",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
     
         writer.optimize()
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory)
+        self.searcher = IndexSearcher(self.directory, True)
         self.query = PhraseQuery()
 
     def tearDown(self):
@@ -47,16 +48,16 @@ class PhraseQueryTestCase(TestCase):
         self.query.setSlop(2)
         self.query.add(Term("field", "one"))
         self.query.add(Term("field", "five"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(0, hits.length())
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(0, topDocs.totalHits)
 
     def testBarelyCloseEnough(self):
 
         self.query.setSlop(3)
         self.query.add(Term("field", "one"))
         self.query.add(Term("field", "five"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(1, hits.length())
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(1, topDocs.totalHits)
 
     def testExact(self):
         """
@@ -66,14 +67,14 @@ class PhraseQueryTestCase(TestCase):
         # slop is zero by default
         self.query.add(Term("field", "four"))
         self.query.add(Term("field", "five"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(1, hits.length(), "exact match")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(1, topDocs.totalHits, "exact match")
 
         self.query = PhraseQuery()
         self.query.add(Term("field", "two"))
         self.query.add(Term("field", "one"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(0, hits.length(), "reverse not exact")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(0, topDocs.totalHits, "reverse not exact")
 
     def testSlop1(self):
 
@@ -81,8 +82,8 @@ class PhraseQueryTestCase(TestCase):
         self.query.setSlop(1)
         self.query.add(Term("field", "one"))
         self.query.add(Term("field", "two"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(1, hits.length(), "in order")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(1, topDocs.totalHits, "in order")
 
         # Ensures slop of 1 does not work for phrases out of order
         # must be at least 2.
@@ -90,8 +91,8 @@ class PhraseQueryTestCase(TestCase):
         self.query.setSlop(1)
         self.query.add(Term("field", "two"))
         self.query.add(Term("field", "one"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(0, hits.length(), "reversed, slop not 2 or more")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(0, topDocs.totalHits, "reversed, slop not 2 or more")
 
     def testOrderDoesntMatter(self):
         """
@@ -101,15 +102,15 @@ class PhraseQueryTestCase(TestCase):
         self.query.setSlop(2) # must be at least two for reverse order match
         self.query.add(Term("field", "two"))
         self.query.add(Term("field", "one"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(1, hits.length(), "just sloppy enough")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(1, topDocs.totalHits, "just sloppy enough")
 
         self.query = PhraseQuery()
         self.query.setSlop(2)
         self.query.add(Term("field", "three"))
         self.query.add(Term("field", "one"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(0, hits.length(), "not sloppy enough")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(0, topDocs.totalHits, "not sloppy enough")
 
     def testMulipleTerms(self):
         """
@@ -121,135 +122,138 @@ class PhraseQueryTestCase(TestCase):
         self.query.add(Term("field", "one"))
         self.query.add(Term("field", "three"))
         self.query.add(Term("field", "five"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(1, hits.length(), "two total moves")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(1, topDocs.totalHits, "two total moves")
 
         self.query = PhraseQuery()
         self.query.setSlop(5) # it takes six moves to match this phrase
         self.query.add(Term("field", "five"))
         self.query.add(Term("field", "three"))
         self.query.add(Term("field", "one"))
-        hits = self.searcher.search(self.query)
-        self.assertEqual(0, hits.length(), "slop of 5 not close enough")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(0, topDocs.totalHits, "slop of 5 not close enough")
 
         self.query.setSlop(6)
-        hits = self.searcher.search(self.query)
-        self.assertEqual(1, hits.length(), "slop of 6 just right")
+        topDocs = self.searcher.search(self.query, 50)
+        self.assertEqual(1, topDocs.totalHits, "slop of 6 just right")
 
     def testPhraseQueryWithStopAnalyzer(self):
 
         directory = RAMDirectory()
         stopAnalyzer = StopAnalyzer()
-        writer = IndexWriter(directory, stopAnalyzer, True)
+        writer = IndexWriter(directory, stopAnalyzer, True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         doc = Document()
         doc.add(Field("field", "the stop words are here",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
         writer.close()
 
-        searcher = IndexSearcher(directory)
+        searcher = IndexSearcher(directory, True)
 
         # valid exact phrase query
         query = PhraseQuery()
         query.add(Term("field","stop"))
         query.add(Term("field","words"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits)
 
         # currently StopAnalyzer does not leave "holes", so this matches.
         query = PhraseQuery()
         query.add(Term("field", "words"))
         query.add(Term("field", "here"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits)
 
         searcher.close()
   
     def testPhraseQueryInConjunctionScorer(self):
 
         directory = RAMDirectory()
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
     
         doc = Document()
         doc.add(Field("source", "marketing info",
-                      Field.Store.YES, Field.Index.TOKENIZED,
+                      Field.Store.YES, Field.Index.ANALYZED,
                       Field.TermVector.YES))
         writer.addDocument(doc)
     
         doc = Document()
         doc.add(Field("contents", "foobar",
-                      Field.Store.YES, Field.Index.TOKENIZED,
+                      Field.Store.YES, Field.Index.ANALYZED,
                       Field.TermVector.YES))
         doc.add(Field("source", "marketing info",
-                      Field.Store.YES, Field.Index.TOKENIZED,
+                      Field.Store.YES, Field.Index.ANALYZED,
                       Field.TermVector.YES))
         writer.addDocument(doc)
     
         writer.optimize()
         writer.close()
     
-        searcher = IndexSearcher(directory)
+        searcher = IndexSearcher(directory, True)
     
         phraseQuery = PhraseQuery()
         phraseQuery.add(Term("source", "marketing"))
         phraseQuery.add(Term("source", "info"))
-        hits = searcher.search(phraseQuery)
-        self.assertEqual(2, hits.length())
+        topDocs = searcher.search(phraseQuery, 50)
+        self.assertEqual(2, topDocs.totalHits)
     
         termQuery = TermQuery(Term("contents","foobar"))
         booleanQuery = BooleanQuery()
         booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
         booleanQuery.add(phraseQuery, BooleanClause.Occur.MUST)
-        hits = searcher.search(booleanQuery)
-        self.assertEqual(1, hits.length())
+        topDocs = searcher.search(booleanQuery, 50)
+        self.assertEqual(1, topDocs.totalHits)
     
         searcher.close()
     
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         doc = Document()
         doc.add(Field("contents", "map entry woo",
-                      Field.Store.YES, Field.Index.TOKENIZED,
+                      Field.Store.YES, Field.Index.ANALYZED,
                       Field.TermVector.YES))
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("contents", "woo map entry",
-                      Field.Store.YES, Field.Index.TOKENIZED,
+                      Field.Store.YES, Field.Index.ANALYZED,
                       Field.TermVector.YES))
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("contents", "map foobarword entry woo",
-                      Field.Store.YES, Field.Index.TOKENIZED,
+                      Field.Store.YES, Field.Index.ANALYZED,
                       Field.TermVector.YES))
         writer.addDocument(doc)
 
         writer.optimize()
         writer.close()
     
-        searcher = IndexSearcher(directory)
+        searcher = IndexSearcher(directory, True)
     
         termQuery = TermQuery(Term("contents", "woo"))
         phraseQuery = PhraseQuery()
         phraseQuery.add(Term("contents", "map"))
         phraseQuery.add(Term("contents", "entry"))
     
-        hits = searcher.search(termQuery)
-        self.assertEqual(3, hits.length())
-        hits = searcher.search(phraseQuery)
-        self.assertEqual(2, hits.length())
+        topDocs = searcher.search(termQuery, 50)
+        self.assertEqual(3, topDocs.totalHits)
+        topDocs = searcher.search(phraseQuery, 50)
+        self.assertEqual(2, topDocs.totalHits)
     
         booleanQuery = BooleanQuery()
         booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
         booleanQuery.add(phraseQuery, BooleanClause.Occur.MUST)
-        hits = searcher.search(booleanQuery)
-        self.assertEqual(2, hits.length())
+        topDocs = searcher.search(booleanQuery, 50)
+        self.assertEqual(2, topDocs.totalHits)
     
         booleanQuery = BooleanQuery()
         booleanQuery.add(phraseQuery, BooleanClause.Occur.MUST)
         booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
-        hits = searcher.search(booleanQuery)
-        self.assertEqual(2, hits.length())
+        topDocs = searcher.search(booleanQuery, 50)
+        self.assertEqual(2, topDocs.totalHits)
     
         searcher.close()
         directory.close()
@@ -257,7 +261,7 @@ class PhraseQueryTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

@@ -51,23 +51,22 @@ class SimilarityTestCase(TestCase):
     def testSimilarity(self):
 
         store = RAMDirectory()
-        writer = IndexWriter(store, SimpleAnalyzer(), True)
+        writer = IndexWriter(store, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         writer.setSimilarity(SimpleSimilarity())
     
         d1 = Document()
-        d1.add(Field("field", "a c",
-                     Field.Store.YES, Field.Index.TOKENIZED))
+        d1.add(Field("field", "a c", Field.Store.YES, Field.Index.ANALYZED))
 
         d2 = Document()
-        d2.add(Field("field", "a b c",
-                     Field.Store.YES, Field.Index.TOKENIZED))
+        d2.add(Field("field", "a b c", Field.Store.YES, Field.Index.ANALYZED))
     
         writer.addDocument(d1)
         writer.addDocument(d2)
         writer.optimize()
         writer.close()
 
-        searcher = IndexSearcher(store)
+        searcher = IndexSearcher(store, True)
         searcher.setSimilarity(SimpleSimilarity())
 
         a = Term("field", "a")
@@ -105,7 +104,7 @@ class SimilarityTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

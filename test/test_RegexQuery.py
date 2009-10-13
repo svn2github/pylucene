@@ -24,13 +24,14 @@ class TestRegexQuery(TestCase):
 
         directory = RAMDirectory()
 
-        writer = IndexWriter(directory, SimpleAnalyzer(), True)
+        writer = IndexWriter(directory, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         doc = Document()
-        doc.add(Field(self.FN, "the quick brown fox jumps over the lazy dog", Field.Store.NO, Field.Index.TOKENIZED))
+        doc.add(Field(self.FN, "the quick brown fox jumps over the lazy dog", Field.Store.NO, Field.Index.ANALYZED))
         writer.addDocument(doc)
         writer.optimize()
         writer.close()
-        self.searcher = IndexSearcher(directory)
+        self.searcher = IndexSearcher(directory, True)
 
     def tearDown(self):
 
@@ -44,7 +45,7 @@ class TestRegexQuery(TestCase):
 
         query = RegexQuery(self.newTerm(regex))
 
-        return len(self.searcher.search(query))
+        return self.searcher.search(query, 50).totalHits
 
     def spanRegexQueryNrHits(self, regex1, regex2, slop, ordered):
 
@@ -52,7 +53,7 @@ class TestRegexQuery(TestCase):
         srq2 = SpanRegexQuery(self.newTerm(regex2))
         query = SpanNearQuery([srq1, srq2], slop, ordered)
 
-        return len(self.searcher.search(query))
+        return self.searcher.search(query, 50).totalHits
 
     def testRegex1(self):
 
@@ -79,7 +80,7 @@ class TestRegexQuery(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

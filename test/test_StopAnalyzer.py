@@ -33,35 +33,59 @@ class StopAnalyzerTestCase(TestCase):
         stream = self.stop.tokenStream("test", reader)
         self.assert_(stream is not None)
 
-        try:
-            for token in stream:
-                self.assert_(token.termText() not in self.inValidTokens)
-        except Exception, e:
-            self.fail(str(e))
+        termAtt = stream.getAttribute(TermAttribute.class_)
+    
+        while stream.incrementToken():
+            self.assert_(termAtt.term() not in self.inValidTokens)
 
     def testStopList(self):
 
-        stopWordsSet = []
-        stopWordsSet.append("good")
-        stopWordsSet.append("test")
-        stopWordsSet.append("analyzer")
+        stopWordsSet = ["good", "test", "analyzer"]
 
         newStop = StopAnalyzer(stopWordsSet)
         reader = StringReader("This is a good test of the english stop analyzer")
         stream = newStop.tokenStream("test", reader)
         self.assert_(stream is not None)
 
+        termAtt = stream.getAttribute(TermAttribute.class_)
+        posIncrAtt = stream.addAttribute(PositionIncrementAttribute.class_)
+    
+        while stream.incrementToken():
+            text = termAtt.term()
+            self.assert_(text not in stopWordsSet)
+            # by default stop tokenizer does not apply increments.
+            self.assertEqual(1, posIncrAtt.getPositionIncrement())
+
+    def testStopListPositions(self):
+        
+        defaultEnable = StopFilter.getEnablePositionIncrementsDefault()
+        StopFilter.setEnablePositionIncrementsDefault(True)
+
         try:
-            for token in stream:
-                text = token.termText()
+            stopWordsSet = ["good", "test", "analyzer"]
+            newStop = StopAnalyzer(stopWordsSet)
+            reader = StringReader("This is a good test of the english stop analyzer with positions")
+            expectedIncr = [ 1,   1, 1,          3, 1,  1,      1,            2,   1]
+            stream = newStop.tokenStream("test", reader)
+            self.assert_(stream is not None)
+
+            i = 0
+            termAtt = stream.getAttribute(TermAttribute.class_)
+            posIncrAtt = stream.addAttribute(PositionIncrementAttribute.class_)
+
+            while stream.incrementToken():
+                text = termAtt.term()
                 self.assert_(text not in stopWordsSet)
-        except Exception, e:
-            self.fail(str(e))
+                self.assertEqual(expectedIncr[i],
+                                 posIncrAtt.getPositionIncrement())
+                i += 1
+        finally:
+            StopFilter.setEnablePositionIncrementsDefault(defaultEnable)
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

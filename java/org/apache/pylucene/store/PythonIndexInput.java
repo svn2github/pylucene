@@ -15,7 +15,9 @@
 
 package org.apache.pylucene.store;
 
+import java.io.IOException;
 import org.apache.lucene.store.BufferedIndexInput;
+
 
 public class PythonIndexInput extends BufferedIndexInput {
 
@@ -40,14 +42,19 @@ public class PythonIndexInput extends BufferedIndexInput {
         pythonDecRef();
     }
 
-    public native Object clone();
-    public native void close();
     public native void pythonDecRef();
+
+    public native Object clone();
     public native long length();
-    public native byte[] readInternal(int length, long pos);
-    public native void seekInternal(long pos);
+    public native void close()
+        throws IOException;
+    public native byte[] readInternal(int length, long pos)
+        throws IOException;
+    public native void seekInternal(long pos)
+        throws IOException;
 
     protected void readInternal(byte[] b, int offset, int length)
+        throws IOException
     {
         byte[] data = readInternal(length, getFilePointer());
         System.arraycopy(data, 0, b, offset, data.length);

@@ -23,15 +23,16 @@ class Test_Bug1763(unittest.TestCase):
         self.d1 = RAMDirectory()
         self.d2 = RAMDirectory()
         
-        w1, w2 = [IndexWriter(d, self.analyzer, True)
+        w1, w2 = [IndexWriter(d, self.analyzer, True,
+                              IndexWriter.MaxFieldLength.LIMITED)
                   for d in [self.d1, self.d2]]
         doc1 = Document()
         doc2 = Document()
         doc1.add(Field("all", "blah blah double blah Gesundheit",
-                       Field.Store.NO, Field.Index.TOKENIZED))
+                       Field.Store.NO, Field.Index.ANALYZED))
         doc1.add(Field('id', '1', Field.Store.YES, Field.Index.NO))
         doc2.add(Field("all", "a quick brown test ran over the lazy data",
-                       Field.Store.NO, Field.Index.TOKENIZED))
+                       Field.Store.NO, Field.Index.ANALYZED))
         doc2.add(Field('id', '2',
                        Field.Store.YES, Field.Index.NO))
         w1.addDocument(doc1)
@@ -45,18 +46,19 @@ class Test_Bug1763(unittest.TestCase):
 
     def test_bug1763(self):
             
-        w1 = IndexWriter(self.d1, self.analyzer, True)
+        w1 = IndexWriter(self.d1, self.analyzer, True,
+                         IndexWriter.MaxFieldLength.LIMITED)
         w1.addIndexes([self.d2])
         w1.optimize()
         w1.close()
 
-        searcher = IndexSearcher(self.d1)
+        searcher = IndexSearcher(self.d1, True)
         q = QueryParser('all', self.analyzer).parse('brown')
-        hits = searcher.search(q)
-        self.assertEqual(hits.doc(0).get('id'), '2')
+        topDocs = searcher.search(q, 50)
+        self.assertEqual(searcher.doc(topDocs.scoreDocs[0].doc).get('id'), '2')
 
 
 if __name__ == '__main__':
     import lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     unittest.main()

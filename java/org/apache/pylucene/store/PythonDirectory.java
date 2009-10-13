@@ -15,6 +15,8 @@
 
 package org.apache.pylucene.store;
 
+import java.io.IOException;
+
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
@@ -45,20 +47,27 @@ public class PythonDirectory extends Directory {
     }
 
     public native void pythonDecRef();
-    public native void close();
-    public native IndexOutput createOutput(String name);
-    public native void deleteFile(String name);
-    public native boolean fileExists(String name);
-    public native long fileLength(String name);
-    public native long fileModified(String name);
-    public native String[] list();
-    public native Lock makeLock(String name);
-    public native IndexInput openInput(String name);
-    public native IndexInput openInput(String name, int bufferSize);
-    public native void touchFile(String name);
 
-    /* no longer implemented, deprecated in Lucene 2.1 */
-    public void renameFile(String from, String to)
-    {
-    }
+    public native void close()
+        throws IOException;
+    public native IndexOutput createOutput(String name)
+        throws IOException;
+    public native void deleteFile(String name)
+        throws IOException;
+    public native boolean fileExists(String name)
+        throws IOException;
+    public native long fileLength(String name)
+        throws IOException;
+    public native long fileModified(String name)
+        throws IOException;
+    public native String[] listAll()
+        throws IOException;
+    public native IndexInput openInput(String name)
+        throws IOException;
+    public native IndexInput openInput(String name, int bufferSize)
+        throws IOException;
+    public native void touchFile(String name)
+        throws IOException;
+    public native void sync(String name) 
+        throws IOException;
 }

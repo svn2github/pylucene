@@ -15,47 +15,36 @@
 
 from unittest import TestCase, main
 from lucene import ThaiAnalyzer, StringReader
+from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 
-class ThaiAnalyzerTestCase(TestCase):
-
-    def assertAnalyzesTo(self, analyzer, input, output):
-
-        tokenStream = analyzer.tokenStream("dummy", StringReader(input))
-
-        for termText in output:
-            token = tokenStream.next()
-            self.assert_(token is not None)
-            self.assertEqual(token.termText(), termText)
-
-        self.assert_(not list(tokenStream))
-        tokenStream.close()
+class ThaiAnalyzerTestCase(BaseTokenStreamTestCase):
 
     def testAnalyzer(self):
 
         analyzer = ThaiAnalyzer()
     
-        self.assertAnalyzesTo(analyzer, u"", [])
+        self._assertAnalyzesTo(analyzer, u"", [])
 
-        self.assertAnalyzesTo(analyzer,
-                              u"การที่ได้ต้องแสดงว่างานดี",
-                              [ u"การ", u"ที่", u"ได้", u"ต้อง",
-                                u"แสดง", u"ว่า", u"งาน", u"ดี" ])
+        self._assertAnalyzesTo(analyzer,
+                               u"การที่ได้ต้องแสดงว่างานดี",
+                               [ u"การ", u"ที่", u"ได้", u"ต้อง",
+                                 u"แสดง", u"ว่า", u"งาน", u"ดี" ])
 
-        self.assertAnalyzesTo(analyzer,
-                              u"บริษัทชื่อ XY&Z - คุยกับ xyz@demo.com",
-                              [ u"บริษัท", u"ชื่อ", u"xy&z", u"คุย", u"กับ", u"xyz@demo.com" ])
+        self._assertAnalyzesTo(analyzer,
+                               u"บริษัทชื่อ XY&Z - คุยกับ xyz@demo.com",
+                               [ u"บริษัท", u"ชื่อ", u"xy&z", u"คุย", u"กับ", u"xyz@demo.com" ])
 
         # English stop words
-        self.assertAnalyzesTo(analyzer,
-                              u"ประโยคว่า The quick brown fox jumped over the lazy dogs",
-                              [ u"ประโยค", u"ว่า", u"quick", u"brown", u"fox",
-                                u"jumped", u"over", u"lazy", u"dogs" ])
+        self._assertAnalyzesTo(analyzer,
+                               u"ประโยคว่า The quick brown fox jumped over the lazy dogs",
+                               [ u"ประโยค", u"ว่า", u"quick", u"brown", u"fox",
+                                 u"jumped", u"over", u"lazy", u"dogs" ])
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

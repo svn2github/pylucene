@@ -38,23 +38,24 @@ class BooleanOrTestCase(TestCase):
     def setUp(self):
 
         rd = RAMDirectory()
-        writer = IndexWriter(rd, StandardAnalyzer(), True)
+        writer = IndexWriter(rd, StandardAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         d = Document()
         d.add(Field(self.FIELD_T,
                     "Optimize not deleting all files",
-                    Field.Store.YES, Field.Index.TOKENIZED))
+                    Field.Store.YES, Field.Index.ANALYZED))
         d.add(Field(self.FIELD_C,
                     "Deleted When I run an optimize in our production environment.",
-                    Field.Store.YES, Field.Index.TOKENIZED))
+                    Field.Store.YES, Field.Index.ANALYZED))
 
         writer.addDocument(d)
         writer.close()
 
-        self.searcher = IndexSearcher(rd)
+        self.searcher = IndexSearcher(rd, True)
 
     def search(self, q):
-        return self.searcher.search(q).length()
+        return self.searcher.search(q, 50).totalHits
 
     def testElements(self):
 
@@ -114,7 +115,7 @@ class BooleanOrTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

@@ -50,12 +50,17 @@ public class PythonIndexOutput extends BufferedIndexOutput {
     }
 
     public native void pythonDecRef();
-    public native long length();
-    public native void flushBuffer(byte[] data);
-    public native void seekInternal(long pos);
-    public native void close();
+    public native long length()
+        throws IOException;
+    public native void flushBuffer(byte[] data)
+        throws IOException;
+    public native void seekInternal(long pos)
+        throws IOException;
+    public native void close()
+        throws IOException;
 
     protected void flushBuffer(byte[] b, int offset, int len)
+        throws IOException
     {
         byte[] data = new byte[len];
         System.arraycopy(b, offset, data, 0, len);

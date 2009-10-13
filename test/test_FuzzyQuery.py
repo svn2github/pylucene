@@ -22,15 +22,17 @@ class FuzzyQueryTestCase(TestCase):
     """
 
     def _addDoc(self, text, writer):
+
         doc = Document()
         doc.add(Field("field", text,
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
 
     def testDefaultFuzziness(self):
 
         directory = RAMDirectory()
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         self._addDoc("aaaaa", writer)
         self._addDoc("aaaab", writer)
         self._addDoc("aaabb", writer)
@@ -41,47 +43,47 @@ class FuzzyQueryTestCase(TestCase):
         writer.optimize()
         writer.close()
 
-        searcher = IndexSearcher(directory)
+        searcher = IndexSearcher(directory, True)
 
         query = FuzzyQuery(Term("field", "aaaaa"))
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(3, topDocs.totalHits)
 
         # not similar enough:
         query = FuzzyQuery(Term("field", "xxxxx"))
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits)
         # edit distance to "aaaaa" = 3
         query = FuzzyQuery(Term("field", "aaccc"))
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits)
 
         # query identical to a word in the index:
         query = FuzzyQuery(Term("field", "aaaaa"))
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length())
-        self.assertEqual(hits.doc(0).get("field"), "aaaaa")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(3, len(scoreDocs))
+        self.assertEqual(searcher.doc(scoreDocs[0].doc).get("field"), "aaaaa")
         # default allows for up to two edits:
-        self.assertEqual(hits.doc(1).get("field"), "aaaab")
-        self.assertEqual(hits.doc(2).get("field"), "aaabb")
+        self.assertEqual(searcher.doc(scoreDocs[1].doc).get("field"), "aaaab")
+        self.assertEqual(searcher.doc(scoreDocs[2].doc).get("field"), "aaabb")
 
         # query similar to a word in the index:
         query = FuzzyQuery(Term("field", "aaaac"))
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length())
-        self.assertEqual(hits.doc(0).get("field"), "aaaaa")
-        self.assertEqual(hits.doc(1).get("field"), "aaaab")
-        self.assertEqual(hits.doc(2).get("field"), "aaabb")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(3, len(scoreDocs))
+        self.assertEqual(searcher.doc(scoreDocs[0].doc).get("field"), "aaaaa")
+        self.assertEqual(searcher.doc(scoreDocs[1].doc).get("field"), "aaaab")
+        self.assertEqual(searcher.doc(scoreDocs[2].doc).get("field"), "aaabb")
 
         query = FuzzyQuery(Term("field", "ddddX"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
-        self.assertEqual(hits.doc(0).get("field"), "ddddd")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
+        self.assertEqual(searcher.doc(scoreDocs[0].doc).get("field"), "ddddd")
 
         # different field = no match:
         query = FuzzyQuery(Term("anotherfield", "ddddX"))
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits)
 
         searcher.close()
         directory.close()
@@ -89,37 +91,38 @@ class FuzzyQueryTestCase(TestCase):
     def testDefaultFuzzinessLong(self):
 
         directory = RAMDirectory()
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         self._addDoc("aaaaaaa", writer)
         self._addDoc("segment", writer)
         writer.optimize()
         writer.close()
-        searcher = IndexSearcher(directory)
+        searcher = IndexSearcher(directory, True)
 
         # not similar enough:
         query = FuzzyQuery(Term("field", "xxxxx"))
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits)
         # edit distance to "aaaaaaa" = 3, this matches because
         # the string is longer than
         # in testDefaultFuzziness so a bigger difference is allowed:
         query = FuzzyQuery(Term("field", "aaaaccc"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
-        self.assertEqual(hits.doc(0).get("field"), "aaaaaaa")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
+        self.assertEqual(searcher.doc(scoreDocs[0].doc).get("field"), "aaaaaaa")
 
         # no match, more than half of the characters is wrong:
         query = FuzzyQuery(Term("field", "aaacccc"))
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(0, topDocs.totalHits)
 
         # "student" and "stellent" are indeed similar to "segment" by default:
         query = FuzzyQuery(Term("field", "student"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits)
         query = FuzzyQuery(Term("field", "stellent"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits)
 
         searcher.close()
         directory.close()
@@ -127,7 +130,7 @@ class FuzzyQueryTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

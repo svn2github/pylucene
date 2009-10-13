@@ -22,13 +22,14 @@ class Test_Bug1564(unittest.TestCase):
         self.analyzer = StandardAnalyzer()
         self.store = RAMDirectory()
 
-        writer = IndexWriter(self.store, self.analyzer, True)
+        writer = IndexWriter(self.store, self.analyzer, True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         doc = Document()
         doc.add(Field('all', u'windowpane beplaster rapacious \
         catatonia gauntlet wynn depressible swede pick dressmake supreme \
         jeremy plumb theoretic bureaucracy causation chartres equipoise \
         dispersible careen heard',
-                      Field.Store.NO, Field.Index.TOKENIZED))
+                      Field.Store.NO, Field.Index.ANALYZED))
         doc.add(Field('id', '1', Field.Store.YES, Field.Index.NO))
         writer.addDocument(doc)
         writer.optimize()
@@ -39,13 +40,13 @@ class Test_Bug1564(unittest.TestCase):
 
     def test_bug1564(self):
 
-        searcher = IndexSearcher(self.store)
+        searcher = IndexSearcher(self.store, True)
         query = QueryParser('all', self.analyzer).parse('supreme')
-        hits = searcher.search(query)
-        self.assertEqual(hits.length(), 1)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(topDocs.totalHits, 1)
 
 
 if __name__ == '__main__':
     import lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     unittest.main()

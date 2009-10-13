@@ -12,26 +12,15 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
+from unittest import main
+from BaseTokenStreamTestCase import BaseTokenStreamTestCase;
 from lucene import *
 
 
-class AnalyzersTestCase(TestCase):
+class AnalyzersTestCase(BaseTokenStreamTestCase):
     """
     Unit tests ported from Java Lucene
     """
-
-    def _assertAnalyzesTo(self, a, input, output):
-
-        ts = a.tokenStream("dummy", StringReader(input))
-        for string in output:
-            t = ts.next()
-            self.assert_(t is not None)
-            self.assertEqual(t.termText(), string)
-
-        self.assert_(not list(ts))
-        ts.close()
-
 
     def testSimple(self):
 
@@ -52,6 +41,7 @@ class AnalyzersTestCase(TestCase):
                                [ "b" ])
         self._assertAnalyzesTo(a, "\"QUOTED\" word", 
                                [ "quoted", "word" ])
+
 
     def testNull(self):
 
@@ -81,10 +71,53 @@ class AnalyzersTestCase(TestCase):
         self._assertAnalyzesTo(a, "foo a bar such FOO THESE BAR", 
                                [ "foo", "bar", "foo", "bar" ])
 
+    def _verifyPayload(self, ts):
+
+        payloadAtt = ts.getAttribute(PayloadAttribute.class_)
+        b = 0
+        while True:
+            b += 1
+            if not ts.incrementToken():
+                break
+            self.assertEqual(b, payloadAtt.getPayload().toByteArray()[0])
+
+    # Make sure old style next() calls result in a new copy of payloads
+    def testPayloadCopy(self):
+
+        s = "how now brown cow"
+        ts = WhitespaceTokenizer(StringReader(s))
+        ts = PayloadSetter(ts)
+        self._verifyPayload(ts)
+
+        ts = WhitespaceTokenizer(StringReader(s))
+        ts = PayloadSetter(ts)
+        self._verifyPayload(ts)
+
+
+class PayloadSetter(PythonTokenFilter):
+
+    def __init__(self, input):
+        super(PayloadSetter, self).__init__(input)
+
+        self.input = input
+        self.payloadAtt = self.addAttribute(PayloadAttribute.class_)
+        self.data = JArray('byte')(1)
+        self.p = Payload(self.data, 0, 1)
+
+    def incrementToken(self):
+
+        if not self.input.incrementToken():
+            return False
+
+        self.payloadAtt.setPayload(self.p)
+        self.data[0] += 1;
+
+        return True
+
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

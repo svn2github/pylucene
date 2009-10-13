@@ -52,7 +52,7 @@ class BooleanPrefixQueryTestCase(TestCase):
 
             writer.close()
       
-            reader = IndexReader.open(directory)
+            reader = IndexReader.open(directory, True)
             query = PrefixQuery(Term("category", "foo"))
             rw1 = query.rewrite(reader)
       
@@ -69,7 +69,7 @@ class BooleanPrefixQueryTestCase(TestCase):
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

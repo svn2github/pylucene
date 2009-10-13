@@ -27,5 +27,5 @@ class TestRuntimeError(unittest.TestCase):
 
 if __name__ == '__main__':
     import lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     unittest.main()

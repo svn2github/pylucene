@@ -26,29 +26,30 @@ class PrefixQueryTestCase(TestCase):
         directory = RAMDirectory()
 
         categories = ["/Computers", "/Computers/Mac", "/Computers/Windows"]
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         for category in categories:
             doc = Document()
             doc.add(Field("category", category,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
 
         writer.close()
 
         query = PrefixQuery(Term("category", "/Computers"))
-        searcher = IndexSearcher(directory)
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length(),
+        searcher = IndexSearcher(directory, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(3, topDocs.totalHits,
                          "All documents in /Computers category and below")
 
         query = PrefixQuery(Term("category", "/Computers/Mac"))
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(), "One in /Computers/Mac")
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits, "One in /Computers/Mac")
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

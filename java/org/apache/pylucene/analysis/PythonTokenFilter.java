@@ -46,6 +46,6 @@ public class PythonTokenFilter extends TokenFilter {
     }
 
     public native void pythonDecRef();
-    public native Token next()
+    public native boolean incrementToken()
         throws IOException;
 }

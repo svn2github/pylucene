@@ -24,9 +24,10 @@ class QueryRewriteTest(unittest.TestCase):
     def setUp(self):
 
         store = lucene.RAMDirectory()
-        writer = lucene.IndexWriter(store, lucene.StandardAnalyzer(), True)
+        writer = lucene.IndexWriter(store, lucene.StandardAnalyzer(), True,
+                                    lucene.IndexWriter.MaxFieldLength.LIMITED)
         writer.close()
-        self.reader = lucene.IndexSearcher(store).getIndexReader()
+        self.reader = lucene.IndexSearcher(store, True).getIndexReader()
         self.term = lucene.Term('all', 'foo')
         
     def testQuery(self):
@@ -38,7 +39,7 @@ class QueryRewriteTest(unittest.TestCase):
     
 
 if __name__ == "__main__":
-    env = lucene.initVM(lucene.CLASSPATH)
+    env = lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

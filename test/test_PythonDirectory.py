@@ -231,7 +231,7 @@ class PythonDirectoryTests(unittest.TestCase, test_PyLucene.Test_PyLuceneBase):
 
 if __name__ == "__main__":
     import sys, lucene
-    env = lucene.initVM(lucene.CLASSPATH)
+    env = lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

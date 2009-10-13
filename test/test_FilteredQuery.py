@@ -24,52 +24,53 @@ class FilteredQueryTestCase(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         doc = Document()
         doc.add(Field("field", "one two three four five",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         doc.add(Field("sorter", "b",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
                       
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("field", "one two three four",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         doc.add(Field("sorter", "d",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
 
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("field", "one two three y",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         doc.add(Field("sorter", "a",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
 
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("field", "one two x",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         doc.add(Field("sorter", "c",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
                       
         writer.addDocument(doc)
 
         writer.optimize()
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory)
+        self.searcher = IndexSearcher(self.directory, True)
         self.query = TermQuery(Term("field", "three"))
 
         class filter(PythonFilter):
-            def bits(self, reader):
+            def getDocIdSet(self, reader):
                 bitset = BitSet(5)
                 bitset.set(1)
                 bitset.set(3)
-                return bitset
+                return DocIdBitSet(bitset)
 
         self.filter = filter()
 
@@ -81,44 +82,44 @@ class FilteredQueryTestCase(TestCase):
     def testFilteredQuery(self):
 
         filteredquery = FilteredQuery(self.query, self.filter)
-        hits = self.searcher.search(filteredquery);
-        self.assertEqual(1, hits.length())
-        self.assertEqual(1, hits.id(0))
+        topDocs = self.searcher.search(filteredquery, 50)
+        self.assertEqual(1, topDocs.totalHits)
+        self.assertEqual(1, topDocs.scoreDocs[0].doc)
 
-        hits = self.searcher.search(filteredquery, Sort("sorter"))
-        self.assertEqual(1, hits.length())
-        self.assertEqual(1, hits.id(0))
+        topDocs = self.searcher.search(filteredquery, None, 50, Sort("sorter"))
+        self.assertEqual(1, topDocs.totalHits)
+        self.assertEqual(1, topDocs.scoreDocs[0].doc)
 
         filteredquery = FilteredQuery(TermQuery(Term("field", "one")),
                                       self.filter)
-        hits = self.searcher.search(filteredquery)
-        self.assertEqual(2, hits.length())
+        topDocs = self.searcher.search(filteredquery, 50)
+        self.assertEqual(2, topDocs.totalHits)
 
         filteredquery = FilteredQuery(TermQuery(Term("field", "x")),
                                       self.filter)
-        hits = self.searcher.search(filteredquery)
-        self.assertEqual(1, hits.length())
-        self.assertEqual(3, hits.id(0))
+        topDocs = self.searcher.search(filteredquery, 50)
+        self.assertEqual(1, topDocs.totalHits)
+        self.assertEqual(3, topDocs.scoreDocs[0].doc)
 
         filteredquery = FilteredQuery(TermQuery(Term("field", "y")),
                                       self.filter)
-        hits = self.searcher.search(filteredquery)
-        self.assertEqual(0, hits.length())
+        topDocs = self.searcher.search(filteredquery, 50)
+        self.assertEqual(0, topDocs.totalHits)
 
     def testRangeQuery(self):
         """
         This tests FilteredQuery's rewrite correctness
         """
-        
-        rq = RangeQuery(Term("sorter", "b"), Term("sorter", "d"), True)
+
+        rq = TermRangeQuery("sorter", "b", "d", True, True)
         filteredquery = FilteredQuery(rq, self.filter)
-        hits = self.searcher.search(filteredquery)
-        self.assertEqual(2, hits.length())
+        scoreDocs = self.searcher.search(filteredquery, 1000).scoreDocs
+        self.assertEqual(2, len(scoreDocs))
 
 
 if __name__ == "__main__":
     import sys, lucene
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
