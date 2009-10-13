@@ -280,6 +280,8 @@ namespace java {
     namespace lang {
         using namespace reflect;
 
+        static PyObject *t_Class_cast_(PyTypeObject *type, PyObject *arg);
+        static PyObject *t_Class_instance_(PyTypeObject *type, PyObject *arg);
         static PyObject *t_Class_forName(PyTypeObject *type, PyObject *arg);
         static PyObject *t_Class_getDeclaredConstructors(t_Class *self);
         static PyObject *t_Class_getDeclaredMethods(t_Class *self);
@@ -301,9 +303,21 @@ namespace java {
         static PyObject *t_Class_getTypeParameters(t_Class *self);
         static PyObject *t_Class_getGenericInterfaces(t_Class *self);
         static PyObject *t_Class_getGenericSuperclass(t_Class *self);
+        static PyObject *t_Class_get__parameters_(t_Class *self, void *data);
+
+        static PyGetSetDef t_Class__fields_[] = {
+            DECLARE_GET_FIELD(t_Class, parameters_),
+            { NULL, NULL, NULL, NULL, NULL }
+        };
+#else
+        static PyGetSetDef t_Class__fields_[] = {
+            { NULL, NULL, NULL, NULL, NULL }
+        };
 #endif
 
         static PyMethodDef t_Class__methods_[] = {
+            DECLARE_METHOD(t_Class, cast_, METH_O | METH_CLASS),
+            DECLARE_METHOD(t_Class, instance_, METH_O | METH_CLASS),
             DECLARE_METHOD(t_Class, forName, METH_O | METH_CLASS),
             DECLARE_METHOD(t_Class, getDeclaredConstructors, METH_NOARGS),
             DECLARE_METHOD(t_Class, getDeclaredMethods, METH_NOARGS),
@@ -330,7 +344,31 @@ namespace java {
         };
 
         DECLARE_TYPE(Class, t_Class, Object, java::lang::Class,
-                     abstract_init, 0, 0, 0, 0, 0);
+                     abstract_init, 0, 0, t_Class__fields_, 0, 0);
+
+        PyObject *t_Class::wrap_Object(const Class& object, PyTypeObject *T)
+        {
+            PyObject *obj = t_Class::wrap_Object(object);
+            if (obj != Py_None)
+            {
+                t_Class *self = (t_Class *) obj;
+                self->parameters[0] = T;
+            }
+            return obj;
+        }
+
+        static PyObject *t_Class_cast_(PyTypeObject *type, PyObject *arg)
+        {
+            if (!(arg = castCheck(arg, Class::initializeClass, 1)))
+                return NULL;
+            return t_Class::wrap_Object(Class(((t_Class *) arg)->object.this$));
+        }
+        static PyObject *t_Class_instance_(PyTypeObject *type, PyObject *arg)
+        {
+            if (!castCheck(arg, Class::initializeClass, 0))
+                Py_RETURN_FALSE;
+            Py_RETURN_TRUE;
+        }
 
         static PyObject *t_Class_forName(PyTypeObject *type, PyObject *arg)
         {
@@ -525,6 +563,11 @@ namespace java {
             OBJ_CALL(result = self->object.getGenericSuperclass());
 
             return t_Type::wrap_Object(result);
+        }
+
+        static PyObject *t_Class_get__parameters_(t_Class *self, void *data)
+        {
+            return typeParameters(self->parameters, sizeof(self->parameters));
         }
 #endif
     }

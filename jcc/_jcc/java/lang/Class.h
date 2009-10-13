@@ -75,7 +75,17 @@ namespace java {
         public:
             PyObject_HEAD
             Class object;
+#ifdef _java_generics
+            PyTypeObject *parameters[1];
+            static PyTypeObject **parameters_(t_Class *self)
+            {
+                return (PyTypeObject **) &(self->parameters);
+            }
+#endif
             static PyObject *wrap_Object(const Class& object);
+#ifdef _java_generics
+            static PyObject *wrap_Object(const Class& object, PyTypeObject *T);
+#endif
             static PyObject *wrap_jobject(const jobject& object);
         };
     }

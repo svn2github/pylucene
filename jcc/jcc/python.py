@@ -17,9 +17,14 @@ import os, sys, platform, shutil, _jcc
 from cpp import PRIMITIVES, INDENT, HALF_INDENT
 from cpp import cppname, cppnames, typename
 from cpp import line, signature, find_method, split_pkg, sort
-from cpp import Modifier
+from cpp import Modifier, Class, Method
 from _jcc import findClass
 from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, SHARED
+
+try:
+    from cpp import ParameterizedType, TypeVariable
+except ImportError:
+    pass
 
 python_ver = '%d.%d.%d' %(sys.version_info[0:3])
 if python_ver < '2.4':
@@ -47,7 +52,7 @@ CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
              'java.lang.String': ('O', 'env->fromJString((jstring) %s)', True) }
 
 
-def parseArgs(params, current):
+def parseArgs(params, current, generics):
 
     def signature(cls):
         array = ''
@@ -61,7 +66,10 @@ def parseArgs(params, current):
             return array + 's'
         if clsName == 'java.lang.Object':
             return array + 'o'
-        return array + 'k'
+        if generics and cls.getTypeParameters():
+            return array + 'K'
+        else:
+            return array + 'k'
 
     def checkarg(cls):
         while cls.isArray():
@@ -72,6 +80,12 @@ def parseArgs(params, current):
         return ', %s::initializeClass' %(typename(cls, current, False))
 
     def callarg(cls, i):
+        if generics:
+            while cls.isArray():
+                cls = cls.getComponentType()
+            if cls.getTypeParameters():
+                p0, sep, p1 = rpartition(typename(cls, current, False), '::')
+                return ', &a%d, &p%d, %s%st_%s::parameters_' %(i, i, p0, sep, p1)
         return ', &a%d' %(i)
 
     return (''.join([signature(param) for param in params]),
@@ -79,7 +93,21 @@ def parseArgs(params, current):
             ''.join([callarg(params[i], i) for i in xrange(len(params))]))
 
 
-def construct(out, indent, cls, inCase, constructor, names):
+def declareVars(out, indent, params, current, generics):
+
+    for i in xrange(len(params)):
+        param = params[i]
+        line(out, indent, '%s a%d%s;',
+             typename(param, current, False), i,
+             not param.isPrimitive() and '((jobject) NULL)' or '')
+        if generics:
+            while param.isArray():
+                param = param.getComponentType()
+            if param.getTypeParameters():
+                line(out, indent, 'PyTypeObject **p%d;', i)
+    
+
+def construct(out, indent, cls, inCase, constructor, names, generics):
 
     if inCase:
         line(out, indent, '{')
@@ -88,16 +116,13 @@ def construct(out, indent, cls, inCase, constructor, names):
     params = constructor.getParameterTypes()
     count = len(params)
 
-    for i in xrange(count):
-        line(out, indent, '%s a%d%s;',
-             typename(params[i], cls, False), i,
-             not params[i].isPrimitive() and '((jobject) NULL)' or '')
+    declareVars(out, indent, params, cls, generics)
     line(out, indent, '%s object((jobject) NULL);', cppname(names[-1]))
 
     line(out)
     if count:
         line(out, indent, 'if (!parseArgs(args, "%s"%s%s))',
-             *parseArgs(params, cls))
+             *parseArgs(params, cls, generics))
         line(out, indent, '{')
         indent += 1
 
@@ -154,35 +179,74 @@ def fieldValue(cls, value, fieldType):
     return result %(value)
 
 
-def returnValue(cls, returnType, value):
+def returnValue(cls, returnType, value, genericRT=None):
 
     result = RESULTS.get(returnType.getName())
-    if not result:
-        if returnType.isArray():
+    if result:
+        return result %(value)
+
+    if returnType.isArray():
+        returnType = returnType.getComponentType()
+        depth = 1
+        while returnType.isArray():
             returnType = returnType.getComponentType()
-            depth = 1
-            while returnType.isArray():
-                returnType = returnType.getComponentType()
-                depth += 1
-            if depth > 1:
-                result = 'return JArray<jobject>(%s.this$).wrap(NULL);'
-            elif returnType.isPrimitive():
-                result = 'return %s.wrap();'
-            elif returnType.getName() == 'java.lang.String':
-                result = 'return JArray<jstring>(%s.this$).wrap();'
+            depth += 1
+        if depth > 1:
+            return 'return JArray<jobject>(%s.this$).wrap(NULL);' %(value)
+        elif returnType.isPrimitive():
+            return 'return %s.wrap();' %(value)
+        elif returnType.getName() == 'java.lang.String':
+            return 'return JArray<jstring>(%s.this$).wrap();' %(value)
+
+        p0, sep, p1 = rpartition(typename(returnType, cls, False), '::')
+        return 'return JArray<jobject>(%s.this$).wrap(%s%st_%s::wrap_jobject);' %(value, p0, sep, p1)
+
+    p0, sep, p1 = rpartition(typename(returnType, cls, False), '::')
+    if genericRT is not None:
+        if ParameterizedType.instance_(genericRT):
+            genericRT = ParameterizedType.cast_(genericRT)
+            clsArgs = []
+            for clsArg in genericRT.getActualTypeArguments():
+                if Class.instance_(clsArg):
+                    clsNames = Class.cast_(clsArg).getName().split('.')
+                    clsArg = '&%s::%s$$Type' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                    clsArgs.append(clsArg)
+                elif TypeVariable.instance_(clsArg):
+                    gd = TypeVariable.cast_(clsArg).getGenericDeclaration()
+                    if Class.instance_(gd):
+                        i = 0
+                        for clsParam in gd.getTypeParameters():
+                            if clsArg == clsParam:
+                                clsArgs.append('self->parameters[%d]' %(i))
+                                break
+                            i += 1
+                        else:
+                            break
+                    else:
+                        break
+                else:
+                    break
             else:
-                returnName = typename(returnType, cls, False)
-                parts = rpartition(returnName, '::')
-                result = 'return JArray<jobject>(%%s.this$).wrap(%s%st_%s::wrap_jobject);' %(parts)
-        else:
-            returnName = typename(returnType, cls, False)
-            parts = rpartition(returnName, '::')
-            result = 'return %s%st_%s::wrap_Object(%%s);' %(parts)
+                return 'return %s%st_%s::wrap_Object(%s, %s);' %(p0, sep, p1, value, ', '.join(clsArgs))
+        elif TypeVariable.instance_(genericRT):
+            gd = TypeVariable.cast_(genericRT).getGenericDeclaration()
+            i = 0
+            if Class.instance_(gd):
+                for clsParam in gd.getTypeParameters():
+                    if genericRT == clsParam:
+                        return 'return self->parameters[%d] != NULL ? wrapType(self->parameters[%d], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, value, p0, sep, p1, value)
+                    i += 1
+            elif Method.instance_(gd):
+                for clsParam in gd.getTypeParameters():
+                    if genericRT == clsParam:
+                        return 'return p%d != NULL && p%d[0] != NULL ? wrapType(p%d[0], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, i, value, p0, sep, p1, value)
+                    i += 1
 
-    return result %(value)
+    return 'return %s%st_%s::wrap_Object(%s);' %(p0, sep, p1, value)
 
 
-def call(out, indent, cls, inCase, method, names, cardinality, isExtension):
+def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
+         generics):
 
     if inCase:
         line(out, indent, '{')
@@ -192,12 +256,14 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension):
     modifiers = method.getModifiers()
     params = method.getParameterTypes()
     returnType = method.getReturnType()
+    if generics:
+        genericRT = method.getGenericReturnType()
+    else:
+        genericRT = None
     count = len(params)
 
-    for i in xrange(count):
-        line(out, indent, '%s a%d%s;',
-             typename(params[i], cls, False), i,
-             not params[i].isPrimitive() and '((jobject) NULL)' or '')
+    declareVars(out, indent, params, cls, generics)
+
     returnName = returnType.getName()
     if returnName != 'void':
         line(out, indent, '%s result%s;',
@@ -214,7 +280,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension):
             line(out, indent, 'if (arg)')
         else:
             line(out, indent, 'if (!parseArg%s(arg%s, "%s"%s%s))',
-                 s, s, *parseArgs(params, cls))
+                 s, s, *parseArgs(params, cls, generics))
         line(out, indent, '{')
         indent += 1
 
@@ -242,7 +308,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension):
         line(out, indent, '}')
         line(out, indent, 'return PyErr_SetArgsError("%s", arg);' %(name))
     elif returnName != 'void':
-        line(out, indent, returnValue(cls, returnType, 'result'))
+        line(out, indent, returnValue(cls, returnType, 'result', genericRT))
     else:
         line(out, indent, 'Py_RETURN_NONE;')
     if cardinality and (count or not inCase):
@@ -289,7 +355,7 @@ def jniargs(params):
     return ''
 
 
-def extension(env, out, indent, cls, names, name, count, method):
+def extension(env, out, indent, cls, names, name, count, method, generics):
 
     line(out, indent, 'jlong ptr = jenv->CallLongMethod(jobj, %s::mids$[%s::mid_pythonExtension_%s]);',
          cppname(names[-1]), cppname(names[-1]), env.strhash('()J'))
@@ -364,7 +430,7 @@ def extension(env, out, indent, cls, names, name, count, method):
         line(out, indent, 'else')
         line(out, indent + 1, 'Py_DECREF(result);')
     else:
-        signature, check, x = parseArgs([returnType], cls)
+        signature, check, x = parseArgs([returnType], cls, False)
         line(out, indent, 'else if (parseArg(result, "%s"%s, &value))',
              signature, check)
         line(out, indent, '{')
@@ -390,7 +456,7 @@ def extension(env, out, indent, cls, names, name, count, method):
 
 def python(env, out_h, out, cls, superCls, names, superNames,
            constructors, methods, protectedMethods, fields, instanceFields,
-           mapping, sequence, rename, declares, typeset, moduleName):
+           mapping, sequence, rename, declares, typeset, moduleName, generics):
 
     line(out_h)
     line(out_h, 0, '#include <Python.h>')
@@ -402,13 +468,30 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         indent += 1
     line(out_h, indent, 'extern PyTypeObject %s$$Type;', names[-1])
 
+    if generics:
+        clsParams = cls.getTypeParameters()
+    else:
+        clsParams = None
+
     line(out_h)
     line(out_h, indent, 'class t_%s {', names[-1])
     line(out_h, indent, 'public:')
     line(out_h, indent + 1, 'PyObject_HEAD')
     line(out_h, indent + 1, '%s object;', cppname(names[-1]))
+    if clsParams:
+        line(out_h, indent + 1, 'PyTypeObject *parameters[%d];', len(clsParams))
+        line(out_h, indent + 1, 'static PyTypeObject **parameters_(t_%s *self)',
+             cppname(names[-1]))
+        line(out_h, indent + 1, '{')
+        line(out_h, indent + 2, 'return (PyTypeObject **) &(self->parameters);')
+        line(out_h, indent + 1, '}')
+
     line(out_h, indent + 1, 'static PyObject *wrap_Object(const %s&);',
          cppname(names[-1]))
+    if clsParams:
+        line(out_h, indent + 1, 'static PyObject *wrap_Object(const %s&, %s);',
+             cppname(names[-1]),
+             ', '.join(['PyTypeObject *'] * len(clsParams)))
     line(out_h, indent + 1, 'static PyObject *wrap_jobject(const jobject&);')
     line(out_h, indent + 1, 'static void install(PyObject *module);')
     line(out_h, indent + 1, 'static void initialize(PyObject *module);')
@@ -635,8 +718,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                 setter = True
                 line(out, indent, 'static int t_%s_set__%s(t_%s *self, PyObject *arg, void *data);',
                      names[-1], fieldName, names[-1])
+    if clsParams:
+        line(out, indent, 'static PyObject *t_%s_get__parameters_(t_%s *self, void *data);', names[-1], names[-1])
 
-    if instanceFields or propMethods or isExtension:
+    if instanceFields or propMethods or isExtension or clsParams:
         line(out, indent, 'static PyGetSetDef t_%s__fields_[] = {', names[-1])
         for field in instanceFields:
             fieldName = field.getName()
@@ -667,6 +752,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                  op, names[-1], fieldName)
         if isExtension:
             line(out, indent + 1, 'DECLARE_GET_FIELD(t_%s, self),', names[-1])
+        if clsParams:
+            line(out, indent + 1, 'DECLARE_GET_FIELD(t_%s, parameters_),',
+                 names[-1])
+            
         line(out, indent + 1, '{ NULL, NULL, NULL, NULL, NULL }')
         line(out, indent, '};')
 
@@ -700,7 +789,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out, indent + 1, '{ NULL, NULL, 0, NULL }')
     line(out, indent, '};')
 
-    if instanceFields or propMethods or isExtension:
+    if instanceFields or propMethods or isExtension or clsParams:
         tp_getset = 't_%s__fields_' %(names[-1])
     else:
         tp_getset = '0'
@@ -802,6 +891,28 @@ def python(env, out_h, out, cls, superCls, names, superNames,
          names[-1], names[-1], base, cppname(names[-1]), constructorName,
          tp_iter, tp_iternext, tp_getset, tp_as_mapping, tp_as_sequence)
 
+    if clsParams:
+        clsArgs = []
+        for clsParam in clsParams:
+            clsArgs.append("PyTypeObject *%s" %(clsParam.getName()))
+        line(out, indent, 
+             "PyObject *t_%s::wrap_Object(const %s& object, %s)",
+             cppname(names[-1]), names[-1], ', '.join(clsArgs))
+        line(out, indent, "{")
+        line(out, indent + 1, "PyObject *obj = t_%s::wrap_Object(object);",
+             names[-1])
+        line(out, indent + 1, "if (obj != Py_None)")
+        line(out, indent + 1, "{")
+        line(out, indent + 2, "t_%s *self = (t_%s *) obj;",
+             names[-1], names[-1])
+        i = 0;
+        for clsParam in clsParams:
+            line(out, indent + 2, "self->parameters[%d] = %s;",
+                 i, clsParam.getName())
+        line(out, indent + 1, "}")
+        line(out, indent + 1, "return obj;");
+        line(out, indent, "}")
+
     line(out)
     line(out, indent, 'void t_%s::install(PyObject *module)', names[-1])
     line(out, indent, '{')
@@ -818,8 +929,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out)
     line(out, indent, 'void t_%s::initialize(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass));',
-         names[-1], cppname(names[-1]))
+    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
+         names[-1], cppname(names[-1]), generics and 1 or 0)
     line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(t_%s::wrap_jobject));',
          names[-1], names[-1])
 
@@ -881,7 +992,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                         line(out, indent + 2, 'goto err;')
                     currLen = len(params)
                     line(out, indent + 1, '%scase %d:', HALF_INDENT, currLen)
-                construct(out, indent + 2, cls, True, constructor, names)
+                construct(out, indent + 2, cls, True, constructor, names,
+                          generics)
             line(out, indent + 1, '%sdefault:', HALF_INDENT)
             if withErr:
                 line(out, indent + 1, '%serr:', HALF_INDENT)
@@ -889,7 +1001,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
             line(out, indent + 2, 'return -1;')
             line(out, indent + 1, '}')
         else:
-            construct(out, indent + 1, cls, False, constructors[0], names)
+            construct(out, indent + 1, cls, False, constructors[0], names,
+                      generics)
             if constructors[0].getParameterTypes():
                 line(out, indent + 1, 'else')
                 line(out, indent + 1, '{')
@@ -935,11 +1048,11 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     currLen = len(params)
                     line(out, indent + 1, '%scase %d:', HALF_INDENT, currLen)
                 call(out, indent + 2, cls, True, method, names, cardinality,
-                     isExtension)
+                     isExtension, generics)
             line(out, indent + 1, '}')
         else:
             call(out, indent + 1, cls, False, methods[0], names, cardinality,
-                 isExtension)
+                 isExtension, generics)
 
         if args:
             line(out)
@@ -968,7 +1081,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                      jniargs(method.getParameterTypes()))
                 count += 1
                 line(out, indent, '{')
-                extension(env, out, indent + 1, cls, names, name, count, method)
+                extension(env, out, indent + 1, cls, names, name, count, method,
+                          generics)
                 line(out, indent, '}')
         line(out)
         line(out, indent, 'static PyObject *t_%s_get__self(t_%s *self, void *data)',
@@ -987,6 +1101,12 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out, indent, 'else')
         line(out, indent + 1, 'Py_RETURN_NONE;')
         indent -= 1
+        line(out, indent, '}')
+
+    if clsParams:
+        line(out, indent, 'static PyObject *t_%s_get__parameters_(t_%s *self, void *data)', names[-1], names[-1])
+        line(out, indent, '{')
+        line(out, indent + 1, 'return typeParameters(self->parameters, sizeof(self->parameters));')
         line(out, indent, '}')
 
     if instanceFields:
@@ -1012,7 +1132,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     line(out, indent, '{')
                     line(out, indent + 1, '%s value%s;', typeName,
                          not fieldType.isPrimitive() and '((jobject) NULL)' or '')
-                    sig, check, x = parseArgs([fieldType], cls)
+                    sig, check, x = parseArgs([fieldType], cls, False)
                     line(out, indent + 1, 'if (!parseArg(arg, "%s"%s, &value))',
                          sig, check)
                     line(out, indent + 1, '{')
@@ -1064,7 +1184,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     line(out, indent + 1, '{')
                     line(out, indent + 2, '%s value%s;', typeName,
                          not argType.isPrimitive() and '((jobject) NULL)' or '')
-                    sig, check, x = parseArgs([argType], cls)
+                    sig, check, x = parseArgs([argType], cls, False)
                     line(out, indent + 2, 'if (!parseArg(arg, "%s"%s, &value))',
                          sig, check)
                     line(out, indent + 2, '{')
@@ -1087,7 +1207,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
             line(out, indent, 'static PyObject *%s(t_%s *self, PyObject *arg)',
                  getName, names[-1])
             line(out, indent, '{')
-            call(out, indent + 1, cls, False, method, names, 1, isExtension)
+            call(out, indent + 1, cls, False, method, names, 1, isExtension,
+                 generics)
             line(out)
             line(out, indent + 1, 'PyErr_SetArgsError((PyObject *) self, "%s", arg);',
                  methodName)
@@ -1223,7 +1344,7 @@ def package(out, allInOne, cppdir, namespace, names):
         package(out, allInOne, cppdir, entries, names + (name,))
 
 
-def module(out, allInOne, classes, cppdir, moduleName, shared):
+def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
 
     extname = '_%s' %(moduleName)
     line(out, 0, '#include <Python.h>')
@@ -1273,7 +1394,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared):
 
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, use_distutils,
-            shared, compiler, modules, wininst, arch):
+            shared, compiler, modules, wininst, arch, generics):
 
     try:
         if use_distutils:
@@ -1437,6 +1558,10 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         'include_dirs': includes,
         'sources': sources
     }
+
+    if generics:
+        args['define_macros'] = [('_java_generics', None)]
+
     if shared:
         shlibdir = os.path.dirname(os.path.dirname(_jcc.__file__))
         if sys.platform == 'darwin':   # distutils no good with -R

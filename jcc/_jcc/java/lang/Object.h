@@ -37,6 +37,7 @@ namespace java {
             String toString() const;
             Class getClass() const;
             int hashCode() const;
+            jboolean equals(const Object& obj) const;
         };
 
         extern PyTypeObject Object$$Type;

@@ -165,6 +165,8 @@ namespace java {
     namespace lang {
         namespace reflect {
 
+            static PyObject *t_Method_cast_(PyTypeObject *type, PyObject *arg);
+            static PyObject *t_Method_instance_(PyTypeObject *type, PyObject *arg);
             static PyObject *t_Method_getModifiers(t_Method *self);
             static PyObject *t_Method_getReturnType(t_Method *self);
             static PyObject *t_Method_getName(t_Method *self);
@@ -179,6 +181,8 @@ namespace java {
 #endif
 
             static PyMethodDef t_Method__methods_[] = {
+                DECLARE_METHOD(t_Method, cast_, METH_O | METH_CLASS),
+                DECLARE_METHOD(t_Method, instance_, METH_O | METH_CLASS),
                 DECLARE_METHOD(t_Method, getModifiers, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getReturnType, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getName, METH_NOARGS),
@@ -196,6 +200,20 @@ namespace java {
 
             DECLARE_TYPE(Method, t_Method, Object, Method,
                          abstract_init, 0, 0, 0, 0, 0);
+
+            static PyObject *t_Method_cast_(PyTypeObject *type, PyObject *arg)
+            {
+                if (!(arg = castCheck(arg, Method::initializeClass, 1)))
+                    return NULL;
+                return t_Method::wrap_Object(Method(((t_Method *) arg)->object.this$));
+            }
+
+            static PyObject *t_Method_instance_(PyTypeObject *type, PyObject *arg)
+            {
+                if (!castCheck(arg, Method::initializeClass, 0))
+                    Py_RETURN_FALSE;
+                Py_RETURN_TRUE;
+            }
 
             static PyObject *t_Method_getModifiers(t_Method *self)
             {

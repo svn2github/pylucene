@@ -143,7 +143,39 @@ def line(out, indent=0, string='', *args):
     out.write('\n')
 
 
-def known(cls, typeset, declares, packages, excludes):
+def known(cls, typeset, declares, packages, excludes, generics):
+
+    if generics:
+        if Class.instance_(cls):
+            cls = Class.cast_(cls)
+        elif ParameterizedType.instance_(cls):
+            pt = ParameterizedType.cast_(cls)
+            if not known(pt.getRawType(), typeset, declares, packages, excludes,
+                         True):
+                return False
+            for ta in pt.getActualTypeArguments():
+                if TypeVariable.instance_(ta):
+                    continue
+                if not known(ta, typeset, declares, packages, excludes, True):
+                    return False
+            return True
+        elif WildcardType.instance_(cls):
+            wc = WildcardType.cast_(cls)
+            for ub in wc.getUpperBounds():
+                if not known(ub, typeset, declares, packages, excludes, True):
+                    return False
+            return True
+        elif TypeVariable.instance_(cls):
+            for bounds in TypeVariable.cast_(cls).getBounds():
+                if not known(bounds, typeset, declares, packages, excludes,
+                             True):
+                    return False
+            return True
+        elif GenericArrayType.instance_(cls):
+            return known(GenericArrayType.cast_(cls).getGenericComponentType(),
+                         typeset, declares, packages, excludes, True)
+        else:
+            raise TypeError, (cls, cls.getClass())
 
     while cls.isArray():
         cls = cls.getComponentType()
@@ -281,6 +313,7 @@ def jcc(args):
     dist = False
     wininst = False
     compiler = None
+    generics = hasattr(_jcc, "Type")
     arch = []
 
     i = 1
@@ -379,6 +412,8 @@ def jcc(args):
             elif arg == '--arch':
                 i += 1
                 arch.append(args[i])
+            elif arg == '--no-generics':
+                generics = False
             else:
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
@@ -401,7 +436,7 @@ def jcc(args):
             compile(env, os.path.dirname(args[0]), output, moduleName,
                     install, dist, debug, jars, version,
                     prefix, root, install_dir, use_distutils,
-                    shared, compiler, modules, wininst, arch)
+                    shared, compiler, modules, wininst, arch, generics)
     else:
         for className in classNames:
             if className in excludes:
@@ -470,7 +505,8 @@ def jcc(args):
 
                 (superCls, constructors, methods, protectedMethods,
                  fields, instanceFields, declares) = \
-                    header(env, out_h, cls, typeset, packages, excludes)
+                    header(env, out_h, cls, typeset, packages, excludes,
+                           generics)
 
                 if not allInOne:
                     out_cpp = file(fileName + '.cpp', 'w')
@@ -486,7 +522,7 @@ def jcc(args):
                            fields, instanceFields,
                            mappings.get(className), sequences.get(className),
                            renames.get(className),
-                           declares, typeset, moduleName)
+                           declares, typeset, moduleName, generics)
 
                 line(out_h)
                 line(out_h, 0, '#endif')
@@ -510,16 +546,16 @@ def jcc(args):
 
         if moduleName:
             out = file(os.path.join(cppdir, moduleName) + '.cpp', 'w')
-            module(out, allInOne, done, cppdir, moduleName, shared)
+            module(out, allInOne, done, cppdir, moduleName, shared, generics)
             out.close()
             if build or install or dist:
                 compile(env, os.path.dirname(args[0]), output, moduleName,
                         install, dist, debug, jars, version,
                         prefix, root, install_dir, use_distutils,
-                        shared, compiler, modules, wininst, arch)
+                        shared, compiler, modules, wininst, arch, generics)
 
 
-def header(env, out, cls, typeset, packages, excludes):
+def header(env, out, cls, typeset, packages, excludes, generics):
 
     names = cls.getName().split('.')
     superCls = cls.getSuperclass()
@@ -529,7 +565,7 @@ def header(env, out, cls, typeset, packages, excludes):
     for interface in cls.getInterfaces():
         if superCls and interface.isAssignableFrom(superCls):
             continue
-        if known(interface, typeset, declares, packages, excludes):
+        if known(interface, typeset, declares, packages, excludes, False):
             interfaces.append(interface)
 
     if cls.isInterface():
@@ -546,11 +582,15 @@ def header(env, out, cls, typeset, packages, excludes):
     constructors = []
     for constructor in cls.getDeclaredConstructors():
         if Modifier.isPublic(constructor.getModifiers()):
-            params = constructor.getParameterTypes()
+            if generics:
+                params = constructor.getGenericParameterTypes()
+            else:
+                params = constructor.getParameterTypes()
             if len(params) == 1 and params[0] == cls:
                 continue
             for param in params:
-                if not known(param, typeset, declares, packages, excludes):
+                if not known(param, typeset, declares, packages, excludes,
+                             generics):
                     break
             else:
                 constructors.append(constructor)
@@ -561,14 +601,23 @@ def header(env, out, cls, typeset, packages, excludes):
     for method in cls.getDeclaredMethods():
         modifiers = method.getModifiers()
         if Modifier.isPublic(modifiers):
-            returnType = method.getReturnType()
-            if not known(returnType, typeset, declares, packages, excludes):
+            if generics:
+                returnType = method.getGenericReturnType()
+            else:
+                returnType = method.getReturnType()
+            if not known(returnType, typeset, declares, packages, excludes,
+                         generics):
                 continue
             sig = "%s:%s" %(method.getName(), signature(method, True))
             if sig in methods and returnType != cls:
                 continue
-            for param in method.getParameterTypes():
-                if not known(param, typeset, declares, packages, excludes):
+            if generics:
+                params = method.getGenericParameterTypes()
+            else:
+                params = method.getParameterTypes()
+            for param in params:
+                if not known(param, typeset, declares, packages, excludes,
+                             generics):
                     break
             else:
                 methods[sig] = method
@@ -578,11 +627,20 @@ def header(env, out, cls, typeset, packages, excludes):
         for method in interface.getMethods():
             sig = "%s:%s" %(method.getName(), signature(method, True))
             if sig not in methods:
-                param = method.getReturnType()
-                if not known(param, typeset, declares, packages, excludes):
+                if generics:
+                    param = method.getGenericReturnType()
+                else:
+                    param = method.getReturnType()
+                if not known(param, typeset, declares, packages, excludes,
+                             generics):
                     continue
-                for param in method.getParameterTypes():
-                    if not known(param, typeset, declares, packages, excludes):
+                if generics:
+                    params = method.getGenericParameterTypes()
+                else:
+                    params = method.getParameterTypes()
+                for param in params:
+                    if not known(param, typeset, declares, packages, excludes,
+                                 generics):
                         break
                 else:
                     methods[sig] = method
@@ -597,19 +655,31 @@ def header(env, out, cls, typeset, packages, excludes):
     sort(methods, fn=_compare)
 
     for constructor in constructors:
-        for exception in constructor.getExceptionTypes():
-            known(exception, typeset, declares, packages, excludes)
+        if generics:
+            exceptions = constructor.getGenericExceptionTypes()
+        else:
+            exceptions = constructor.getExceptionTypes()
+        for exception in exceptions:
+            known(exception, typeset, declares, packages, excludes, generics)
     for method in methods:
-        for exception in method.getExceptionTypes():
-            known(exception, typeset, declares, packages, excludes)
+        if generics:
+            exceptions = method.getGenericExceptionTypes()
+        else:
+            exceptions = method.getExceptionTypes()
+        for exception in exceptions:
+            known(exception, typeset, declares, packages, excludes, generics)
 
     fields = []
     instanceFields = []
     for field in cls.getDeclaredFields():
         modifiers = field.getModifiers()
         if Modifier.isPublic(modifiers):
-            if not known(field.getType(),
-                         typeset, declares, packages, excludes):
+            if generics:
+                fieldType = field.getGenericType()
+            else:
+                fieldType = field.getType()
+            if not known(fieldType, typeset, declares, packages, excludes,
+                         generics):
                 continue
             if Modifier.isStatic(modifiers):
                 fields.append(field)

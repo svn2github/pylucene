@@ -4,6 +4,7 @@ Version 2.4 ->
  - added env.jni_version for the JNI version as returned by JNI's GetVersion()
  - added env.java_version for java.lang.System.getProperty('java.version')
  - default value to initVM's classpath parameter now is importing module's
+ - added (partial) support for Java generics
  - 
 
 Version 2.3 -> 2.4

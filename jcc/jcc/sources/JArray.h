@@ -560,6 +560,11 @@ template<> class JArray<jbyte> : public java::lang::Object {
                     buf[i] = (jbyte) PyString_AS_STRING(obj)[0];
                     Py_DECREF(obj);
                 }
+                else if (PyInt_CheckExact(obj))
+                {
+                    buf[i] = (jbyte) PyInt_AS_LONG(obj);
+                    Py_DECREF(obj);
+                }
                 else
                 {
                     PyErr_SetObject(PyExc_TypeError, obj);
@@ -594,8 +599,12 @@ template<> class JArray<jbyte> : public java::lang::Object {
 
         arrayElements elts = elements();
         jbyte *buf = (jbyte *) elts;
+        PyObject *tuple = PyTuple_New(hi - lo);
+        
+        for (int i = 0; i < hi - lo; i++)
+            PyTuple_SET_ITEM(tuple, i, PyInt_FromLong(buf[lo + i]));
 
-        return PyString_FromStringAndSize((char *) buf + lo, hi - lo);
+        return tuple;
     }
 
     PyObject *get(int n)
@@ -608,7 +617,7 @@ template<> class JArray<jbyte> : public java::lang::Object {
             if (n >= 0 && n < length)
             {
                 jbyte b = (*this)[n];
-                return PyString_FromStringAndSize((char *) &b, 1);
+                return PyInt_FromLong(b);
             }
         }
 
@@ -625,18 +634,13 @@ template<> class JArray<jbyte> : public java::lang::Object {
 
             if (n >= 0 && n < length)
             {
-                if (!PyString_Check(obj))
+                if (!PyInt_CheckExact(obj))
                 {
                     PyErr_SetObject(PyExc_TypeError, obj);
                     return -1;
                 }
-                if (PyString_GET_SIZE(obj) != 1)
-                {
-                    PyErr_SetObject(PyExc_ValueError, obj);
-                    return -1;
-                }
 
-                elements()[n] = (jbyte) PyString_AS_STRING(obj)[0];
+                elements()[n] = (jbyte) PyInt_AS_LONG(obj);
                 return 0;
             }
         }

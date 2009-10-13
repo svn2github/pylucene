@@ -28,6 +28,7 @@ namespace java {
             extern PyTypeObject ParameterizedType$$Type;
             extern PyTypeObject TypeVariable$$Type;
             extern PyTypeObject GenericArrayType$$Type;
+            extern PyTypeObject WildcardType$$Type;
             extern PyTypeObject GenericDeclaration$$Type;
 #endif
 
@@ -42,6 +43,7 @@ namespace java {
                 INSTALL_TYPE(ParameterizedType, m);
                 INSTALL_TYPE(TypeVariable, m);
                 INSTALL_TYPE(GenericArrayType, m);
+                INSTALL_TYPE(WildcardType, m);
                 INSTALL_TYPE(GenericDeclaration, m);
 #endif
             }

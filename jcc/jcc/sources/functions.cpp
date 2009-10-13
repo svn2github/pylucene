@@ -164,6 +164,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
           case 'j':           /* Java object, with class$    */
           case 'k':           /* Java object, with initializeClass */
+          case 'K':           /* Java object, with initializeClass and params */
           {
               jclass cls = NULL;
 
@@ -172,6 +173,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   cls = (jclass) va_arg(list, Class *)->this$;
                   break;
                 case 'k':
+                case 'K':
                   try {
                       getclassfn initializeClass = va_arg(list, getclassfn);
                       cls = (*initializeClass)();
@@ -514,6 +516,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
           case 'j':           /* Java object except String and Object */
           case 'k':           /* Java object, with initializeClass    */
+          case 'K':           /* Java object, with initializeClass and params */
           {
               jclass cls = NULL;
 
@@ -522,6 +525,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   cls = (jclass) va_arg(check, Class *)->this$;
                   break;
                 case 'k':
+                case 'K':
                   getclassfn initializeClass = va_arg(check, getclassfn);
                   cls = (*initializeClass)();
               }
@@ -530,6 +534,15 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               {
                   JArray<jobject> *array = va_arg(list, JArray<jobject> *);
 
+#ifdef _java_generics
+                  if (types[pos] == 'K')
+                  {
+                      PyTypeObject ***tp = va_arg(list, PyTypeObject ***);
+
+                      va_arg(list, PyTypeObject **(*)(void *));
+                      *tp = NULL;
+                  }
+#endif
                   if (arg == Py_None)
                       *array = JArray<jobject>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, JArrayObject$$Type))
@@ -546,6 +559,20 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
                   if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type))
                       arg = ((t_fp *) arg)->object;
+
+#ifdef _java_generics
+                  if (types[pos] == 'K')
+                  {
+                      PyTypeObject ***tp = va_arg(list, PyTypeObject ***);
+                      PyTypeObject **(*parameters_)(void *) = 
+                          va_arg(list, PyTypeObject **(*)(void *));
+
+                      if (arg == Py_None)
+                          *tp = NULL;
+                      else
+                          *tp = (*parameters_)(arg);
+                  }
+#endif
 
                   *obj = arg == Py_None
                       ? Object(NULL)
@@ -1198,3 +1225,37 @@ void installType(PyTypeObject *type, PyObject *module, char *name,
         PyModule_AddObject(module, name, (PyObject *) type);
     }
 }
+
+PyObject *wrapType(PyTypeObject *type, const jobject& obj)
+{
+    PyObject *cobj = PyObject_GetAttrString((PyObject *) type, "wrapfn_");
+    PyObject *(*wrapfn)(const jobject&);
+    
+    if (cobj == NULL)
+        return NULL;
+
+    wrapfn = (PyObject *(*)(const jobject &)) PyCObject_AsVoidPtr(cobj);
+    Py_DECREF(cobj);
+
+    return wrapfn(obj);
+}
+
+#ifdef _java_generics
+PyObject *typeParameters(PyTypeObject *types[], size_t size)
+{
+    size_t count = size / sizeof(PyTypeObject *);
+    PyObject *tuple = PyTuple_New(count);
+
+    for (size_t i = 0; i < count; i++) {
+        PyObject *type = (PyObject *) types[i];
+        
+        if (type == NULL)
+            type = Py_None;
+
+        PyTuple_SET_ITEM(tuple, i, type);
+        Py_INCREF(type);
+    }
+
+    return tuple;
+}
+#endif

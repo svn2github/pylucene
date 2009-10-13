@@ -26,6 +26,7 @@ namespace java {
             mid_toString,
             mid_getClass,
             mid_hashCode,
+            mid_equals,
             max_mid
         };
 
@@ -47,6 +48,8 @@ namespace java {
                                                        "()Ljava/lang/Class;");
                 mids$[mid_hashCode] = env->getMethodID(cls, "hashCode",
                                                        "()I");
+                mids$[mid_equals] = env->getMethodID(cls, "equals",
+                                                     "(Ljava/lang/Object;)Z");
 
                 class$ = (Class *) new JObject(cls);
             }
@@ -71,6 +74,11 @@ namespace java {
         {
             return env->callIntMethod(this$, mids$[mid_hashCode]);
         }
+
+        jboolean Object::equals(const Object& a0) const
+        {
+            return env->callBooleanMethod(this$, mids$[mid_equals], a0.this$);
+        }
     }
 }
 
@@ -85,9 +93,11 @@ namespace java {
         static int t_Object_init(t_Object *self,
                                  PyObject *args, PyObject *kwds);
         static PyObject *t_Object_getClass(t_Object *self);
+        static PyObject *t_Object_equals(t_Object *self, PyObject *arg);
 
         static PyMethodDef t_Object__methods_[] = {
             DECLARE_METHOD(t_Object, getClass, METH_NOARGS),
+            DECLARE_METHOD(t_Object, equals, METH_O),
             { NULL, NULL, 0, NULL }
         };
 
@@ -115,6 +125,21 @@ namespace java {
 
             OBJ_CALL(cls = self->object.getClass());
             return t_Class::wrap_Object(cls);
+        }
+
+        static PyObject *t_Object_equals(t_Object *self, PyObject *arg)
+        {
+            Object a0((jobject) NULL);
+            jboolean result;
+
+            if (!parseArg(arg, "o", &a0))
+            {
+                OBJ_CALL(result = self->object.equals(a0));
+                Py_RETURN_BOOL(result);
+            }
+
+            PyErr_SetArgsError((PyObject *) self, "equals", arg);
+            return NULL;
         }
     }
 }

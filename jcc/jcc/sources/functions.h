@@ -75,6 +75,7 @@ java::lang::String p2j(PyObject *object);
 
 PyObject *make_descriptor(PyTypeObject *value);
 PyObject *make_descriptor(getclassfn initializeClass);
+PyObject *make_descriptor(getclassfn initializeClass, int generics);
 PyObject *make_descriptor(PyObject *value);
 PyObject *make_descriptor(PyObject *(*wrapfn)(const jobject &));
 PyObject *make_descriptor(jboolean value);
@@ -170,6 +171,11 @@ PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError);
 void installType(PyTypeObject *type, PyObject *module, char *name,
                  int isExtension);
+PyObject *wrapType(PyTypeObject *type, const jobject& obj);
+
+#ifdef _java_generics
+PyObject *typeParameters(PyTypeObject *types[], size_t size);
+#endif
 
 extern PyTypeObject FinalizerClass$$Type;
 extern PyTypeObject FinalizerProxy$$Type;

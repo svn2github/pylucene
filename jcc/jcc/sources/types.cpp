@@ -294,9 +294,10 @@ public:
     } access;
 };
     
-#define DESCRIPTOR_VALUE 0x1
-#define DESCRIPTOR_CLASS 0x2
-#define DESCRIPTOR_GETFN 0x4
+#define DESCRIPTOR_VALUE   0x0001
+#define DESCRIPTOR_CLASS   0x0002
+#define DESCRIPTOR_GETFN   0x0004
+#define DESCRIPTOR_GENERIC 0x0008
 
 static void t_descriptor_dealloc(t_descriptor *self);
 static PyObject *t_descriptor___get__(t_descriptor *self,
@@ -383,6 +384,16 @@ PyObject *make_descriptor(getclassfn initializeClass)
         self->access.initializeClass = initializeClass;
         self->flags = DESCRIPTOR_CLASS;
     }
+
+    return (PyObject *) self;
+}
+
+PyObject *make_descriptor(getclassfn initializeClass, int generics)
+{
+    t_descriptor *self = (t_descriptor *) make_descriptor(initializeClass);
+
+    if (self && generics)
+        self->flags |= DESCRIPTOR_GENERIC;
 
     return (PyObject *) self;
 }
@@ -533,7 +544,14 @@ static PyObject *t_descriptor___get__(t_descriptor *self,
     }
 
     if (self->flags & DESCRIPTOR_CLASS)
-        return t_Class::wrap_Object(Class((*self->access.initializeClass)()));
+    {
+#ifdef _java_generics
+        if (self->flags & DESCRIPTOR_GENERIC)
+            return t_Class::wrap_Object(Class((*self->access.initializeClass)()), (PyTypeObject *) type);
+        else
+#endif
+            return t_Class::wrap_Object(Class((*self->access.initializeClass)()));
+    }
 
     Py_RETURN_NONE;
 }
