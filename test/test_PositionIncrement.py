@@ -191,89 +191,80 @@ class PositionIncrementTestCase(TestCase):
 
     def testPayloadsPos0(self):
 
-        for x in xrange(2):
-            dir = RAMDirectory()
-            writer = IndexWriter(dir, TestPayloadAnalyzer(), True,
-                                 IndexWriter.MaxFieldLength.LIMITED)
-            if x == 1:
-                writer.setAllowMinus1Position()
+        dir = RAMDirectory()
+        writer = IndexWriter(dir, TestPayloadAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
 
-            doc = Document()
-            doc.add(Field("content",
-                          StringReader("a a b c d e a f g h i j a b k k")))
-            writer.addDocument(doc)
+        doc = Document()
+        doc.add(Field("content",
+                      StringReader("a a b c d e a f g h i j a b k k")))
+        writer.addDocument(doc)
 
-            r = writer.getReader()
+        r = writer.getReader()
 
-            tp = r.termPositions(Term("content", "a"))
-            count = 0
-            self.assert_(tp.next())
-            # "a" occurs 4 times
-            self.assertEqual(4, tp.freq())
+        tp = r.termPositions(Term("content", "a"))
+        count = 0
+        self.assert_(tp.next())
+        # "a" occurs 4 times
+        self.assertEqual(4, tp.freq())
 
-            if x == 1:
-                expected = Integer.MAX_VALUE
-            else:
-                expected = 0
+        expected = 0
+        self.assertEqual(expected, tp.nextPosition())
+        self.assertEqual(1, tp.nextPosition())
+        self.assertEqual(3, tp.nextPosition())
+        self.assertEqual(6, tp.nextPosition())
 
-            self.assertEqual(expected, tp.nextPosition())
-            if x == 1:
-                continue
+        # only one doc has "a"
+        self.assert_(not tp.next())
 
-            self.assertEqual(1, tp.nextPosition())
-            self.assertEqual(3, tp.nextPosition())
-            self.assertEqual(6, tp.nextPosition())
-
-            # only one doc has "a"
-            self.assert_(not tp.next())
-
-            searcher = IndexSearcher(r)
+        searcher = IndexSearcher(r)
     
-            stq1 = SpanTermQuery(Term("content", "a"))
-            stq2 = SpanTermQuery(Term("content", "k"))
-            sqs = [stq1, stq2]
-            snq = SpanNearQuery(sqs, 30, False)
+        stq1 = SpanTermQuery(Term("content", "a"))
+        stq2 = SpanTermQuery(Term("content", "k"))
+        sqs = [stq1, stq2]
+        snq = SpanNearQuery(sqs, 30, False)
 
-            count = 0
-            sawZero = False
+        count = 0
+        sawZero = False
 
-            pspans = snq.getSpans(searcher.getIndexReader())
-            while pspans.next():
-                payloads = pspans.getPayload()
-                sawZero |= pspans.start() == 0
+        pspans = snq.getSpans(searcher.getIndexReader())
+        while pspans.next():
+            payloads = pspans.getPayload()
+            sawZero |= pspans.start() == 0
 
-                it = payloads.iterator()
-                while it.hasNext():
-                    count += 1
-                    it.next()
-
-            self.assertEqual(5, count)
-            self.assert_(sawZero)
-
-            spans = snq.getSpans(searcher.getIndexReader())
-            count = 0
-            sawZero = False
-            while spans.next():
-                count += 1
-                sawZero |= spans.start() == 0
-
-            self.assertEqual(4, count)
-            self.assert_(sawZero)
-		
-            sawZero = False
-            psu = PayloadSpanUtil(searcher.getIndexReader())
-            pls = psu.getPayloadsForQuery(snq)
-            count = pls.size()
-            it = pls.iterator()
+            it = payloads.iterator()
             while it.hasNext():
-                s = str(String(JArray('byte').cast_(it.next())))
-                sawZero |= s == "pos: 0"
+                count += 1
+                it.next()
 
-            self.assertEqual(5, count)
-            self.assert_(sawZero)
-            writer.close()
-            searcher.getIndexReader().close()
-            dir.close()
+        self.assertEqual(5, count)
+        self.assert_(sawZero)
+
+        spans = snq.getSpans(searcher.getIndexReader())
+        count = 0
+        sawZero = False
+        while spans.next():
+            count += 1
+            sawZero |= spans.start() == 0
+
+        self.assertEqual(4, count)
+        self.assert_(sawZero)
+		
+        sawZero = False
+        psu = PayloadSpanUtil(searcher.getIndexReader())
+        pls = psu.getPayloadsForQuery(snq)
+        count = pls.size()
+        it = pls.iterator()
+        while it.hasNext():
+            bytes = JArray('byte').cast_(it.next())
+            s = bytes.string_
+            sawZero |= s == "pos: 0"
+
+        self.assertEqual(5, count)
+        self.assert_(sawZero)
+        writer.close()
+        searcher.getIndexReader().close()
+        dir.close()
 
 
 class StopWhitespaceAnalyzer(PythonAnalyzer):

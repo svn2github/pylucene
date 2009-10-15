@@ -44,6 +44,5 @@ public class PythonLock extends Lock {
     public native void pythonDecRef();
     public native boolean isLocked();
     public native boolean obtain();
-    public native boolean obtain(long lockWaitTimeout);
     public native void release();
 }

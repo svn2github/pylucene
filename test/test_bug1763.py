@@ -48,7 +48,7 @@ class Test_Bug1763(unittest.TestCase):
             
         w1 = IndexWriter(self.d1, self.analyzer, True,
                          IndexWriter.MaxFieldLength.LIMITED)
-        w1.addIndexes([self.d2])
+        w1.addIndexes([IndexReader.open(self.d2, True)])
         w1.optimize()
         w1.close()
 

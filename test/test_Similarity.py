@@ -73,33 +73,41 @@ class SimilarityTestCase(TestCase):
         b = Term("field", "b")
         c = Term("field", "c")
 
-        class hitCollector1(PythonHitCollector):
+        class collector1(PythonCollector):
             def __init__(_self, score):
-                super(hitCollector1, _self).__init__()
+                super(collector1, _self).__init__()
                 _self.score = score
             def collect(_self, doc, score):
                 self.assertEqual(score, _self.score)
+            def setNextReader(_self, reader, docBase):
+                pass
+            def acceptsDocsOutOfOrder(_self):
+                return True
 
-        searcher.search(TermQuery(b), hitCollector1(1.0))
+        searcher.search(TermQuery(b), collector1(1.0))
 
         bq = BooleanQuery()
         bq.add(TermQuery(a), BooleanClause.Occur.SHOULD)
         bq.add(TermQuery(b), BooleanClause.Occur.SHOULD)
 
-        class hitCollector2(PythonHitCollector):
+        class collector2(PythonCollector):
             def collect(_self, doc, score):
                 self.assertEqual(score, doc + 1)
+            def setNextReader(_self, reader, docBase):
+                pass
+            def acceptsDocsOutOfOrder(_self):
+                return True
 
-        searcher.search(bq, hitCollector2())
+        searcher.search(bq, collector2())
 
         pq = PhraseQuery()
         pq.add(a)
         pq.add(c)
 
-        searcher.search(pq, hitCollector1(1.0))
+        searcher.search(pq, collector1(1.0))
 
         pq.setSlop(2)
-        searcher.search(pq, hitCollector1(2.0))
+        searcher.search(pq, collector1(2.0))
 
 
 if __name__ == "__main__":

@@ -13,18 +13,19 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.search;
+package org.apache.pylucene.store;
 
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreDocComparator;
 import java.io.IOException;
 
+import org.apache.lucene.store.Lock;
+import org.apache.lucene.store.LockFactory;
 
-public class PythonScoreDocComparator implements ScoreDocComparator {
+
+public class PythonLockFactory extends LockFactory {
 
     private long pythonObject;
 
-    public PythonScoreDocComparator()
+    public PythonLockFactory()
     {
     }
 
@@ -44,7 +45,8 @@ public class PythonScoreDocComparator implements ScoreDocComparator {
     }
 
     public native void pythonDecRef();
-    public native int compare(ScoreDoc i, ScoreDoc j);
-    public native int sortType();
-    public native Comparable sortValue(ScoreDoc i);
+
+    public native Lock makeLock(String lockName);
+    public native void clearLock(String lockName)
+        throws IOException;
 }

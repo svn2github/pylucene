@@ -16,7 +16,7 @@ from unittest import TestCase, main
 from lucene import *
 
 
-class RangeQueryTestCase(TestCase):
+class TermRangeQueryTestCase(TestCase):
     """
     Unit tests ported from Java Lucene
     """
@@ -55,9 +55,8 @@ class RangeQueryTestCase(TestCase):
 
     def testExclusive(self):
 
-        query = RangeQuery(Term("content", "A"),
-                           Term("content", "C"),
-                           False)
+        query = TermRangeQuery("content", "A", "C", False, False)
+
         self._initializeIndex(["A", "B", "C", "D"])
         searcher = IndexSearcher(self.dir, True)
         topDocs = searcher.search(query, 50)
@@ -81,9 +80,7 @@ class RangeQueryTestCase(TestCase):
 
     def testInclusive(self):
 
-        query = RangeQuery(Term("content", "A"),
-                           Term("content", "C"),
-                           True)
+        query = TermRangeQuery("content", "A", "C", True, True)
 
         self._initializeIndex(["A", "B", "C", "D"])
         searcher = IndexSearcher(self.dir, True)

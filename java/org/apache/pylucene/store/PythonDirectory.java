@@ -20,15 +20,16 @@ import java.io.IOException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.store.Lock;
+import org.apache.lucene.store.LockFactory;
 
 
 public class PythonDirectory extends Directory {
 
     private long pythonObject;
 
-    public PythonDirectory()
+    public PythonDirectory(LockFactory factory)
     {
+        setLockFactory(factory);
     }
 
     public void pythonExtension(long pythonObject)

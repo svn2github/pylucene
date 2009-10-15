@@ -607,6 +607,17 @@ template<> class JArray<jbyte> : public java::lang::Object {
         return tuple;
     }
 
+    PyObject *to_string_()
+    {
+        if (this$ == NULL)
+            Py_RETURN_NONE;
+
+        arrayElements elts = elements();
+        jbyte *buf = (jbyte *) elts;
+
+        return PyString_FromStringAndSize((char *) buf, length);
+    }
+
     PyObject *get(int n)
     {
         if (this$ != NULL)

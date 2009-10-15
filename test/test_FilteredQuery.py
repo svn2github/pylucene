@@ -86,7 +86,9 @@ class FilteredQueryTestCase(TestCase):
         self.assertEqual(1, topDocs.totalHits)
         self.assertEqual(1, topDocs.scoreDocs[0].doc)
 
-        topDocs = self.searcher.search(filteredquery, None, 50, Sort("sorter"))
+        topDocs = self.searcher.search(filteredquery, None, 50,
+                                       Sort(SortField("sorter",
+                                                      SortField.STRING)))
         self.assertEqual(1, topDocs.totalHits)
         self.assertEqual(1, topDocs.scoreDocs[0].doc)
 

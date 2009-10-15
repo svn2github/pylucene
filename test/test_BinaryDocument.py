@@ -59,7 +59,8 @@ class TestBinaryDocument(TestCase):
     
         # fetch the binary stored field and compare it's content with the
         # original one
-        binaryFldStoredTest = str(String(docFromReader.getBinaryValue("binaryStored")))
+        bytes = docFromReader.getBinaryValue("binaryStored")
+        binaryFldStoredTest = bytes.string_
         self.assertEqual(binaryFldStoredTest, self.binaryValStored)
         
         # fetch the string field and compare it's content with the original
@@ -98,7 +99,8 @@ class TestBinaryDocument(TestCase):
     
         # fetch the binary compressed field and compare it's content with
         # the original one
-        binaryFldCompressedTest = str(String(CompressionTools.decompress(docFromReader.getBinaryValue("binaryCompressed"))))
+        bytes = CompressionTools.decompress(docFromReader.getBinaryValue("binaryCompressed"))
+        binaryFldCompressedTest = bytes.string_
         self.assertEqual(binaryFldCompressedTest, self.binaryValCompressed)
         self.assertEqual(CompressionTools.decompressString(docFromReader.getBinaryValue("stringCompressed")), self.binaryValCompressed)
 

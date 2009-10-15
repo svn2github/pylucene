@@ -390,24 +390,6 @@ class SortTestCase(TestCase):
         sort.setSort([SortField("parser", MyFieldComparatorSource())])
         self._assertMatches(self.full, self.queryA, sort, "JIHGFEDCBA")
 
-    def testAutoSort(self):
-        """
-        test sorts where the type of field is determined dynamically
-        """
-        sort = Sort()
-
-        sort.setSort("int")
-        self._assertMatches(self.full, self.queryX, sort, "IGAEC")
-        self._assertMatches(self.full, self.queryY, sort, "DHFJB")
-
-        sort.setSort("float")
-        self._assertMatches(self.full, self.queryX, sort, "GCIEA")
-        self._assertMatches(self.full, self.queryY, sort, "DHJFB")
-
-        sort.setSort("string")
-        self._assertMatches(self.full, self.queryX, sort, "AIGEC")
-        self._assertMatches(self.full, self.queryY, sort, "DJHFB")
-
     def testReverseSort(self):
         """
         test sorts in reverse
@@ -423,15 +405,15 @@ class SortTestCase(TestCase):
         self._assertMatches(self.full, self.queryX, sort, "IGECA")
         self._assertMatches(self.full, self.queryY, sort, "JHFDB")
 
-        sort.setSort("int", True)
+        sort.setSort(SortField("int", SortField.INT, True))
         self._assertMatches(self.full, self.queryX, sort, "CAEGI")
         self._assertMatches(self.full, self.queryY, sort, "BJFHD")
 
-        sort.setSort("float", True)
+        sort.setSort(SortField("float", SortField.FLOAT, True))
         self._assertMatches(self.full, self.queryX, sort, "AECIG")
         self._assertMatches(self.full, self.queryY, sort, "BFJHD")
 
-        sort.setSort("string", True)
+        sort.setSort(SortField("string", SortField.STRING, True))
         self._assertMatches(self.full, self.queryX, sort, "CEGIA")
         self._assertMatches(self.full, self.queryY, sort, "BFHJD")
 
@@ -442,10 +424,10 @@ class SortTestCase(TestCase):
         """
         sort = Sort()
 
-        sort.setSort("string")
+        sort.setSort(SortField("string", SortField.STRING))
         self._assertMatches(self.full, self.queryF, sort, "ZJI")
 
-        sort.setSort("string", True)
+        sort.setSort(SortField("string", SortField.STRING, True))
         self._assertMatches(self.full, self.queryF, sort, "IJZ")
     
         sort.setSort(SortField("i18n", Locale.ENGLISH))
@@ -454,64 +436,64 @@ class SortTestCase(TestCase):
         sort.setSort(SortField("i18n", Locale.ENGLISH, True))
         self._assertMatches(self.full, self.queryF, sort, "IJZ")
 
-        sort.setSort("int")
+        sort.setSort(SortField("int", SortField.INT))
         self._assertMatches(self.full, self.queryF, sort, "IZJ")
 
-        sort.setSort("int", True)
+        sort.setSort(SortField("int", SortField.INT, True))
         self._assertMatches(self.full, self.queryF, sort, "JZI")
 
-        sort.setSort("float")
+        sort.setSort(SortField("float", SortField.FLOAT))
         self._assertMatches(self.full, self.queryF, sort, "ZJI")
 
         # using a nonexisting field as first sort key shouldn't make a
         # difference:
         sort.setSort([SortField("nosuchfield", SortField.STRING),
-                      SortField("float")])
+                      SortField("float", SortField.FLOAT)])
         self._assertMatches(self.full, self.queryF, sort, "ZJI")
 
-        sort.setSort("float", True)
+        sort.setSort(SortField("float", SortField.FLOAT, True))
         self._assertMatches(self.full, self.queryF, sort, "IJZ")
 
         # When a field is None for both documents, the next SortField should
         # be used. 
         # Works for
-        sort.setSort([SortField("int"),
+        sort.setSort([SortField("int", SortField.INT),
                       SortField("string", SortField.STRING),
-                      SortField("float")])
+                      SortField("float", SortField.FLOAT)])
         self._assertMatches(self.full, self.queryG, sort, "ZWXY")
 
         # Reverse the last criterium to make sure the test didn't pass by
         # chance 
-        sort.setSort([SortField("int"),
+        sort.setSort([SortField("int", SortField.INT),
                       SortField("string", SortField.STRING),
-                      SortField("float", True)])
+                      SortField("float", SortField.FLOAT, True)])
         self._assertMatches(self.full, self.queryG, sort, "ZYXW")
 
         # Do the same for a MultiSearcher
         multiSearcher = MultiSearcher([self.full])
 
-        sort.setSort([SortField("int"),
+        sort.setSort([SortField("int", SortField.INT),
                       SortField("string", SortField.STRING),
-                      SortField("float")])
+                      SortField("float", SortField.FLOAT)])
         self._assertMatches(multiSearcher, self.queryG, sort, "ZWXY")
 
-        sort.setSort([SortField("int"),
+        sort.setSort([SortField("int", SortField.INT),
                       SortField("string", SortField.STRING),
-                      SortField("float", True)])
+                      SortField("float", SortField.FLOAT, True)])
         self._assertMatches(multiSearcher, self.queryG, sort, "ZYXW")
 
         # Don't close the multiSearcher. it would close the full searcher too!
         # Do the same for a ParallelMultiSearcher
         parallelSearcher = ParallelMultiSearcher([self.full])
 
-        sort.setSort([SortField("int"),
+        sort.setSort([SortField("int", SortField.INT),
                       SortField("string", SortField.STRING),
-                      SortField("float")])
+                      SortField("float", SortField.FLOAT)])
         self._assertMatches(parallelSearcher, self.queryG, sort, "ZWXY")
 
-        sort.setSort([SortField("int"),
+        sort.setSort([SortField("int", SortField.INT),
                       SortField("string", SortField.STRING),
-                      SortField("float", True)])
+                      SortField("float", SortField.FLOAT, True)])
         self._assertMatches(parallelSearcher, self.queryG, sort, "ZYXW")
 
         # Don't close the parallelSearcher. it would close the full searcher
@@ -523,14 +505,16 @@ class SortTestCase(TestCase):
         """
         sort = Sort()
 
-        sort.setSort(["int", "float"])
+        sort.setSort([SortField("int", SortField.INT),
+                      SortField("float", SortField.FLOAT)])
         self._assertMatches(self.full, self.queryX, sort, "IGEAC")
 
-        sort.setSort([SortField("int", True),
+        sort.setSort([SortField("int", SortField.INT, True),
                       SortField(None, SortField.DOC, True)])
         self._assertMatches(self.full, self.queryX, sort, "CEAGI")
 
-        sort.setSort(["float", "string"])
+        sort.setSort([SortField("float", SortField.FLOAT),
+                      SortField("string", SortField.STRING)])
         self._assertMatches(self.full, self.queryX, sort, "GICEA")
 
     def testLocaleSort(self):
@@ -586,26 +570,6 @@ class SortTestCase(TestCase):
         sort.setSort(SortField("i18n", Locale("da", "dk")))
         self._assertMatches(multiSearcher, self.queryY, sort, "BJDHF")
     
-    def _testCustomSorts(self):
-        """
-        test a custom sort function
-        """
-        sort = Sort()
-
-        sort.setSort(SortField("custom",
-                               SampleComparable.getComparatorSource()))
-        self._assertMatches(self.full, self.queryX, sort, "CAIEG")
-
-        sort.setSort(SortField("custom",
-                               SampleComparable.getComparatorSource(), True))
-        self._assertMatches(self.full, self.queryY, sort, "HJDBF")
-
-        custom = SampleComparable.getComparator()
-        sort.setSort(SortField("custom", custom))
-        self._assertMatches(self.full, self.queryX, sort, "CAIEG")
-        sort.setSort(SortField("custom", custom, True))
-        self._assertMatches(self.full, self.queryY, sort, "HJDBF")
-
     def testMultiSort(self):
         """
         test a variety of sorts using more than one searcher
@@ -657,7 +621,7 @@ class SortTestCase(TestCase):
         self._assertSameValues(scoresA, self.getScores(self.full.search(self.queryA, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresA, self.getScores(multi.search(self.queryA, None, 1000, sort).scoreDocs, multi))
 
-        sort.setSort("int")
+        sort.setSort(SortField("int", SortField.INT))
         self._assertSameValues(scoresX, self.getScores(self.full.search(self.queryX, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresX, self.getScores(multi.search(self.queryX, None, 1000, sort).scoreDocs, multi))
         self._assertSameValues(scoresY, self.getScores(self.full.search(self.queryY, None, 1000, sort).scoreDocs, self.full))
@@ -665,7 +629,7 @@ class SortTestCase(TestCase):
         self._assertSameValues(scoresA, self.getScores(self.full.search(self.queryA, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresA, self.getScores(multi.search(self.queryA, None, 1000, sort).scoreDocs, multi))
 
-        sort.setSort("float")
+        sort.setSort(SortField("float", SortField.FLOAT))
         self._assertSameValues(scoresX, self.getScores(self.full.search(self.queryX, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresX, self.getScores(multi.search(self.queryX, None, 1000, sort).scoreDocs, multi))
         self._assertSameValues(scoresY, self.getScores(self.full.search(self.queryY, None, 1000, sort).scoreDocs, self.full))
@@ -673,7 +637,7 @@ class SortTestCase(TestCase):
         self._assertSameValues(scoresA, self.getScores(self.full.search(self.queryA, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresA, self.getScores(multi.search(self.queryA, None, 1000, sort).scoreDocs, multi))
 
-        sort.setSort("string")
+        sort.setSort(SortField("string", SortField.STRING))
         self._assertSameValues(scoresX, self.getScores(self.full.search(self.queryX, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresX, self.getScores(multi.search(self.queryX, None, 1000, sort).scoreDocs, multi))
         self._assertSameValues(scoresY, self.getScores(self.full.search(self.queryY, None, 1000, sort).scoreDocs, self.full))
@@ -681,7 +645,8 @@ class SortTestCase(TestCase):
         self._assertSameValues(scoresA, self.getScores(self.full.search(self.queryA, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresA, self.getScores(multi.search(self.queryA, None, 1000, sort).scoreDocs, multi))
 
-        sort.setSort(["int", "float"])
+        sort.setSort([SortField("int", SortField.INT),
+                      SortField("float", SortField.FLOAT)])
         self._assertSameValues(scoresX, self.getScores(self.full.search(self.queryX, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresX, self.getScores(multi.search(self.queryX, None, 1000, sort).scoreDocs, multi))
         self._assertSameValues(scoresY, self.getScores(self.full.search(self.queryY, None, 1000, sort).scoreDocs, self.full))
@@ -689,7 +654,7 @@ class SortTestCase(TestCase):
         self._assertSameValues(scoresA, self.getScores(self.full.search(self.queryA, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresA, self.getScores(multi.search(self.queryA, None, 1000, sort).scoreDocs, multi))
 
-        sort.setSort([SortField("int", True),
+        sort.setSort([SortField("int", SortField.INT, True),
                       SortField(None, SortField.DOC, True)])
         self._assertSameValues(scoresX, self.getScores(self.full.search(self.queryX, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresX, self.getScores(multi.search(self.queryX, None, 1000, sort).scoreDocs, multi))
@@ -698,7 +663,8 @@ class SortTestCase(TestCase):
         self._assertSameValues(scoresA, self.getScores(self.full.search(self.queryA, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresA, self.getScores(multi.search(self.queryA, None, 1000, sort).scoreDocs, multi))
 
-        sort.setSort(["float", "string"])
+        sort.setSort([SortField("float", SortField.FLOAT),
+                      SortField("string", SortField.STRING)])
         self._assertSameValues(scoresX, self.getScores(self.full.search(self.queryX, None, 1000, sort).scoreDocs, self.full))
         self._assertSameValues(scoresX, self.getScores(multi.search(self.queryX, None, 1000, sort).scoreDocs, multi))
         self._assertSameValues(scoresY, self.getScores(self.full.search(self.queryY, None, 1000, sort).scoreDocs, self.full))
@@ -841,10 +807,6 @@ class SortTestCase(TestCase):
             "OutOfOrderOneComparatorScoringMaxScoreCollector" 
         ]
     
-        # Save the original value to set later.
-        origVal = BooleanQuery.getAllowDocsOutOfOrder()
-
-        BooleanQuery.setAllowDocsOutOfOrder(True)
         bq = BooleanQuery()
 
         # Add a Query with SHOULD, since bw.scorer() returns BooleanScorer2
@@ -855,26 +817,20 @@ class SortTestCase(TestCase):
         # return the clause instead of BQ.
         bq.setMinimumNumberShouldMatch(1)
 
-        try:
-            for sort in sorts:
-                for tfcOption, actualTFCClass in izip(tfcOptions,
-                                                      actualTFCClasses):
-                    tdc = TopFieldCollector.create(sort, 10, tfcOption[0],
-                                                   tfcOption[1], tfcOption[2],
-                                                   False)
+        for sort in sorts:
+            for tfcOption, actualTFCClass in izip(tfcOptions,
+                                                  actualTFCClasses):
+                tdc = TopFieldCollector.create(sort, 10, tfcOption[0],
+                                               tfcOption[1], tfcOption[2],
+                                               False)
 
-                    self.assert_(tdc.getClass().getName().endswith("$" + actualTFCClass))
+                self.assert_(tdc.getClass().getName().endswith("$" + actualTFCClass))
           
-                    self.full.search(bq, tdc)
+                self.full.search(bq, tdc)
           
-                    tds = tdc.topDocs()
-                    sds = tds.scoreDocs  
-                    self.assertEqual(10, len(sds))
-        finally:
-            # Whatever happens, reset BooleanQuery.allowDocsOutOfOrder to the
-            # original value. Don't set it to False in case the
-            # implementation in BQ will change some day.
-            BooleanQuery.setAllowDocsOutOfOrder(origVal)
+                tds = tdc.topDocs()
+                sds = tds.scoreDocs  
+                self.assertEqual(10, len(sds))
   
     def testSortWithScoreAndMaxScoreTrackingNoResults(self):
         """
@@ -906,48 +862,50 @@ class SortTestCase(TestCase):
         expected = isFull and "IDHFGJABEC" or "IDHFGJAEBC"
         self._assertMatches(multi, self.queryA, sort, expected)
 
-        sort.setSort("int")
+        sort.setSort(SortField("int", SortField.INT))
         expected = isFull and "IDHFGJABEC" or "IDHFGJAEBC"
         self._assertMatches(multi, self.queryA, sort, expected)
 
         sort.setSort([SortField("float", SortField.FLOAT), SortField.FIELD_DOC])
         self._assertMatches(multi, self.queryA, sort, "GDHJCIEFAB")
 
-        sort.setSort("float")
+        sort.setSort(SortField("float", SortField.FLOAT))
         self._assertMatches(multi, self.queryA, sort, "GDHJCIEFAB")
 
-        sort.setSort("string")
+        sort.setSort(SortField("string", SortField.STRING))
         self._assertMatches(multi, self.queryA, sort, "DJAIHGFEBC")
 
-        sort.setSort("int", True)
+        sort.setSort(SortField("int", SortField.INT, True))
         expected = isFull and "CABEJGFHDI" or "CAEBJGFHDI"
         self._assertMatches(multi, self.queryA, sort, expected)
 
-        sort.setSort("float", True)
+        sort.setSort(SortField("float", SortField.FLOAT, True))
         self._assertMatches(multi, self.queryA, sort, "BAFECIJHDG")
 
-        sort.setSort("string", True)
+        sort.setSort(SortField("string", SortField.STRING, True))
         self._assertMatches(multi, self.queryA, sort, "CBEFGHIAJD")
 
-        sort.setSort(["int", "float"])
+        sort.setSort([SortField("int", SortField.INT),
+                      SortField("float", SortField.FLOAT)])
         self._assertMatches(multi, self.queryA, sort, "IDHFGJEABC")
 
-        sort.setSort(["float", "string"])
+        sort.setSort([SortField("float", SortField.FLOAT),
+                      SortField("string", SortField.STRING)])
         self._assertMatches(multi, self.queryA, sort, "GDHJICEFAB")
 
-        sort.setSort("int")
+        sort.setSort(SortField("int", SortField.INT))
         self._assertMatches(multi, self.queryF, sort, "IZJ")
 
-        sort.setSort("int", True)
+        sort.setSort(SortField("int", SortField.INT, True))
         self._assertMatches(multi, self.queryF, sort, "JZI")
 
-        sort.setSort("float")
+        sort.setSort(SortField("float", SortField.FLOAT))
         self._assertMatches(multi, self.queryF, sort, "ZJI")
 
-        sort.setSort("string")
+        sort.setSort(SortField("string", SortField.STRING))
         self._assertMatches(multi, self.queryF, sort, "ZJI")
 
-        sort.setSort("string", True)
+        sort.setSort(SortField("string", SortField.STRING, True))
         self._assertMatches(multi, self.queryF, sort, "IJZ")
 
         # up to this point, all of the searches should have "sane" 
@@ -1059,111 +1017,6 @@ class MyFieldComparatorSource(PythonFieldComparatorSource):
     def newComparator(self, fieldname, numHits, sortPos, reversed):
         return MyFieldComparator(numHits)
 
-
-class SampleComparable(PythonComparable):
-
-    def __init__(self, s):
-        super(SampleComparable, self).__init__()
-
-        self.string_part, self.int_part = s.split('-', 1)
-        self.int_part = int(self.int_part)
-
-    def compareTo(self, o):
-
-        # The not-so-obvious code below first checks that o needs to be
-        # downcast into a SampleComparable, does it if needed, and sets it
-        # to the inner python instance to work, getting it through '.self'.
-        # If the compareTo() call came from Java then o may just be
-        # wrapped with java.lang.Object, hence not an instance of
-        # SampleComparable even though the actual Java object is.
-        # In that case isinstance() returns False but cast_() succeeds.
-        if not isinstance(o, SampleComparable):
-            o = SampleComparable.cast_(o).self
-
-        i = cmp(self.string_part, o.string_part)
-        if i == 0:
-            return cmp(self.int_part, o.int_part)
-
-        return i
-
-    def getComparatorSource(cls):
-
-        class sortComparatorSource(PythonSortComparatorSource):
-
-            def newComparator(_self, reader, fieldName):
-                enumerator = reader.terms(Term(fieldName, ""))
-                try:
-                    class scoreDocComparator(PythonScoreDocComparator):
-                        def __init__(self_):
-                            super(scoreDocComparator, self_).__init__()
-                            self_.cachedValues = _self.fillCache(reader, enumerator, fieldName)
-
-                        def compare(self_, i, j):
-                            return self_.cachedValues[i.doc].compareTo(self_.cachedValues[j.doc])
-
-                        def sortValue(self_, i):
-                            return self_.cachedValues[i.doc]
-
-                        def sortType(self_):
-                            return SortField.CUSTOM
-
-                    return scoreDocComparator()
-                finally:
-                    enumerator.close()
-
-            def fillCache(_self, reader, enumerator, fieldName):
-                """
-                Returns an array of objects which represent that natural order
-                of the term values in the given field.
-
-                param reader     Terms are in this index.
-                param enumerator Use this to get the term values and TermDocs.
-                param fieldName  Comparables should be for this field.
-                return Array of objects representing natural order of terms
-                       in field. 
-                throws IOException If an error occurs reading the index.
-                """
-                retArray = [None] * reader.maxDoc()
-                if len(retArray) > 0:
-                    termDocs = reader.termDocs()
-                    try:
-                        if enumerator.term() is None:
-                            raise AssertionError, "no terms in field " + fieldName
-                        while True:
-                            term = enumerator.term()
-                            if term.field() != fieldName:
-                                break
-                            termval = _self.getComparable(term.text())
-                            termDocs.seek(enumerator)
-                            while termDocs.next():
-                                retArray[termDocs.doc()] = termval
-                            if not enumerator.next():
-                                break
-                    finally:
-                        termDocs.close()
-                return retArray
-
-            def getComparable(_self, termtext):
-                return SampleComparable(termtext)
-
-        return sortComparatorSource()
-
-    def getComparator(cls):
-
-        class sortComparator(PythonSortComparator):
-            def getComparable(_self, termtext):
-                return SampleComparable(termtext)
-
-            def hashCode(_self):
-                return _self.getClass().getName().hashCode()
-
-            def equals(_self, that):
-                return _self.getClass().equals(that.getClass())
-  
-        return sortComparator()
-
-    getComparatorSource = classmethod(getComparatorSource)
-    getComparator = classmethod(getComparator)
 
 
 if __name__ == "__main__":

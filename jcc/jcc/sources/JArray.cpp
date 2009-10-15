@@ -1139,6 +1139,17 @@ PyObject *JArray_Type(PyObject *self, PyObject *arg)
     return type;
 }
 
+static PyObject *t_jarray_jbyte__get_string_(t_jarray<jbyte> *self, void *data)
+{
+    return self->array.to_string_();
+}
+
+static PyGetSetDef t_jarray_jbyte__fields[] = {
+    { "string_", (getter) t_jarray_jbyte__get_string_, NULL, "", NULL },
+    { NULL, NULL, NULL, NULL, NULL }
+};
+
+
 PyTypeObject *JArrayObject$$Type;
 PyTypeObject *JArrayString$$Type;
 PyTypeObject *JArrayBool$$Type;
@@ -1149,6 +1160,7 @@ PyTypeObject *JArrayFloat$$Type;
 PyTypeObject *JArrayInt$$Type;
 PyTypeObject *JArrayLong$$Type;
 PyTypeObject *JArrayShort$$Type;
+
 
 void _install_jarray(PyObject *module)
 {
@@ -1164,6 +1176,7 @@ void _install_jarray(PyObject *module)
                             "__JArray_bool_iterator", module);
     JArrayBool$$Type = &jarray_jboolean.type_object;
 
+    jarray_jbyte.type_object.tp_getset = t_jarray_jbyte__fields;
     jarray_jbyte.install("JArray_byte", "byte",
                          "__JArray_byte_iterator", module);
     JArrayByte$$Type = &jarray_jbyte.type_object;

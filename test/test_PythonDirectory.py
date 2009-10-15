@@ -17,8 +17,9 @@ from threading import RLock
 import test_PyLucene 
 
 from lucene import \
-    PythonLock, PythonIndexInput, PythonIndexOutput, PythonDirectory, \
-    JavaError, IOException, JArray
+    PythonLock, PythonLockFactory, \
+    PythonIndexInput, PythonIndexOutput, PythonDirectory, \
+    JavaError, IOException, JArray, String
 
 """
 The Directory Implementation here is for testing purposes only, not meant
@@ -61,13 +62,35 @@ class PythonDirLock(PythonLock):
     def isLocked(self):
         return self.lock.locked()
 
-    def obtain(self, timeout=None):
-        if timeout is not None:
-            return self.lock.acquire(timeout)
+    def obtain(self):
         return self.lock.acquire()
 
     def release(self):
         return self.lock.release()
+
+
+class PythonDirLockFactory(PythonLockFactory):
+
+    def __init__(self, path):
+        super(PythonDirLockFactory, self).__init__()
+        
+        self.path = path
+        self._locks = {}
+
+    def makeLock(self, name):
+
+        lock = self._locks.get(name)
+        if lock is None:
+            lock = PythonDirLock(name, os.path.join(self.path, name), RLock())
+            self._locks[name] = lock
+
+        return lock
+
+    def clearLock(self, name):
+
+        lock = self._locks.pop(name, None)
+        if lock is not None:
+            lock.release()
 
 
 class PythonFileStreamInput(PythonIndexInput):
@@ -123,27 +146,27 @@ class PythonFileStreamOutput(PythonIndexOutput):
     def seekInternal(self, pos):
         self.fh.seek(pos)
 
-    def flushBuffer(self, buffer):
-        self.fh.write(''.join(buffer))
+    def flushBuffer(self, bytes):
+
+        self.fh.write(bytes.string_)
         self.fh.flush()
-        self._length += len(buffer)
+        self._length += len(bytes)
 
 
 class PythonFileDirectory(PythonDirectory):
 
     def __init__(self, path):
-        super(PythonFileDirectory, self).__init__()
+        super(PythonFileDirectory, self).__init__(PythonDirLockFactory(path))
+
         self.name = path
         assert os.path.isdir(path)
         self.path = path
-        self._locks = {}
         self._streams = []
 
     def close(self):
         for stream in self._streams:
             stream.close()
         del self._streams[:]
-        self._locks.clear()
 
     def createOutput(self, name):
         file_path = os.path.join(self.path, name)
@@ -167,15 +190,11 @@ class PythonFileDirectory(PythonDirectory):
         file_path = os.path.join(self.path, name)
         return os.path.getmtime(file_path)
 
-    def list(self):
+    def listAll(self):
         return os.listdir(self.path)
 
-    def makeLock(self, name):
-        lock = self._locks.get(name)
-        if lock is None:
-            lock = PythonDirLock(name, os.path.join(self.path, name), RLock())
-            self._locks[name] = lock
-        return lock
+    def sync(self, name):
+        pass
 
     def openInput(self, name, bufferSize=0):
         file_path = os.path.join(self.path, name)

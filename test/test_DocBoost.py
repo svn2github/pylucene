@@ -52,12 +52,20 @@ class DocBoostTestCase(TestCase):
 
         scores = [0.0] * 4
 
-        class hitCollector(PythonHitCollector):
-            def collect(self, doc, score):
-                scores[doc] = score
+        class collector(PythonCollector):
+            def __init__(_self, scores):
+                super(collector, _self).__init__()
+                _self.scores = scores
+                _self.base = 0
+            def collect(_self, doc, score):
+                _self.scores[doc + _self.base] = score
+            def setNextReader(_self, reader, docBase):
+                _self.base = docBase
+            def acceptsDocsOutOfOrder(_self):
+                return True
 
         IndexSearcher(store, True).search(TermQuery(Term("field", "word")),
-                                          hitCollector())
+                                          collector(scores))
     
         lastScore = 0.0
         for score in scores:

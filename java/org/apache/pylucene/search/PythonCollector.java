@@ -15,17 +15,18 @@
 
 package org.apache.pylucene.search;
 
-import org.apache.lucene.search.HitCollector;
+import java.io.IOException;
 
-/**
- * @author Andi Vajda
- */
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.index.IndexReader;
 
-public class PythonHitCollector extends HitCollector {
+
+public class PythonCollector extends Collector {
 
     private long pythonObject;
 
-    public PythonHitCollector()
+    public PythonCollector()
     {
     }
 
@@ -44,6 +45,24 @@ public class PythonHitCollector extends HitCollector {
         pythonDecRef();
     }
 
+    Scorer scorer;
+
+    public void setScorer(Scorer scorer)
+        throws IOException
+    {
+        this.scorer = scorer;
+    }
+
+    public void collect(int doc)
+        throws IOException
+    {
+        collect(doc, scorer.score());
+    }
+
     public native void pythonDecRef();
-    public native void collect(int doc, float score);
+    public native void collect(int doc, float score)
+        throws IOException;
+    public native void setNextReader(IndexReader reader, int docBase)
+        throws IOException;
+    public native boolean acceptsDocsOutOfOrder();
 }

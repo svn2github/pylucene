@@ -14,7 +14,7 @@
 # site-packages directory.
 #
 
-VERSION=3.0.0-1
+VERSION=3.0.0-0
 LUCENE_SVN_VER=HEAD
 LUCENE_VER=3.0.0
 LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/trunk
@@ -199,6 +199,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.util \
                      java.util.Arrays \
                      java.text.SimpleDateFormat \
+                     java.text.Collator \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
                              java.io.FileInputStream \
