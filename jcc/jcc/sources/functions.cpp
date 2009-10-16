@@ -206,10 +206,21 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                       if (PySequence_Length(arg) > 0)
                       {
                           PyObject *obj = PySequence_GetItem(arg, 0);
-                          int ok =
-                              (obj == Py_None ||
-                               (PyObject_TypeCheck(obj, &Object$$Type) &&
-                                vm_env->IsInstanceOf(((t_Object *) obj)->object.this$, cls)));
+                          int ok = 0;
+
+                          if (obj == Py_None)
+                              ok = 1;
+                          else if (PyObject_TypeCheck(obj, &Object$$Type) &&
+                                   vm_env->IsInstanceOf(((t_Object *) obj)->object.this$, cls))
+                              ok = 1;
+                          else if (PyObject_TypeCheck(obj, &FinalizerProxy$$Type))
+                          {
+                              PyObject *o = ((t_fp *) obj)->object;
+
+                              if (PyObject_TypeCheck(o, &Object$$Type) &&
+                                  vm_env->IsInstanceOf(((t_Object *) o)->object.this$, cls))
+                                  ok = 1;
+                          }
 
                           Py_DECREF(obj);
                           if (ok)

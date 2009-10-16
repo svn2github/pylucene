@@ -6,6 +6,7 @@ Version 2.4 ->
  - default value to initVM's classpath parameter now is importing module's
  - added (partial) support for Java generics
  - added 'string_' property to JArray('byte') instances to extract byte string
+ - fixed bug with passing list of extension objects
  - 
 
 Version 2.3 -> 2.4

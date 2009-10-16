@@ -112,30 +112,8 @@ template<> class JArray<jobject> : public java::lang::Object {
     }
 
 #ifdef PYTHON
-    JArray<jobject>(jclass cls, PyObject *sequence) : java::lang::Object(env->get_vm_env()->NewObjectArray(PySequence_Length(sequence), cls, NULL)) {
-        length = env->getArrayLength((jobjectArray) this$);
-
-        for (int i = 0; i < length; i++) {
-            PyObject *obj = PySequence_GetItem(sequence, i);
-
-            if (obj == NULL)
-                break;
-
-            if (!PyObject_TypeCheck(obj, &JObject$$Type))
-            {
-                PyErr_SetObject(PyExc_TypeError, obj);
-                break;
-            }
-
-            jobject jobj = ((t_JObject *) obj)->object.this$;
-
-            Py_DECREF(obj);
-            try {
-                env->setObjectArrayElement((jobjectArray) this$, i, jobj);
-            } catch (JCCEnv::exception e) {
-                PyErr_SetJavaError(e.throwable);
-            }
-        }
+    JArray<jobject>(jclass cls, PyObject *sequence) : java::lang::Object(fromPySequence(cls, sequence)) {
+        length = this$ ? env->getArrayLength((jobjectArray) this$) : 0;
     }
 
     PyObject *toSequence(PyObject *(*wrapfn)(const jobject&))
