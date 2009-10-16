@@ -80,6 +80,19 @@ namespace java {
         DECLARE_TYPE(Iterator, t_Iterator, JObject, java::util::Iterator,
                      abstract_init, 0, 0, 0, 0, 0);
 
+#ifdef _java_generics
+        PyObject *t_Iterator::wrap_Object(const Iterator& object,
+                                          PyTypeObject *T)
+        {
+            PyObject *obj = t_Iterator::wrap_Object(object);
+            if (obj != Py_None)
+            {
+                t_Iterator *self = (t_Iterator *) obj;
+                self->parameters[0] = T;
+            }
+            return obj;
+        }
+#endif
         static PyObject *t_Iterator_hasNext(t_Iterator *self)
         {
             jboolean b;

@@ -21,7 +21,7 @@
 import os, re, sys
 from subprocess import *
 from lucene import IndexWriter, StandardAnalyzer, Document, Field
-from lucene import initVM, CLASSPATH
+from lucene import SimpleFSDirectory, File, initVM
 
 def indexDirectory(dir):
 
@@ -63,17 +63,17 @@ def indexFile(dir,filename):
 
     doc = Document()
     doc.add(Field("command", command,
-                  Field.Store.YES, Field.Index.UN_TOKENIZED))
+                  Field.Store.YES, Field.Index.NOT_ANALYZED))
     doc.add(Field("section", section,
-                  Field.Store.YES, Field.Index.UN_TOKENIZED))
+                  Field.Store.YES, Field.Index.NOT_ANALYZED))
     doc.add(Field("name", name.strip(),
-                  Field.Store.YES, Field.Index.TOKENIZED))
+                  Field.Store.YES, Field.Index.ANALYZED))
     doc.add(Field("synopsis", synopsis.strip(),
-                  Field.Store.YES, Field.Index.TOKENIZED))
+                  Field.Store.YES, Field.Index.ANALYZED))
     doc.add(Field("keywords", ' '.join((command, name, synopsis, description)),
-                  Field.Store.NO, Field.Index.TOKENIZED))
+                  Field.Store.NO, Field.Index.ANALYZED))
     doc.add(Field("filename", os.path.abspath(path),
-                  Field.Store.YES, Field.Index.UN_TOKENIZED))
+                  Field.Store.YES, Field.Index.NOT_ANALYZED))
 
     writer.addDocument(doc)
 
@@ -84,9 +84,11 @@ if __name__ == '__main__':
         print "Usage: python manindex.py <index dir>"
 
     else:
-        initVM(CLASSPATH)
+        initVM()
         indexDir = sys.argv[1]
-        writer = IndexWriter(indexDir, StandardAnalyzer(), True)
+        writer = IndexWriter(SimpleFSDirectory(File(indexDir)),
+                             StandardAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         manpath = os.environ.get('MANPATH', '/usr/share/man').split(os.pathsep)
         for dir in manpath:
             print "Crawling", dir

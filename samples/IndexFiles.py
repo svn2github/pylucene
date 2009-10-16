@@ -30,8 +30,9 @@ class IndexFiles(object):
 
         if not os.path.exists(storeDir):
             os.mkdir(storeDir)
-        store = lucene.FSDirectory.getDirectory(storeDir, True)
-        writer = lucene.IndexWriter(store, analyzer, True)
+        store = lucene.SimpleFSDirectory(lucene.File(storeDir))
+        writer = lucene.IndexWriter(store, analyzer, True,
+                                    lucene.IndexWriter.MaxFieldLength.LIMITED)
         writer.setMaxFieldLength(1048576)
         self.indexDocs(root, writer)
         ticker = Ticker()
@@ -56,14 +57,14 @@ class IndexFiles(object):
                     doc = lucene.Document()
                     doc.add(lucene.Field("name", filename,
                                          lucene.Field.Store.YES,
-                                         lucene.Field.Index.UN_TOKENIZED))
+                                         lucene.Field.Index.NOT_ANALYZED))
                     doc.add(lucene.Field("path", path,
                                          lucene.Field.Store.YES,
-                                         lucene.Field.Index.UN_TOKENIZED))
+                                         lucene.Field.Index.NOT_ANALYZED))
                     if len(contents) > 0:
                         doc.add(lucene.Field("contents", contents,
                                              lucene.Field.Store.NO,
-                                             lucene.Field.Index.TOKENIZED))
+                                             lucene.Field.Index.ANALYZED))
                     else:
                         print "warning: no content in %s" % filename
                     writer.addDocument(doc)
@@ -74,7 +75,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print IndexFiles.__doc__
         sys.exit(1)
-    lucene.initVM(lucene.CLASSPATH)
+    lucene.initVM()
     print 'lucene', lucene.VERSION
     start = datetime.now()
     try:

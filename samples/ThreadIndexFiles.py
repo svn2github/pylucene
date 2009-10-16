@@ -15,8 +15,9 @@
 # This sample illustrates how to use a thread with PyLucene
 
 import sys, os, threading
+
 from datetime import datetime
-from lucene import StandardAnalyzer, VERSION, initVM, CLASSPATH
+from lucene import StandardAnalyzer, VERSION, initVM
 from IndexFiles import IndexFiles
 
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print IndexFiles.__doc__
         sys.exit(1)
-    env=initVM(CLASSPATH)
+    env=initVM()
     print 'lucene', VERSION
 
     def fn():

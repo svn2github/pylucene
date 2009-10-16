@@ -78,6 +78,19 @@ namespace java {
         DECLARE_TYPE(Enumeration, t_Enumeration, JObject,
                      java::util::Enumeration, abstract_init, 0, 0, 0, 0, 0);
 
+#ifdef _java_generics
+        PyObject *t_Enumeration::wrap_Object(const Enumeration& object,
+                                             PyTypeObject *T)
+        {
+            PyObject *obj = t_Enumeration::wrap_Object(object);
+            if (obj != Py_None)
+            {
+                t_Enumeration *self = (t_Enumeration *) obj;
+                self->parameters[0] = T;
+            }
+            return obj;
+        }
+#endif
         static PyObject *t_Enumeration_hasMoreElements(t_Enumeration *self)
         {
             jboolean b;

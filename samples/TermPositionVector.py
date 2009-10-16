@@ -1,24 +1,25 @@
 from lucene import \
     StandardAnalyzer, RAMDirectory, Document, Field, \
-    IndexWriter, IndexReader, TermPositionVector, initVM, CLASSPATH
+    IndexWriter, IndexReader, TermPositionVector, initVM
 
 if __name__ == '__main__':
-    initVM(CLASSPATH)
+    initVM()
 
 directory = RAMDirectory()
-iwriter = IndexWriter(directory, StandardAnalyzer(), True)
+iwriter = IndexWriter(directory, StandardAnalyzer(), True,
+                      IndexWriter.MaxFieldLength.LIMITED)
 ts = ["this bernhard is the text to be index text",
       "this claudia is the text to be index"]
 for t in ts:
     doc = Document()
     doc.add(Field("fieldname", t,
-                  Field.Store.YES, Field.Index.TOKENIZED,
+                  Field.Store.YES, Field.Index.ANALYZED,
                   Field.TermVector.WITH_POSITIONS_OFFSETS))
     iwriter.addDocument(doc)
 iwriter.optimize()
 iwriter.close()
 
-ireader = IndexReader.open(directory)
+ireader = IndexReader.open(directory, True)
 tpv = TermPositionVector.cast_(ireader.getTermFreqVector(0, 'fieldname'))
 
 for (t,f,i) in zip(tpv.getTerms(),tpv.getTermFrequencies(),xrange(100000)):

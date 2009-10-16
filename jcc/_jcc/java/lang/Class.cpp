@@ -346,6 +346,7 @@ namespace java {
         DECLARE_TYPE(Class, t_Class, Object, java::lang::Class,
                      abstract_init, 0, 0, t_Class__fields_, 0, 0);
 
+#ifdef _java_generics
         PyObject *t_Class::wrap_Object(const Class& object, PyTypeObject *T)
         {
             PyObject *obj = t_Class::wrap_Object(object);
@@ -356,7 +357,7 @@ namespace java {
             }
             return obj;
         }
-
+#endif
         static PyObject *t_Class_cast_(PyTypeObject *type, PyObject *arg)
         {
             if (!(arg = castCheck(arg, Class::initializeClass, 1)))

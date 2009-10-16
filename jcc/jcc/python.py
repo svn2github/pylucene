@@ -84,8 +84,8 @@ def parseArgs(params, current, generics):
             while cls.isArray():
                 cls = cls.getComponentType()
             if cls.getTypeParameters():
-                p0, sep, p1 = rpartition(typename(cls, current, False), '::')
-                return ', &a%d, &p%d, %s%st_%s::parameters_' %(i, i, p0, sep, p1)
+                ns, sep, n = rpartition(typename(cls, current, False), '::')
+                return ', &a%d, &p%d, %s%st_%s::parameters_' %(i, i, ns, sep, n)
         return ', &a%d' %(i)
 
     return (''.join([signature(param) for param in params]),
@@ -198,10 +198,10 @@ def returnValue(cls, returnType, value, genericRT=None):
         elif returnType.getName() == 'java.lang.String':
             return 'return JArray<jstring>(%s.this$).wrap();' %(value)
 
-        p0, sep, p1 = rpartition(typename(returnType, cls, False), '::')
-        return 'return JArray<jobject>(%s.this$).wrap(%s%st_%s::wrap_jobject);' %(value, p0, sep, p1)
+        ns, sep, n = rpartition(typename(returnType, cls, False), '::')
+        return 'return JArray<jobject>(%s.this$).wrap(%s%st_%s::wrap_jobject);' %(value, ns, sep, n)
 
-    p0, sep, p1 = rpartition(typename(returnType, cls, False), '::')
+    ns, sep, n = rpartition(typename(returnType, cls, False), '::')
     if genericRT is not None:
         if ParameterizedType.instance_(genericRT):
             genericRT = ParameterizedType.cast_(genericRT)
@@ -227,22 +227,22 @@ def returnValue(cls, returnType, value, genericRT=None):
                 else:
                     break
             else:
-                return 'return %s%st_%s::wrap_Object(%s, %s);' %(p0, sep, p1, value, ', '.join(clsArgs))
+                return 'return %s%st_%s::wrap_Object(%s, %s);' %(ns, sep, n, value, ', '.join(clsArgs))
         elif TypeVariable.instance_(genericRT):
             gd = TypeVariable.cast_(genericRT).getGenericDeclaration()
             i = 0
             if Class.instance_(gd):
                 for clsParam in gd.getTypeParameters():
                     if genericRT == clsParam:
-                        return 'return self->parameters[%d] != NULL ? wrapType(self->parameters[%d], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, value, p0, sep, p1, value)
+                        return 'return self->parameters[%d] != NULL ? wrapType(self->parameters[%d], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, value, ns, sep, n, value)
                     i += 1
             elif Method.instance_(gd):
                 for clsParam in gd.getTypeParameters():
                     if genericRT == clsParam:
-                        return 'return p%d != NULL && p%d[0] != NULL ? wrapType(p%d[0], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, i, value, p0, sep, p1, value)
+                        return 'return p%d != NULL && p%d[0] != NULL ? wrapType(p%d[0], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, i, value, ns, sep, n, value)
                     i += 1
 
-    return 'return %s%st_%s::wrap_Object(%s);' %(p0, sep, p1, value)
+    return 'return %s%st_%s::wrap_Object(%s);' %(ns, sep, n, value)
 
 
 def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
@@ -797,6 +797,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     if iteratorMethod:
         if iteratorExt:
             tp_iter = 'get_extension_iterator'
+        elif generics and clsParams:
+            tp_iter = '((PyObject *(*)(t_%s *)) get_generic_iterator<t_%s>)' %(names[-1], names[-1])
         else:
             tp_iter = '((PyObject *(*)(t_%s *)) get_iterator<t_%s>)' %(names[-1], names[-1])
         tp_iternext = '0'
@@ -806,6 +808,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         ns, sep, n = rpartition(returnName, '::')
         if nextExt:
             tp_iternext = 'get_extension_next'
+        elif generics and clsParams:
+            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_generic_iterator_next<java::util::t_Iterator,%s%st_%s,%s>)' %(ns, sep, n, returnName)
         else:
             tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_iterator_next<java::util::t_Iterator,%s%st_%s,%s>)' %(ns, sep, n, returnName)
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
@@ -814,6 +818,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         ns, sep, n = rpartition(returnName, '::')
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
+        elif generics and clsParams:
+            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_generic_enumeration_next<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
         else:
             tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_next<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
     elif nextMethod:
@@ -822,6 +828,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         ns, sep, n = rpartition(returnName, '::')
         if nextExt:
             tp_iternext = 'get_extension_next'
+        elif generics and clsParams:
+            tp_iternext = '((PyObject *(*)(t_%s *)) get_generic_next<t_%s,%s%st_%s,%s>)' %(names[-1], names[-1], ns, sep, n, returnName)
         else:
             tp_iternext = '((PyObject *(*)(t_%s *)) get_next<t_%s,%s%st_%s,%s>)' %(names[-1], names[-1], ns, sep, n, returnName)
     else:

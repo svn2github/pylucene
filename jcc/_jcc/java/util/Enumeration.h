@@ -46,7 +46,18 @@ namespace java {
         public:
             PyObject_HEAD
             Enumeration object;
+#ifdef _java_generics
+            PyTypeObject *parameters[1];
+            static PyTypeObject **parameters_(t_Enumeration *self)
+            {
+                return (PyTypeObject **) &(self->parameters);
+            }
+#endif
             static PyObject *wrap_Object(const Enumeration& object);
+#ifdef _java_generics
+            static PyObject *wrap_Object(const Enumeration& object,
+                                         PyTypeObject *T);
+#endif
             static PyObject *wrap_jobject(const jobject& object);
         };
     }

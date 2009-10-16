@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from lucene import \
-    QueryParser, IndexSearcher, StandardAnalyzer, FSDirectory, Hit, \
-    VERSION, initVM, CLASSPATH
+    QueryParser, IndexSearcher, StandardAnalyzer, SimpleFSDirectory, File, \
+    VERSION, initVM
 
 
 """
@@ -24,20 +24,20 @@ def run(searcher, analyzer):
         print
         print "Searching for:", command
         query = QueryParser("contents", analyzer).parse(command)
-        hits = searcher.search(query)
-        print "%s total matching documents." % hits.length()
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        print "%s total matching documents." % len(scoreDocs)
 
-        for hit in hits:
-            doc = Hit.cast_(hit).getDocument()
+        for scoreDoc in scoreDocs:
+            doc = searcher.doc(scoreDoc.doc)
             print 'path:', doc.get("path"), 'name:', doc.get("name")
 
 
 if __name__ == '__main__':
     STORE_DIR = "index"
-    initVM(CLASSPATH)
+    initVM()
     print 'lucene', VERSION
-    directory = FSDirectory.getDirectory(STORE_DIR, False)
-    searcher = IndexSearcher(directory)
+    directory = SimpleFSDirectory(File(STORE_DIR))
+    searcher = IndexSearcher(directory, True)
     analyzer = StandardAnalyzer()
     run(searcher, analyzer)
     searcher.close()

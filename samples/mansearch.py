@@ -28,11 +28,11 @@ from datetime import datetime
 from getopt import getopt, GetoptError
 
 from lucene import \
-     Document, IndexSearcher, FSDirectory, QueryParser, StandardAnalyzer, \
-     Hit, Field, initVM, CLASSPATH
+     Document, IndexSearcher, SimpleFSDirectory, File, QueryParser, \
+     StandardAnalyzer, initVM
 
 if __name__ == '__main__':
-    initVM(CLASSPATH)
+    initVM()
 
 def usage():
     print sys.argv[0], "[--format=<format string>] [--index=<index dir>] [--stats] <query...>"
@@ -62,20 +62,20 @@ class CustomTemplate(Template):
 
 template = CustomTemplate(format)
 
-fsDir = FSDirectory.getDirectory(indexDir, False)
-searcher = IndexSearcher(fsDir)
+fsDir = SimpleFSDirectory(File(indexDir))
+searcher = IndexSearcher(fsDir, True)
 
 parser = QueryParser("keywords", StandardAnalyzer())
 parser.setDefaultOperator(QueryParser.Operator.AND)
 query = parser.parse(' '.join(args))
 start = datetime.now()
-hits = searcher.search(query)
+scoreDocs = searcher.search(query, 50).scoreDocs
 duration = datetime.now() - start
 if stats:
-    print >> sys.stderr, "Found %d document(s) (in %s) that matched query '%s':" %(len(hits), duration, query)
+    print >>sys.stderr, "Found %d document(s) (in %s) that matched query '%s':" %(len(scoreDocs), duration, query)
 
-for hit in hits:
-    doc = Hit.cast_(hit).getDocument()
+for scoreDoc in scoreDocs:
+    doc = searcher.doc(scoreDoc.doc)
     table = dict((field.name(), field.stringValue())
-                 for field in (Field.cast_(f) for f in doc.getFields()))
+                 for field in doc.getFields())
     print template.substitute(table)

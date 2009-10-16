@@ -55,6 +55,7 @@ class PythonDirLock(PythonLock):
     
     def __init__(self, name, path, lock):
         super(PythonDirLock, self).__init__()
+
         self.name = name
         self.lock_file = path
         self.lock = lock
