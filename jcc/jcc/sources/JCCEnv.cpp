@@ -109,6 +109,13 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
     _mids[mid_obj_getClass] =
         vm_env->GetMethodID(_obj, "getClass",
                             "()Ljava/lang/Class;");
+
+    _mids[mid_iterator_next] =
+        vm_env->GetMethodID(vm_env->FindClass("java/util/Iterator"),
+                            "next", "()Ljava/lang/Object;");
+    _mids[mid_enumeration_nextElement] =
+        vm_env->GetMethodID(vm_env->FindClass("java/util/Enumeration"),
+                            "nextElement", "()Ljava/lang/Object;");
 }
 
 #if defined(_MSC_VER) || defined(__WIN32)
@@ -131,19 +138,29 @@ void JCCEnv::set_vm_env(JNIEnv *vm_env)
 
 #endif
 
-jint JCCEnv::getJNIVersion()
+jint JCCEnv::getJNIVersion() const
 {
     return get_vm_env()->GetVersion();
 }
 
-jstring JCCEnv::getJavaVersion()
+jstring JCCEnv::getJavaVersion() const
 {
     return (jstring)
         callStaticObjectMethod(_sys, _mids[mid_sys_getProperty],
                                get_vm_env()->NewStringUTF("java.version"));
 }
 
-jclass JCCEnv::findClass(const char *className)
+jobject JCCEnv::iteratorNext(jobject obj) const
+{
+    return callObjectMethod(obj, _mids[mid_iterator_next]);
+}
+
+jobject JCCEnv::enumerationNext(jobject obj) const
+{
+    return callObjectMethod(obj, _mids[mid_enumeration_nextElement]);
+}
+
+jclass JCCEnv::findClass(const char *className) const
 {
     jclass cls = NULL;
 
@@ -184,7 +201,7 @@ jclass JCCEnv::findClass(const char *className)
     return cls;
 }
 
-void JCCEnv::registerNatives(jclass cls, JNINativeMethod *methods, int n)
+void JCCEnv::registerNatives(jclass cls, JNINativeMethod *methods, int n) const
 {
     get_vm_env()->RegisterNatives(cls, methods, n);
 }
@@ -309,13 +326,14 @@ jobjectArray JCCEnv::newObjectArray(jclass cls, int size)
     return array;
 }
 
-void JCCEnv::setObjectArrayElement(jobjectArray array, int n, jobject obj)
+void JCCEnv::setObjectArrayElement(jobjectArray array, int n,
+                                   jobject obj) const
 {
     get_vm_env()->SetObjectArrayElement(array, n, obj);
     reportException();
 }
 
-jobject JCCEnv::getObjectArrayElement(jobjectArray array, int n)
+jobject JCCEnv::getObjectArrayElement(jobjectArray array, int n) const
 {
     jobject obj = get_vm_env()->GetObjectArrayElement(array, n);
 
@@ -323,7 +341,7 @@ jobject JCCEnv::getObjectArrayElement(jobjectArray array, int n)
     return obj;
 }
 
-int JCCEnv::getArrayLength(jarray array)
+int JCCEnv::getArrayLength(jarray array) const
 {
     int len = get_vm_env()->GetArrayLength(array);
 
@@ -331,12 +349,14 @@ int JCCEnv::getArrayLength(jarray array)
     return len;
 }
 
-jclass JCCEnv::getPythonExceptionClass()
+#ifdef PYTHON
+jclass JCCEnv::getPythonExceptionClass() const
 {
     return _thr;
 }
+#endif
 
-void JCCEnv::reportException()
+void JCCEnv::reportException() const
 {
     JNIEnv *vm_env = get_vm_env();
     jthrowable throwable = vm_env->ExceptionOccurred();
@@ -368,42 +388,42 @@ void JCCEnv::reportException()
 }
 
 
-#define DEFINE_CALL(jtype, Type)                                        \
-    jtype JCCEnv::call##Type##Method(jobject obj,                       \
-                                     jmethodID mid, ...)                \
-    {                                                                   \
-        va_list ap;                                                     \
-        jtype result;                                                   \
-                                                                        \
-        va_start(ap, mid);                                              \
-        result = get_vm_env()->Call##Type##MethodV(obj, mid, ap);       \
-        va_end(ap);                                                     \
-                                                                        \
-        reportException();                                              \
-                                                                        \
-        return result;                                                  \
+#define DEFINE_CALL(jtype, Type)                                         \
+    jtype JCCEnv::call##Type##Method(jobject obj,                        \
+                                     jmethodID mid, ...) const           \
+    {                                                                    \
+        va_list ap;                                                      \
+        jtype result;                                                    \
+                                                                         \
+        va_start(ap, mid);                                               \
+        result = get_vm_env()->Call##Type##MethodV(obj, mid, ap);        \
+        va_end(ap);                                                      \
+                                                                         \
+        reportException();                                               \
+                                                                         \
+        return result;                                                   \
     }
 
-#define DEFINE_NONVIRTUAL_CALL(jtype, Type)                             \
-    jtype JCCEnv::callNonvirtual##Type##Method(jobject obj, jclass cls, \
-                                               jmethodID mid, ...)      \
-    {                                                                   \
-        va_list ap;                                                     \
-        jtype result;                                                   \
-                                                                        \
-        va_start(ap, mid);                                              \
-        result = get_vm_env()->CallNonvirtual##Type##MethodV(obj, cls,  \
-                                                             mid, ap);  \
-        va_end(ap);                                                     \
-                                                                        \
-        reportException();                                              \
-                                                                        \
-        return result;                                                  \
+#define DEFINE_NONVIRTUAL_CALL(jtype, Type)                              \
+    jtype JCCEnv::callNonvirtual##Type##Method(jobject obj, jclass cls,  \
+                                               jmethodID mid, ...) const \
+    {                                                                    \
+        va_list ap;                                                      \
+        jtype result;                                                    \
+                                                                         \
+        va_start(ap, mid);                                               \
+        result = get_vm_env()->CallNonvirtual##Type##MethodV(obj, cls,   \
+                                                             mid, ap);   \
+        va_end(ap);                                                      \
+                                                                         \
+        reportException();                                               \
+                                                                         \
+        return result;                                                   \
     }
 
 #define DEFINE_STATIC_CALL(jtype, Type)                                 \
     jtype JCCEnv::callStatic##Type##Method(jclass cls,                  \
-                                           jmethodID mid, ...)          \
+                                           jmethodID mid, ...) const    \
     {                                                                   \
         va_list ap;                                                     \
         jtype result;                                                   \
@@ -447,7 +467,7 @@ DEFINE_STATIC_CALL(jint, Int)
 DEFINE_STATIC_CALL(jlong, Long)
 DEFINE_STATIC_CALL(jshort, Short)
 
-void JCCEnv::callVoidMethod(jobject obj, jmethodID mid, ...)
+void JCCEnv::callVoidMethod(jobject obj, jmethodID mid, ...) const
 {
     va_list ap;
 
@@ -459,7 +479,7 @@ void JCCEnv::callVoidMethod(jobject obj, jmethodID mid, ...)
 }
 
 void JCCEnv::callNonvirtualVoidMethod(jobject obj, jclass cls,
-                                      jmethodID mid, ...)
+                                      jmethodID mid, ...) const
 {
     va_list ap;
 
@@ -470,7 +490,7 @@ void JCCEnv::callNonvirtualVoidMethod(jobject obj, jclass cls,
     reportException();
 }
 
-void JCCEnv::callStaticVoidMethod(jclass cls, jmethodID mid, ...)
+void JCCEnv::callStaticVoidMethod(jclass cls, jmethodID mid, ...) const
 {
     va_list ap;
 
@@ -483,7 +503,7 @@ void JCCEnv::callStaticVoidMethod(jclass cls, jmethodID mid, ...)
 
 
 jmethodID JCCEnv::getMethodID(jclass cls, const char *name,
-                              const char *signature)
+                              const char *signature) const
 {
     jmethodID id = get_vm_env()->GetMethodID(cls, name, signature);
 
@@ -493,7 +513,7 @@ jmethodID JCCEnv::getMethodID(jclass cls, const char *name,
 }
 
 jfieldID JCCEnv::getFieldID(jclass cls, const char *name,
-                            const char *signature)
+                            const char *signature) const
 {
     jfieldID id = get_vm_env()->GetFieldID(cls, name, signature);
 
@@ -504,7 +524,7 @@ jfieldID JCCEnv::getFieldID(jclass cls, const char *name,
 
 
 jmethodID JCCEnv::getStaticMethodID(jclass cls, const char *name,
-                                    const char *signature)
+                                    const char *signature) const
 {
     jmethodID id = get_vm_env()->GetStaticMethodID(cls, name, signature);
 
@@ -514,7 +534,7 @@ jmethodID JCCEnv::getStaticMethodID(jclass cls, const char *name,
 }
 
 jobject JCCEnv::getStaticObjectField(jclass cls, const char *name,
-                                     const char *signature)
+                                     const char *signature) const
 {
     JNIEnv *vm_env = get_vm_env();
     jfieldID id = vm_env->GetStaticFieldID(cls, name, signature);
@@ -525,7 +545,8 @@ jobject JCCEnv::getStaticObjectField(jclass cls, const char *name,
 }
 
 #define DEFINE_GET_STATIC_FIELD(jtype, Type, signature)                 \
-    jtype JCCEnv::getStatic##Type##Field(jclass cls, const char *name)  \
+    jtype JCCEnv::getStatic##Type##Field(jclass cls,                    \
+                                         const char *name) const        \
     {                                                                   \
         JNIEnv *vm_env = get_vm_env();                                  \
         jfieldID id = vm_env->GetStaticFieldID(cls, name, #signature);  \
@@ -543,7 +564,7 @@ DEFINE_GET_STATIC_FIELD(jlong, Long, J)
 DEFINE_GET_STATIC_FIELD(jshort, Short, S)
 
 #define DEFINE_GET_FIELD(jtype, Type)                                   \
-    jtype JCCEnv::get##Type##Field(jobject obj, jfieldID id)            \
+    jtype JCCEnv::get##Type##Field(jobject obj, jfieldID id) const      \
     {                                                                   \
         jtype value = get_vm_env()->Get##Type##Field(obj, id);          \
         reportException();                                              \
@@ -560,11 +581,12 @@ DEFINE_GET_FIELD(jint, Int)
 DEFINE_GET_FIELD(jlong, Long)
 DEFINE_GET_FIELD(jshort, Short)
 
-#define DEFINE_SET_FIELD(jtype, Type)                                    \
-    void JCCEnv::set##Type##Field(jobject obj, jfieldID id, jtype value) \
-    {                                                                    \
-        get_vm_env()->Set##Type##Field(obj, id, value);                  \
-        reportException();                                               \
+#define DEFINE_SET_FIELD(jtype, Type)                                   \
+    void JCCEnv::set##Type##Field(jobject obj, jfieldID id,             \
+                                  jtype value) const                    \
+    {                                                                   \
+        get_vm_env()->Set##Type##Field(obj, id, value);                 \
+        reportException();                                              \
     }
 
 DEFINE_SET_FIELD(jobject, Object)
@@ -607,7 +629,7 @@ void JCCEnv::setClassPath(const char *classPath)
     free(path);
 }
 
-jstring JCCEnv::fromUTF(const char *bytes)
+jstring JCCEnv::fromUTF(const char *bytes) const
 {
     jstring str = get_vm_env()->NewStringUTF(bytes);
 
@@ -616,7 +638,7 @@ jstring JCCEnv::fromUTF(const char *bytes)
     return str;
 }
 
-char *JCCEnv::toUTF(jstring str)
+char *JCCEnv::toUTF(jstring str) const
 {
     JNIEnv *vm_env = get_vm_env();
     int len = vm_env->GetStringUTFLength(str);
@@ -635,14 +657,14 @@ char *JCCEnv::toUTF(jstring str)
     return bytes;
 }
 
-char *JCCEnv::toString(jobject obj)
+char *JCCEnv::toString(jobject obj) const
 {
     return obj
         ? toUTF((jstring) callObjectMethod(obj, _mids[mid_obj_toString]))
         : NULL;
 }
 
-char *JCCEnv::getClassName(jobject obj)
+char *JCCEnv::getClassName(jobject obj) const
 {
     return obj
         ? toString(callObjectMethod(obj, _mids[mid_obj_getClass]))
@@ -651,7 +673,7 @@ char *JCCEnv::getClassName(jobject obj)
 
 #ifdef PYTHON
 
-jstring JCCEnv::fromPyString(PyObject *object)
+jstring JCCEnv::fromPyString(PyObject *object) const
 {
     if (object == Py_None)
         return NULL;
@@ -694,42 +716,47 @@ jstring JCCEnv::fromPyString(PyObject *object)
     }
 }
 
-PyObject *JCCEnv::fromJString(jstring js)
+PyObject *JCCEnv::fromJString(jstring js, int delete_local_ref) const
 {
     if (!js)
         Py_RETURN_NONE;
 
     JNIEnv *vm_env = get_vm_env();
+    PyObject *string;
 
     if (sizeof(Py_UNICODE) == sizeof(jchar))
     {
         jboolean isCopy;
         const jchar *buf = vm_env->GetStringChars(js, &isCopy);
         jsize len = vm_env->GetStringLength(js);
-        PyObject *string = PyUnicode_FromUnicode((const Py_UNICODE *) buf, len);
 
+        string = PyUnicode_FromUnicode((const Py_UNICODE *) buf, len);
         vm_env->ReleaseStringChars(js, buf);
-        return string;
     }
     else
     {
         jsize len = vm_env->GetStringLength(js);
-        PyObject *string = PyUnicode_FromUnicode(NULL, len);
 
-        if (!string)
-            return NULL;
+        string = PyUnicode_FromUnicode(NULL, len);
+        if (string)
+        {
+            jboolean isCopy;
+            const jchar *jchars = vm_env->GetStringChars(js, &isCopy);
+            Py_UNICODE *pchars = PyUnicode_AS_UNICODE(string);
 
-        jboolean isCopy;
-        const jchar *jchars = vm_env->GetStringChars(js, &isCopy);
-        Py_UNICODE *pchars = PyUnicode_AS_UNICODE(string);
-
-        for (int i = 0; i < len; i++)
-            pchars[i] = (Py_UNICODE) jchars[i];
+            for (int i = 0; i < len; i++)
+                pchars[i] = (Py_UNICODE) jchars[i];
         
-        vm_env->ReleaseStringChars(js, jchars);
-        return string;
+            vm_env->ReleaseStringChars(js, jchars);
+        }
     }
+
+    if (delete_local_ref)
+        vm_env->DeleteLocalRef((jobject) js);
+
+    return string;
 }
+
 
 /* may be called from finalizer thread which has no vm_env thread local */
 void JCCEnv::finalizeObject(JNIEnv *jenv, PyObject *obj)

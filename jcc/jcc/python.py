@@ -49,7 +49,7 @@ CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
              'int': ('i', '(int) %s', False),
              'long': ('L', '(long long) %s', False),
              'short': ('i', '(int) %s', False),
-             'java.lang.String': ('O', 'env->fromJString((jstring) %s)', True) }
+             'java.lang.String': ('O', 'env->fromJString((jstring) %s, 0)', True) }
 
 
 def parseArgs(params, current, generics):
@@ -809,9 +809,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextExt:
             tp_iternext = 'get_extension_next'
         elif generics and clsParams:
-            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_generic_iterator_next<java::util::t_Iterator,%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_generic_iterator_next<java::util::t_Iterator,%s%st_%s>)' %(ns, sep, n)
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_iterator_next<java::util::t_Iterator,%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_iterator_next<java::util::t_Iterator,%s%st_%s>)' %(ns, sep, n)
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextElementMethod.getReturnType(), cls, False)
@@ -819,9 +819,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
         elif generics and clsParams:
-            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_generic_enumeration_next<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_generic_enumeration_next<java::util::t_Enumeration,%s%st_%s>)' %(ns, sep, n)
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_next<java::util::t_Enumeration,%s%st_%s,%s>)' %(ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_next<java::util::t_Enumeration,%s%st_%s>)' %(ns, sep, n)
     elif nextMethod:
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextMethod.getReturnType(), cls, False)

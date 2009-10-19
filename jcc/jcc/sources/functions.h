@@ -69,6 +69,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...);
 #endif
 
 int abstract_init(PyObject *self, PyObject *args, PyObject *kwds);
+PyObject *wrapType(PyTypeObject *type, const jobject& obj);
 
 PyObject *j2p(const java::lang::String& js);
 java::lang::String p2j(PyObject *object);
@@ -113,10 +114,9 @@ template<class T> PyObject *get_generic_iterator(T *self)
 }
 #endif
 
-template<class T, class U, class V> PyObject *get_iterator_next(T *self)
+template<class T, class U> PyObject *get_iterator_next(T *self)
 {
     jboolean hasNext;
-
     OBJ_CALL(hasNext = self->object.hasNext());
     if (!hasNext)
     {
@@ -124,21 +124,20 @@ template<class T, class U, class V> PyObject *get_iterator_next(T *self)
         return NULL;
     }
 
-    V next((jobject) NULL);
-    OBJ_CALL(next = self->object.next());
+    jobject next;
+    OBJ_CALL(next = env->iteratorNext(self->object.this$));
 
     jclass cls = java::lang::String::initializeClass();
-    if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
-        return env->fromJString((jstring) next.this$);
+    if (env->get_vm_env()->IsInstanceOf(next, cls))
+        return env->fromJString((jstring) next, 1);
 
-    return U::wrap_Object(next);
+    return U::wrap_jobject(next);
 }
 
 #ifdef _java_generics
-template<class T, class U, class V> PyObject *get_generic_iterator_next(T *self)
+template<class T, class U> PyObject *get_generic_iterator_next(T *self)
 {
     jboolean hasNext;
-
     OBJ_CALL(hasNext = self->object.hasNext());
     if (!hasNext)
     {
@@ -146,26 +145,24 @@ template<class T, class U, class V> PyObject *get_generic_iterator_next(T *self)
         return NULL;
     }
 
-    V next((jobject) NULL);
-    OBJ_CALL(next = self->object.next());
+    jobject next;
+    OBJ_CALL(next = env->iteratorNext(self->object.this$));
 
     jclass cls = java::lang::String::initializeClass();
-    if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
-        return env->fromJString((jstring) next.this$);
+    if (env->get_vm_env()->IsInstanceOf(next, cls))
+        return env->fromJString((jstring) next, 1);
 
     PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
-
     if (param != NULL)
-        return wrapType(param, next.this$);
+        return wrapType(param, next);
 
-    return U::wrap_Object(next);
+    return U::wrap_jobject(next);
 }
 #endif
 
-template<class T, class U, class V> PyObject *get_enumeration_next(T *self)
+template<class T, class U> PyObject *get_enumeration_next(T *self)
 {
     jboolean hasMoreElements;
-
     OBJ_CALL(hasMoreElements = self->object.hasMoreElements());
     if (!hasMoreElements)
     {
@@ -173,21 +170,20 @@ template<class T, class U, class V> PyObject *get_enumeration_next(T *self)
         return NULL;
     }
 
-    V next((jobject) NULL);
-    OBJ_CALL(next = self->object.nextElement());
+    jobject next;
+    OBJ_CALL(next = env->enumerationNext(self->object.this$));
 
     jclass cls = java::lang::String::initializeClass();
-    if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
-        return env->fromJString((jstring) next.this$);
+    if (env->get_vm_env()->IsInstanceOf(next, cls))
+        return env->fromJString((jstring) next, 1);
 
-    return U::wrap_Object(next);
+    return U::wrap_jobject(next);
 }
 
 #ifdef _java_generics
-template<class T, class U, class V> PyObject *get_generic_enumeration_next(T *self)
+template<class T, class U> PyObject *get_generic_enumeration_next(T *self)
 {
     jboolean hasMoreElements;
-
     OBJ_CALL(hasMoreElements = self->object.hasMoreElements());
     if (!hasMoreElements)
     {
@@ -195,26 +191,24 @@ template<class T, class U, class V> PyObject *get_generic_enumeration_next(T *se
         return NULL;
     }
 
-    V next((jobject) NULL);
-    OBJ_CALL(next = self->object.nextElement());
+    jobject next;
+    OBJ_CALL(next = env->enumerationNext(self->object.this$));
 
     jclass cls = java::lang::String::initializeClass();
-    if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
-        return env->fromJString((jstring) next.this$);
+    if (env->get_vm_env()->IsInstanceOf(next, cls))
+        return env->fromJString((jstring) next, 1);
 
     PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
-
     if (param != NULL)
-        return wrapType(param, next.this$);
+        return wrapType(param, next);
 
-    return U::wrap_Object(next);
+    return U::wrap_jobject(next);
 }
 #endif
 
 template<class T, class U, class V> PyObject *get_next(T *self)
 {
     V next((jobject) NULL);
-
     OBJ_CALL(next = self->object.next());
     if (!next)
     {
@@ -224,7 +218,7 @@ template<class T, class U, class V> PyObject *get_next(T *self)
         
     jclass cls = java::lang::String::initializeClass();
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
-        return env->fromJString((jstring) next.this$);
+        return env->fromJString((jstring) next.this$, 0);
 
     return U::wrap_Object(next);
 }
@@ -233,7 +227,6 @@ template<class T, class U, class V> PyObject *get_next(T *self)
 template<class T, class U, class V> PyObject *get_generic_next(T *self)
 {
     V next((jobject) NULL);
-
     OBJ_CALL(next = self->object.next());
     if (!next)
     {
@@ -243,10 +236,9 @@ template<class T, class U, class V> PyObject *get_generic_next(T *self)
         
     jclass cls = java::lang::String::initializeClass();
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
-        return env->fromJString((jstring) next.this$);
+        return env->fromJString((jstring) next.this$, 0);
 
     PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
-
     if (param != NULL)
         return wrapType(param, next.this$);
 
@@ -263,7 +255,6 @@ PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError);
 void installType(PyTypeObject *type, PyObject *module, char *name,
                  int isExtension);
-PyObject *wrapType(PyTypeObject *type, const jobject& obj);
 
 #ifdef _java_generics
 PyObject *typeParameters(PyTypeObject *types[], size_t size);

@@ -27,8 +27,16 @@ public:
 
     inline explicit JObject(jobject obj)
     {
-        id = env->id(obj);
-        this$ = env->newGlobalRef(obj, id);
+        if (obj)
+        {
+            id = env->id(obj);
+            this$ = env->newGlobalRef(obj, id);
+        }
+        else
+        {
+            id = 0;
+            this$ = NULL;
+        }
     }
 
     inline JObject(const JObject& obj)

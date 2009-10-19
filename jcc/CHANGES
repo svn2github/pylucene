@@ -7,6 +7,7 @@ Version 2.4 ->
  - added (partial) support for Java generics
  - added 'string_' property to JArray('byte') instances to extract byte string
  - fixed bug with passing list of extension objects
+ - reworked iterator and enumeration 'next' templates to shortcut C++ wrappers
  - 
 
 Version 2.3 -> 2.4

@@ -275,7 +275,7 @@ static PyObject *t_jccenv__get_jni_version(PyObject *self, void *data)
 
 static PyObject *t_jccenv__get_java_version(PyObject *self, void *data)
 {
-    return env->fromJString(env->getJavaVersion());
+    return env->fromJString(env->getJavaVersion(), 1);
 }
 
 _DLL_EXPORT PyObject *getVMEnv(PyObject *self)

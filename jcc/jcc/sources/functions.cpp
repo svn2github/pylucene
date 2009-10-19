@@ -903,7 +903,7 @@ String p2j(PyObject *object)
 
 PyObject *j2p(const String& js)
 {
-    return env->fromJString((jstring) js.this$);
+    return env->fromJString((jstring) js.this$, 0);
 }
 
 PyObject *PyErr_SetArgsError(char *name, PyObject *args)

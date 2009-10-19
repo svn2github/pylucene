@@ -86,6 +86,8 @@ protected:
         mid_obj_toString,
         mid_obj_hashCode,
         mid_obj_getClass,
+        mid_iterator_next,
+        mid_enumeration_nextElement,
         max_mid
     };
 
@@ -116,14 +118,14 @@ public:
     virtual ~JCCEnv() {};
 
 #if defined(_MSC_VER) || defined(__WIN32)
-    inline JNIEnv *get_vm_env()
+    inline JNIEnv *get_vm_env() const
     {
         return (JNIEnv *) TlsGetValue(VM_ENV);
     }
 #else
     static pthread_key_t VM_ENV;
 
-    inline JNIEnv *get_vm_env()
+    inline JNIEnv *get_vm_env() const
     {
         return (JNIEnv *) pthread_getspecific(VM_ENV);
     }
@@ -131,11 +133,16 @@ public:
     virtual void set_vm(JavaVM *vm, JNIEnv *vm_env);
     virtual void set_vm_env(JNIEnv *vm_env);
 
-    virtual jint getJNIVersion();
-    virtual jstring getJavaVersion();
+    virtual jint getJNIVersion() const;
+    virtual jstring getJavaVersion() const;
 
-    virtual jclass findClass(const char *className);
-    virtual void registerNatives(jclass cls, JNINativeMethod *methods, int n);
+    virtual jclass findClass(const char *className) const;
+    virtual void registerNatives(jclass cls, JNINativeMethod *methods,
+                                 int n) const;
+
+    virtual jobject iteratorNext(jobject obj) const;
+    virtual jobject enumerationNext(jobject obj) const;
+
     virtual jobject newGlobalRef(jobject obj, int id);
     virtual jobject deleteGlobalRef(jobject obj, int id);
 
@@ -143,85 +150,105 @@ public:
                               int m, ...);
 
     virtual jobjectArray newObjectArray(jclass cls, int size);
-    virtual void setObjectArrayElement(jobjectArray a, int n, jobject obj);
-    virtual jobject getObjectArrayElement(jobjectArray a, int n);
-    virtual int getArrayLength(jarray a);
+    virtual void setObjectArrayElement(jobjectArray a, int n,
+                                       jobject obj) const;
+    virtual jobject getObjectArrayElement(jobjectArray a, int n) const;
+    virtual int getArrayLength(jarray a) const;
 
-    virtual jclass getPythonExceptionClass();
-    virtual void reportException();
+    virtual void reportException() const;
 
-    virtual jobject callObjectMethod(jobject obj, jmethodID mid, ...);
-    virtual jboolean callBooleanMethod(jobject obj, jmethodID mid, ...);
-    virtual jbyte callByteMethod(jobject obj, jmethodID mid, ...);
-    virtual jchar callCharMethod(jobject obj, jmethodID mid, ...);
-    virtual jdouble callDoubleMethod(jobject obj, jmethodID mid, ...);
-    virtual jfloat callFloatMethod(jobject obj, jmethodID mid, ...);
-    virtual jint callIntMethod(jobject obj, jmethodID mid, ...);
-    virtual jlong callLongMethod(jobject obj, jmethodID mid, ...);
-    virtual jshort callShortMethod(jobject obj, jmethodID mid, ...);
-    virtual void callVoidMethod(jobject obj, jmethodID mid, ...);
+    virtual jobject callObjectMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jboolean callBooleanMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jbyte callByteMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jchar callCharMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jdouble callDoubleMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jfloat callFloatMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jint callIntMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jlong callLongMethod(jobject obj, jmethodID mid, ...) const;
+    virtual jshort callShortMethod(jobject obj, jmethodID mid, ...) const;
+    virtual void callVoidMethod(jobject obj, jmethodID mid, ...) const;
 
-    virtual jobject callNonvirtualObjectMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jboolean callNonvirtualBooleanMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jbyte callNonvirtualByteMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jchar callNonvirtualCharMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jdouble callNonvirtualDoubleMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jfloat callNonvirtualFloatMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jint callNonvirtualIntMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jlong callNonvirtualLongMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual jshort callNonvirtualShortMethod(jobject obj, jclass cls, jmethodID mid, ...);
-    virtual void callNonvirtualVoidMethod(jobject obj, jclass cls, jmethodID mid, ...);
+    virtual jobject callNonvirtualObjectMethod(jobject obj, jclass cls,
+                                               jmethodID mid, ...) const;
+    virtual jboolean callNonvirtualBooleanMethod(jobject obj, jclass cls,
+                                                 jmethodID mid, ...) const;
+    virtual jbyte callNonvirtualByteMethod(jobject obj, jclass cls,
+                                           jmethodID mid, ...) const;
+    virtual jchar callNonvirtualCharMethod(jobject obj, jclass cls,
+                                           jmethodID mid, ...) const;
+    virtual jdouble callNonvirtualDoubleMethod(jobject obj, jclass cls,
+                                               jmethodID mid, ...) const;
+    virtual jfloat callNonvirtualFloatMethod(jobject obj, jclass cls,
+                                             jmethodID mid, ...) const;
+    virtual jint callNonvirtualIntMethod(jobject obj, jclass cls,
+                                         jmethodID mid, ...) const;
+    virtual jlong callNonvirtualLongMethod(jobject obj, jclass cls,
+                                           jmethodID mid, ...) const;
+    virtual jshort callNonvirtualShortMethod(jobject obj, jclass cls,
+                                             jmethodID mid, ...) const;
+    virtual void callNonvirtualVoidMethod(jobject obj, jclass cls,
+                                          jmethodID mid, ...) const;
 
-    virtual jobject callStaticObjectMethod(jclass cls, jmethodID mid, ...);
-    virtual jboolean callStaticBooleanMethod(jclass cls, jmethodID mid, ...);
-    virtual jbyte callStaticByteMethod(jclass cls, jmethodID mid, ...);
-    virtual jchar callStaticCharMethod(jclass cls, jmethodID mid, ...);
-    virtual jdouble callStaticDoubleMethod(jclass cls, jmethodID mid, ...);
-    virtual jfloat callStaticFloatMethod(jclass cls, jmethodID mid, ...);
-    virtual jint callStaticIntMethod(jclass cls, jmethodID mid, ...);
-    virtual jlong callStaticLongMethod(jclass cls, jmethodID mid, ...);
-    virtual jshort callStaticShortMethod(jclass cls, jmethodID mid, ...);
-    virtual void callStaticVoidMethod(jclass cls, jmethodID mid, ...);
+    virtual jobject callStaticObjectMethod(jclass cls,
+                                           jmethodID mid, ...) const;
+    virtual jboolean callStaticBooleanMethod(jclass cls,
+                                             jmethodID mid, ...) const;
+    virtual jbyte callStaticByteMethod(jclass cls,
+                                       jmethodID mid, ...) const;
+    virtual jchar callStaticCharMethod(jclass cls,
+                                       jmethodID mid, ...) const;
+    virtual jdouble callStaticDoubleMethod(jclass cls,
+                                           jmethodID mid, ...) const;
+    virtual jfloat callStaticFloatMethod(jclass cls,
+                                         jmethodID mid, ...) const;
+    virtual jint callStaticIntMethod(jclass cls,
+                                     jmethodID mid, ...) const;
+    virtual jlong callStaticLongMethod(jclass cls,
+                                       jmethodID mid, ...) const;
+    virtual jshort callStaticShortMethod(jclass cls,
+                                         jmethodID mid, ...) const;
+    virtual void callStaticVoidMethod(jclass cls,
+                                      jmethodID mid, ...) const;
 
     virtual jmethodID getMethodID(jclass cls, const char *name,
-                                  const char *signature);
+                                  const char *signature) const;
     virtual jfieldID getFieldID(jclass cls, const char *name,
-                                const char *signature);
+                                const char *signature) const;
     virtual jmethodID getStaticMethodID(jclass cls, const char *name,
-                                        const char *signature);
+                                        const char *signature) const;
 
     virtual jobject getStaticObjectField(jclass cls, const char *name,
-                                         const char *signature);
-    virtual jboolean getStaticBooleanField(jclass cls, const char *name);
-    virtual jbyte getStaticByteField(jclass cls, const char *name);
-    virtual jchar getStaticCharField(jclass cls, const char *name);
-    virtual jdouble getStaticDoubleField(jclass cls, const char *name);
-    virtual jfloat getStaticFloatField(jclass cls, const char *name);
-    virtual jint getStaticIntField(jclass cls, const char *name);
-    virtual jlong getStaticLongField(jclass cls, const char *name);
-    virtual jshort getStaticShortField(jclass cls, const char *name);
+                                         const char *signature) const;
+    virtual jboolean getStaticBooleanField(jclass cls, const char *name) const;
+    virtual jbyte getStaticByteField(jclass cls, const char *name) const;
+    virtual jchar getStaticCharField(jclass cls, const char *name) const;
+    virtual jdouble getStaticDoubleField(jclass cls, const char *name) const;
+    virtual jfloat getStaticFloatField(jclass cls, const char *name) const;
+    virtual jint getStaticIntField(jclass cls, const char *name) const;
+    virtual jlong getStaticLongField(jclass cls, const char *name) const;
+    virtual jshort getStaticShortField(jclass cls, const char *name) const;
 
-    virtual jobject getObjectField(jobject obj, jfieldID id);
-    virtual jboolean getBooleanField(jobject obj, jfieldID id);
-    virtual jbyte getByteField(jobject obj, jfieldID id);
-    virtual jchar getCharField(jobject obj, jfieldID id);
-    virtual jdouble getDoubleField(jobject obj, jfieldID id);
-    virtual jfloat getFloatField(jobject obj, jfieldID id);
-    virtual jint getIntField(jobject obj, jfieldID id);
-    virtual jlong getLongField(jobject obj, jfieldID id);
-    virtual jshort getShortField(jobject obj, jfieldID id);
+    virtual jobject getObjectField(jobject obj, jfieldID id) const;
+    virtual jboolean getBooleanField(jobject obj, jfieldID id) const;
+    virtual jbyte getByteField(jobject obj, jfieldID id) const;
+    virtual jchar getCharField(jobject obj, jfieldID id) const;
+    virtual jdouble getDoubleField(jobject obj, jfieldID id) const;
+    virtual jfloat getFloatField(jobject obj, jfieldID id) const;
+    virtual jint getIntField(jobject obj, jfieldID id) const;
+    virtual jlong getLongField(jobject obj, jfieldID id) const;
+    virtual jshort getShortField(jobject obj, jfieldID id) const;
 
-    virtual void setObjectField(jobject obj, jfieldID id, jobject value);
-    virtual void setBooleanField(jobject obj, jfieldID id, jboolean value);
-    virtual void setByteField(jobject obj, jfieldID id, jbyte value);
-    virtual void setCharField(jobject obj, jfieldID id, jchar value);
-    virtual void setDoubleField(jobject obj, jfieldID id, jdouble value);
-    virtual void setFloatField(jobject obj, jfieldID id, jfloat value);
-    virtual void setIntField(jobject obj, jfieldID id, jint value);
-    virtual void setLongField(jobject obj, jfieldID id, jlong value);
-    virtual void setShortField(jobject obj, jfieldID id, jshort value);
+    virtual void setObjectField(jobject obj, jfieldID id, jobject value) const;
+    virtual void setBooleanField(jobject obj, jfieldID id, jboolean value) const;
+    virtual void setByteField(jobject obj, jfieldID id, jbyte value) const;
+    virtual void setCharField(jobject obj, jfieldID id, jchar value) const;
+    virtual void setDoubleField(jobject obj, jfieldID id, jdouble value) const;
+    virtual void setFloatField(jobject obj, jfieldID id, jfloat value) const;
+    virtual void setIntField(jobject obj, jfieldID id, jint value) const;
+    virtual void setLongField(jobject obj, jfieldID id, jlong value) const;
+    virtual void setShortField(jobject obj, jfieldID id, jshort value) const;
 
-    int id(jobject obj) {
+    int id(jobject obj) const {
         return obj
             ? get_vm_env()->CallStaticIntMethod(_sys,
                                                 _mids[mid_sys_identityHashCode],
@@ -229,24 +256,26 @@ public:
             : 0;
     }
 
-    int hash(jobject obj) {
+    int hash(jobject obj) const {
         return obj
             ? get_vm_env()->CallIntMethod(obj, _mids[mid_obj_hashCode])
             : 0;
     }
 
     virtual void setClassPath(const char *classPath);
-    virtual jstring fromUTF(const char *bytes);
-    virtual char *toUTF(jstring str);
-    virtual char *toString(jobject obj);
-    virtual char *getClassName(jobject obj);
+
+    virtual jstring fromUTF(const char *bytes) const;
+    virtual char *toUTF(jstring str) const;
+    virtual char *toString(jobject obj) const;
+    virtual char *getClassName(jobject obj) const;
 #ifdef PYTHON
-    virtual jstring fromPyString(PyObject *object);
-    virtual PyObject *fromJString(jstring js);
+    virtual jclass getPythonExceptionClass() const;
+    virtual jstring fromPyString(PyObject *object) const;
+    virtual PyObject *fromJString(jstring js, int delete_local_ref) const;
     virtual void finalizeObject(JNIEnv *jenv, PyObject *obj);
 #endif
 
-    virtual inline int isSame(jobject o1, jobject o2)
+    virtual inline int isSame(jobject o1, jobject o2) const
     {
         return o1 == o2 || get_vm_env()->IsSameObject(o1, o2);
     }
