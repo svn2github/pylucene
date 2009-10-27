@@ -109,10 +109,12 @@ try:
         raise ImportError
     from setuptools import setup, Extension
     from pkg_resources import require
-    with_setuptools = require('setuptools')[0].version
-
+    with_setuptools = require('setuptools')[0].parsed_version
+    
     enable_shared = False
-    if with_setuptools >= '0.6c7' and 'NO_SHARED' not in os.environ:
+    with_setuptools_c7 = ('00000000', '00000006', '*c', '00000007', '*final')
+    with_setuptools_c11 = ('00000000', '00000006', '*c', '00000011', '*final')
+    if with_setuptools >= with_setuptools_c7 and 'NO_SHARED' not in os.environ:
         if platform in ('darwin', 'ipod', 'win32'):
             enable_shared = True
         elif platform == 'linux2':
@@ -123,34 +125,38 @@ try:
                 import setuptools
                 jccdir = os.path.dirname(os.path.abspath(__file__))
                 st_egg = os.path.dirname(setuptools.__path__[0])
+                if with_setuptools < with_setuptools_c11:
+                    patch_version = '0.6c7'
+                else:
+                    patch_version = '0.6c11'
 
                 def patch_st_dir():
                     return '''
 
-Shared mode is disabled, setuptools patch.43 must be applied to enable it
+Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
 or the NO_SHARED environment variable must be set to turn off this error.
 
-    sudo patch -d %s -Nup0 < %s/jcc/patches/patch.43
+    sudo patch -d %s -Nup0 < %s/jcc/patches/patch.43.%s
 
 See %s/INSTALL for more information about shared mode.
-''' %(st_egg, jccdir, jccdir)
+''' %(patch_version, st_egg, jccdir, jccdir, patch_version)
 
                 def patch_st_zip():
                     return '''
 
-Shared mode is disabled, setuptools patch.43 must be applied to enable it
+Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
 or the NO_SHARED environment variable must be set to turn off this error.
 
     mkdir tmp
     cd tmp
     unzip -q %s
-    patch -Nup0 < %s/jcc/patches/patch.43
+    patch -Nup0 < %s/jcc/patches/patch.43.%s
     sudo zip %s -f
     cd ..
     rm -rf tmp
 
 See %s/INSTALL for more information about shared mode.
-''' %(st_egg, jccdir, st_egg, jccdir)
+''' %(patch_version, st_egg, jccdir, patch_version, st_egg, jccdir)
 
                 if os.path.isdir(st_egg):
                     raise NotImplementedError, patch_st_dir()
