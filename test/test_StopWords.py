@@ -22,14 +22,18 @@ class StopWordsTestCase(TestCase):
 
     def setUp(self):
 
-        self.stop_set = ['the', 'and', 's']
+        stopWords = ['the', 'and', 's']
+        self.stop_set = HashSet()
+        for stopWord in stopWords:
+            self.stop_set.add(stopWord)
+
         self.reader = StringReader('foo')
 
     def testStopWords(self):
 
         try:
-            result = StandardTokenizer(self.reader)
-            result = StopFilter(result, self.stop_set)
+            result = StandardTokenizer(Version.LUCENE_CURRENT, self.reader)
+            result = StopFilter(True, result, self.stop_set)
         except Exception, e:
             self.fail(str(e))
 

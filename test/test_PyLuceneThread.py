@@ -27,7 +27,8 @@ class PyLuceneThreadTestCase(TestCase):
         self.classLoader = Thread.currentThread().getContextClassLoader()
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, StandardAnalyzer(), True,
+        writer = IndexWriter(self.directory,
+                             StandardAnalyzer(Version.LUCENE_CURRENT), True,
                              IndexWriter.MaxFieldLength.LIMITED)
 
         doc1 = Document()

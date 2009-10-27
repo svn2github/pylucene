@@ -30,12 +30,6 @@ class SimpleSimilarity(PythonSimilarity):
     def sloppyFreq(self, distance):
         return 2.0
 
-    def idfTerms(self, terms, searcher):
-        return 1.0
-
-    def idfTerm(self, term, searcher):
-        return 1.0
-
     def idf(self, docFreq, numDocs):
         return 1.0
 
@@ -74,17 +68,15 @@ class SimilarityTestCase(TestCase):
         c = Term("field", "c")
 
         class collector1(PythonCollector):
-            def __init__(_self, score):
-                super(collector1, _self).__init__()
-                _self.score = score
             def collect(_self, doc, score):
-                self.assertEqual(score, _self.score)
+                self.assertEqual(1.0, score)
             def setNextReader(_self, reader, docBase):
                 pass
             def acceptsDocsOutOfOrder(_self):
                 return True
 
-        searcher.search(TermQuery(b), collector1(1.0))
+        searcher.search(TermQuery(b), collector1())
+
 
         bq = BooleanQuery()
         bq.add(TermQuery(a), BooleanClause.Occur.SHOULD)
@@ -92,22 +84,41 @@ class SimilarityTestCase(TestCase):
 
         class collector2(PythonCollector):
             def collect(_self, doc, score):
-                self.assertEqual(score, doc + 1)
+                self.assertEqual(doc + _self.base + 1, score)
             def setNextReader(_self, reader, docBase):
-                pass
+                _self.base = docBase
             def acceptsDocsOutOfOrder(_self):
                 return True
 
         searcher.search(bq, collector2())
 
+
         pq = PhraseQuery()
         pq.add(a)
         pq.add(c)
 
-        searcher.search(pq, collector1(1.0))
+        class collector3(PythonCollector):
+            def collect(_self, doc, score):
+                self.assertEqual(1.0, score)
+            def setNextReader(_self, reader, docBase):
+                pass
+            def acceptsDocsOutOfOrder(_self):
+                return True
+
+        searcher.search(pq, collector3())
+
 
         pq.setSlop(2)
-        searcher.search(pq, collector1(2.0))
+
+        class collector4(PythonCollector):
+            def collect(_self, doc, score):
+                self.assertEqual(2.0, score)
+            def setNextReader(_self, reader, docBase):
+                pass
+            def acceptsDocsOutOfOrder(_self):
+                return True
+
+        searcher.search(pq, collector4())
 
 
 if __name__ == "__main__":

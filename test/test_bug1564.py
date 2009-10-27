@@ -19,7 +19,7 @@ class Test_Bug1564(unittest.TestCase):
 
     def setUp(self):
 
-        self.analyzer = StandardAnalyzer()
+        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         self.store = RAMDirectory()
 
         writer = IndexWriter(self.store, self.analyzer, True,
@@ -41,7 +41,8 @@ class Test_Bug1564(unittest.TestCase):
     def test_bug1564(self):
 
         searcher = IndexSearcher(self.store, True)
-        query = QueryParser('all', self.analyzer).parse('supreme')
+        query = QueryParser(Version.LUCENE_CURRENT, 'all',
+                            self.analyzer).parse('supreme')
         topDocs = searcher.search(query, 50)
         self.assertEqual(topDocs.totalHits, 1)
 

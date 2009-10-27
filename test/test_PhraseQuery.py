@@ -140,7 +140,7 @@ class PhraseQueryTestCase(TestCase):
     def testPhraseQueryWithStopAnalyzer(self):
 
         directory = RAMDirectory()
-        stopAnalyzer = StopAnalyzer()
+        stopAnalyzer = StopAnalyzer(Version.LUCENE_24)
         writer = IndexWriter(directory, stopAnalyzer, True,
                              IndexWriter.MaxFieldLength.LIMITED)
         doc = Document()

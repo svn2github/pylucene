@@ -35,7 +35,8 @@ class PythonQueryParserTestCase(TestCase):
         class TestQueryParser(BooleanTestMixin, PythonQueryParser):
             pass
         
-        qp = TestQueryParser('all', StandardAnalyzer())
+        qp = TestQueryParser(Version.LUCENE_CURRENT, 'all',
+                             StandardAnalyzer(Version.LUCENE_CURRENT))
         q = qp.parse("foo bar")
         self.assertEquals(str(q), "all:foo all:bar all:extra_clause")
 
@@ -47,10 +48,11 @@ class PythonMultiFieldQueryParserTestCase(TestCase):
         class TestQueryParser(BooleanTestMixin, PythonMultiFieldQueryParser):
             pass
 
-        qp = TestQueryParser(['one', 'two'], StandardAnalyzer())
-        q = qp.parse("foo bar", ['one', 'two'],
+        qp = TestQueryParser(Version.LUCENE_CURRENT, ['one', 'two'],
+                             StandardAnalyzer(Version.LUCENE_CURRENT))
+        q = qp.parse(Version.LUCENE_CURRENT, "foo bar", ['one', 'two'],
                      [BooleanClause.Occur.SHOULD, BooleanClause.Occur.SHOULD],
-                     StandardAnalyzer())
+                     StandardAnalyzer(Version.LUCENE_CURRENT))
         self.assertEquals(str(q), "(one:foo one:bar) (two:foo two:bar)")
 
 

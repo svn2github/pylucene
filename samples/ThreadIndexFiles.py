@@ -17,7 +17,7 @@
 import sys, os, threading
 
 from datetime import datetime
-from lucene import StandardAnalyzer, VERSION, initVM
+from lucene import StandardAnalyzer, VERSION, initVM, Version
 from IndexFiles import IndexFiles
 
 
@@ -31,7 +31,8 @@ if __name__ == '__main__':
     def fn():
         env.attachCurrentThread()
         start = datetime.now()
-        IndexFiles(sys.argv[1], "index", StandardAnalyzer())
+        IndexFiles(sys.argv[1], "index",
+                   StandardAnalyzer(Version.LUCENE_CURRENT))
         end = datetime.now()
         print end - start
 

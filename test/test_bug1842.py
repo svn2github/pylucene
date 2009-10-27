@@ -19,7 +19,7 @@ class Test_Bug1842(unittest.TestCase):
 
     def setUp(self):
 
-        self.analyzer = StandardAnalyzer()
+        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         self.d1 = RAMDirectory()
         
         w1 = IndexWriter(self.d1, self.analyzer, True,

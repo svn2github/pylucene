@@ -24,8 +24,8 @@ class CachingWrapperFilterTestCase(TestCase):
     def testCachingWorks(self):
 
         dir = RAMDirectory()
-        writer = IndexWriter(dir, StandardAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = IndexWriter(dir, StandardAnalyzer(Version.LUCENE_CURRENT),
+                             True, IndexWriter.MaxFieldLength.LIMITED)
         writer.close()
 
         reader = IndexReader.open(dir, True)

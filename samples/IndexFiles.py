@@ -79,7 +79,7 @@ if __name__ == '__main__':
     print 'lucene', lucene.VERSION
     start = datetime.now()
     try:
-        IndexFiles(sys.argv[1], "index", lucene.StandardAnalyzer())
+        IndexFiles(sys.argv[1], "index", lucene.StandardAnalyzer(lucene.Version.LUCENE_CURRENT))
         end = datetime.now()
         print end - start
     except Exception, e:

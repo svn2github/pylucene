@@ -21,7 +21,7 @@
 import os, re, sys
 from subprocess import *
 from lucene import IndexWriter, StandardAnalyzer, Document, Field
-from lucene import SimpleFSDirectory, File, initVM
+from lucene import SimpleFSDirectory, File, initVM, Version
 
 def indexDirectory(dir):
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         initVM()
         indexDir = sys.argv[1]
         writer = IndexWriter(SimpleFSDirectory(File(indexDir)),
-                             StandardAnalyzer(), True,
+                             StandardAnalyzer(Version.LUCENE_CURRENT), True,
                              IndexWriter.MaxFieldLength.LIMITED)
         manpath = os.environ.get('MANPATH', '/usr/share/man').split(os.pathsep)
         for dir in manpath:

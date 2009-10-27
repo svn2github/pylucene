@@ -24,8 +24,8 @@ class NotTestCase(TestCase):
     def testNot(self):
 
         store = RAMDirectory()
-        writer = IndexWriter(store, SimpleAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = IndexWriter(store, SimpleAnalyzer(Version.LUCENE_CURRENT),
+                             True, IndexWriter.MaxFieldLength.LIMITED)
 
         d1 = Document()
         d1.add(Field("field", "a b", Field.Store.YES, Field.Index.ANALYZED))
@@ -35,7 +35,8 @@ class NotTestCase(TestCase):
         writer.close()
 
         searcher = IndexSearcher(store, True)
-        query = QueryParser("field", SimpleAnalyzer()).parse("a NOT b")
+        query = QueryParser(Version.LUCENE_CURRENT, "field",
+                            SimpleAnalyzer(Version.LUCENE_CURRENT)).parse("a NOT b")
 
         topDocs = searcher.search(query, 50)
         self.assertEqual(0, topDocs.totalHits)

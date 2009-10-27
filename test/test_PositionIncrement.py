@@ -156,7 +156,8 @@ class PositionIncrementTestCase(TestCase):
         self.assertEqual(0, len(hits))
 
         # should not find "1 2" because there is a gap of 1 in the index
-        qp = QueryParser("field", StopWhitespaceAnalyzer(False))
+        qp = QueryParser(Version.LUCENE_CURRENT, "field",
+                         StopWhitespaceAnalyzer(False))
         q = PhraseQuery.cast_(qp.parse("\"1 2\""))
         hits = searcher.search(q, None, 1000).scoreDocs
         self.assertEqual(0, len(hits))
@@ -183,7 +184,8 @@ class PositionIncrementTestCase(TestCase):
       
         # when both qp qnd stopFilter propagate increments, we should find
         # the doc.
-        qp = QueryParser("field", StopWhitespaceAnalyzer(True))
+        qp = QueryParser(Version.LUCENE_CURRENT, "field",
+                         StopWhitespaceAnalyzer(True))
         qp.setEnablePositionIncrements(True)
         q = PhraseQuery.cast_(qp.parse("\"1 stop 2\""))
         hits = searcher.search(q, None, 1000).scoreDocs
@@ -278,7 +280,10 @@ class StopWhitespaceAnalyzer(PythonAnalyzer):
     def tokenStream(self, fieldName, reader):
 
         ts = self.a.tokenStream(fieldName, reader)
-        return StopFilter(self.enablePositionIncrements, ts, ["stop"])
+        set = HashSet()
+        set.add("stop")
+
+        return StopFilter(self.enablePositionIncrements, ts, set)
 
 
 class TestPayloadAnalyzer(PythonAnalyzer):

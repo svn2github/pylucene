@@ -47,7 +47,8 @@ class HighlighterTestCase(TestCase):
     def __init__(self, *args):
 
         super(HighlighterTestCase, self).__init__(*args)
-        self.parser = QueryParser(self.FIELD_NAME, StandardAnalyzer())
+        self.parser = QueryParser(Version.LUCENE_CURRENT, self.FIELD_NAME,
+                                  StandardAnalyzer(Version.LUCENE_CURRENT))
 
     def testSimpleHighlighter(self):
 
@@ -114,7 +115,7 @@ class HighlighterTestCase(TestCase):
         
     def setUp(self):
 
-        self.analyzer = StandardAnalyzer()
+        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         self.ramDir = RAMDirectory()
         writer = IndexWriter(self.ramDir, self.analyzer, True,
                              IndexWriter.MaxFieldLength.LIMITED)

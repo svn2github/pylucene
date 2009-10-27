@@ -19,7 +19,7 @@ class Test_Bug1763(unittest.TestCase):
 
     def setUp(self):
 
-        self.analyzer = StandardAnalyzer()
+        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         self.d1 = RAMDirectory()
         self.d2 = RAMDirectory()
         
@@ -53,7 +53,8 @@ class Test_Bug1763(unittest.TestCase):
         w1.close()
 
         searcher = IndexSearcher(self.d1, True)
-        q = QueryParser('all', self.analyzer).parse('brown')
+        q = QueryParser(Version.LUCENE_CURRENT, 'all',
+                        self.analyzer).parse('brown')
         topDocs = searcher.search(q, 50)
         self.assertEqual(searcher.doc(topDocs.scoreDocs[0].doc).get('id'), '2')
 

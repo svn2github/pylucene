@@ -29,7 +29,7 @@ from getopt import getopt, GetoptError
 
 from lucene import \
      Document, IndexSearcher, SimpleFSDirectory, File, QueryParser, \
-     StandardAnalyzer, initVM
+     StandardAnalyzer, initVM, Version
 
 if __name__ == '__main__':
     initVM()
@@ -65,7 +65,7 @@ template = CustomTemplate(format)
 fsDir = SimpleFSDirectory(File(indexDir))
 searcher = IndexSearcher(fsDir, True)
 
-parser = QueryParser("keywords", StandardAnalyzer())
+parser = QueryParser("keywords", StandardAnalyzer(Version.LUCENE_CURRENT))
 parser.setDefaultOperator(QueryParser.Operator.AND)
 query = parser.parse(' '.join(args))
 start = datetime.now()

@@ -65,7 +65,7 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
 
     def testStop(self):
 
-        a = StopAnalyzer()
+        a = StopAnalyzer(Version.LUCENE_CURRENT)
         self._assertAnalyzesTo(a, "foo bar FOO BAR", 
                                [ "foo", "bar", "foo", "bar" ])
         self._assertAnalyzesTo(a, "foo a bar such FOO THESE BAR", 

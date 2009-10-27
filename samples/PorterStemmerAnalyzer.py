@@ -36,11 +36,11 @@ class PorterStemmerAnalyzer(PythonAnalyzer):
 
     def tokenStream(self, fieldName, reader):
 
-        result = StandardTokenizer(reader)
+        result = StandardTokenizer(Version.LUCENE_CURRENT, reader)
         result = StandardFilter(result)
         result = LowerCaseFilter(result)
         result = PorterStemFilter(result)
-        result = StopFilter(result, StopAnalyzer.ENGLISH_STOP_WORDS)
+        result = StopFilter(True, result, StopAnalyzer.ENGLISH_STOP_WORDS_SET)
 
         return result
 

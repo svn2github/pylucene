@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from lucene import \
     QueryParser, IndexSearcher, StandardAnalyzer, SimpleFSDirectory, File, \
-    VERSION, initVM
+    VERSION, initVM, Version
 
 
 """
@@ -23,7 +23,8 @@ def run(searcher, analyzer):
 
         print
         print "Searching for:", command
-        query = QueryParser("contents", analyzer).parse(command)
+        query = QueryParser(Version.LUCENE_CURRENT, "contents",
+                            analyzer).parse(command)
         scoreDocs = searcher.search(query, 50).scoreDocs
         print "%s total matching documents." % len(scoreDocs)
 
@@ -38,6 +39,6 @@ if __name__ == '__main__':
     print 'lucene', VERSION
     directory = SimpleFSDirectory(File(STORE_DIR))
     searcher = IndexSearcher(directory, True)
-    analyzer = StandardAnalyzer()
+    analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
     run(searcher, analyzer)
     searcher.close()

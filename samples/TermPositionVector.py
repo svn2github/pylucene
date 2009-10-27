@@ -1,13 +1,13 @@
 from lucene import \
-    StandardAnalyzer, RAMDirectory, Document, Field, \
+    StandardAnalyzer, RAMDirectory, Document, Field, Version, \
     IndexWriter, IndexReader, TermPositionVector, initVM
 
 if __name__ == '__main__':
     initVM()
 
 directory = RAMDirectory()
-iwriter = IndexWriter(directory, StandardAnalyzer(), True,
-                      IndexWriter.MaxFieldLength.LIMITED)
+iwriter = IndexWriter(directory, StandardAnalyzer(Version.LUCENE_CURRENT),
+                      True, IndexWriter.MaxFieldLength.LIMITED)
 ts = ["this bernhard is the text to be index text",
       "this claudia is the text to be index"]
 for t in ts:

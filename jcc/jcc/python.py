@@ -797,10 +797,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     if iteratorMethod:
         if iteratorExt:
             tp_iter = 'get_extension_iterator'
-        elif generics and clsParams:
-            tp_iter = '((PyObject *(*)(t_%s *)) get_generic_iterator<t_%s>)' %(names[-1], names[-1])
         else:
-            tp_iter = '((PyObject *(*)(t_%s *)) get_iterator<t_%s>)' %(names[-1], names[-1])
+            tp_iter = '((PyObject *(*)(t_%s *)) get_%siterator<t_%s>)' %(names[-1], clsParams and 'generic_' or '', names[-1])
         tp_iternext = '0'
     elif nextMethod and iterator.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
@@ -808,30 +806,24 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         ns, sep, n = rpartition(returnName, '::')
         if nextExt:
             tp_iternext = 'get_extension_next'
-        elif generics and clsParams:
-            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_generic_iterator_next<java::util::t_Iterator,%s%st_%s>)' %(ns, sep, n)
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_iterator_next<java::util::t_Iterator,%s%st_%s>)' %(ns, sep, n)
+            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_%siterator_next<java::util::t_Iterator,%s%st_%s>)' %(clsParams and 'generic_' or '', ns, sep, n)
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextElementMethod.getReturnType(), cls, False)
         ns, sep, n = rpartition(returnName, '::')
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
-        elif generics and clsParams:
-            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_generic_enumeration_next<java::util::t_Enumeration,%s%st_%s>)' %(ns, sep, n)
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_enumeration_next<java::util::t_Enumeration,%s%st_%s>)' %(ns, sep, n)
+            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_%senumeration_next<java::util::t_Enumeration,%s%st_%s>)' %(clsParams and 'generic_' or '', ns, sep, n)
     elif nextMethod:
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextMethod.getReturnType(), cls, False)
         ns, sep, n = rpartition(returnName, '::')
         if nextExt:
             tp_iternext = 'get_extension_next'
-        elif generics and clsParams:
-            tp_iternext = '((PyObject *(*)(t_%s *)) get_generic_next<t_%s,%s%st_%s,%s>)' %(names[-1], names[-1], ns, sep, n, returnName)
         else:
-            tp_iternext = '((PyObject *(*)(t_%s *)) get_next<t_%s,%s%st_%s,%s>)' %(names[-1], names[-1], ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(t_%s *)) get_%snext<t_%s,%s%st_%s,%s>)' %(names[-1], clsParams and 'generic_' or '', names[-1], ns, sep, n, returnName)
     else:
         tp_iter = '0'
         tp_iternext = '0'

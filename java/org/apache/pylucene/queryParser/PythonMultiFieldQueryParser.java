@@ -21,15 +21,17 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.util.Version;
 
 
 public class PythonMultiFieldQueryParser extends MultiFieldQueryParser {
 
     private long pythonObject;
 
-    public PythonMultiFieldQueryParser(String[] fields, Analyzer analyzer)
+    public PythonMultiFieldQueryParser(Version version, String[] fields,
+                                       Analyzer analyzer)
     {
-        super(fields, analyzer);
+        super(version, fields, analyzer);
     }
 
     public void pythonExtension(long pythonObject)

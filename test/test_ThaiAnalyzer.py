@@ -14,7 +14,7 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import ThaiAnalyzer, StringReader
+from lucene import ThaiAnalyzer, StringReader, Version
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 
@@ -22,7 +22,7 @@ class ThaiAnalyzerTestCase(BaseTokenStreamTestCase):
 
     def testAnalyzer(self):
 
-        analyzer = ThaiAnalyzer()
+        analyzer = ThaiAnalyzer(Version.LUCENE_CURRENT)
     
         self._assertAnalyzesTo(analyzer, u"", [])
 

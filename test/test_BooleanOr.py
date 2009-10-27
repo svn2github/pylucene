@@ -38,8 +38,8 @@ class BooleanOrTestCase(TestCase):
     def setUp(self):
 
         rd = RAMDirectory()
-        writer = IndexWriter(rd, StandardAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = IndexWriter(rd, StandardAnalyzer(Version.LUCENE_CURRENT),
+                             True, IndexWriter.MaxFieldLength.LIMITED)
 
         d = Document()
         d.add(Field(self.FIELD_T,

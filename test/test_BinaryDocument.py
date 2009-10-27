@@ -47,8 +47,8 @@ class TestBinaryDocument(TestCase):
     
         # add the doc to a ram index
         dir = RAMDirectory()
-        writer = IndexWriter(dir, StandardAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = IndexWriter(dir, StandardAnalyzer(Version.LUCENE_CURRENT),
+                             True, IndexWriter.MaxFieldLength.LIMITED)
         writer.addDocument(doc)
         writer.close()
     
@@ -87,8 +87,8 @@ class TestBinaryDocument(TestCase):
     
         # add the doc to a ram index
         dir = RAMDirectory()
-        writer = IndexWriter(dir, StandardAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = IndexWriter(dir, StandardAnalyzer(Version.LUCENE_CURRENT),
+                             True, IndexWriter.MaxFieldLength.LIMITED)
         writer.addDocument(doc)
         writer.close()
     

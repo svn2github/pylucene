@@ -21,7 +21,7 @@ from lucene import *
 class Test_PyLuceneBase(object):
 
     def getAnalyzer(self):
-        return StandardAnalyzer()
+        return StandardAnalyzer(Version.LUCENE_CURRENT)
 
     def openStore(self):
         raise NotImplemented
@@ -129,7 +129,8 @@ class Test_PyLuceneBase(object):
         searcher = None
         try:
             searcher = IndexSearcher(store, True)
-            query = QueryParser("title", self.getAnalyzer()).parse("value")
+            query = QueryParser(Version.LUCENE_CURRENT, "title",
+                                self.getAnalyzer()).parse("value")
             topDocs = searcher.search(query, 50)
             self.assertEqual(topDocs.totalHits, 1)
         finally:
@@ -146,8 +147,8 @@ class Test_PyLuceneBase(object):
         try:
             searcher = IndexSearcher(store, True)
             SHOULD = BooleanClause.Occur.SHOULD
-            query = MultiFieldQueryParser.parse("value",
-                                                ["title", "docid"],
+            query = MultiFieldQueryParser.parse(Version.LUCENE_CURRENT,
+                                                "value", ["title", "docid"],
                                                 [SHOULD, SHOULD],
                                                 self.getAnalyzer())
             topDocs = searcher.search(query, 50)
@@ -202,7 +203,8 @@ class Test_PyLuceneBase(object):
         searcher = None
         try:
             searcher = IndexSearcher(store, True)
-            query = QueryParser("title", self.getAnalyzer()).parse("value")
+            query = QueryParser(Version.LUCENE_CURRENT, "title",
+                                self.getAnalyzer()).parse("value")
             topDocs = searcher.search(query, 50)
             self.assertEqual(topDocs.totalHits, 0)
         finally:

@@ -45,7 +45,7 @@ public class PythonCollector extends Collector {
         pythonDecRef();
     }
 
-    Scorer scorer;
+    protected Scorer scorer;
 
     public void setScorer(Scorer scorer)
         throws IOException
