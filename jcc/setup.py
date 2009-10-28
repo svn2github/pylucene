@@ -139,7 +139,7 @@ or the NO_SHARED environment variable must be set to turn off this error.
     sudo patch -d %s -Nup0 < %s/jcc/patches/patch.43.%s
 
 See %s/INSTALL for more information about shared mode.
-''' %(patch_version, st_egg, jccdir, jccdir, patch_version)
+''' %(patch_version, st_egg, jccdir, patch_version, jccdir)
 
                 def patch_st_zip():
                     return '''
