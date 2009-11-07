@@ -12,8 +12,7 @@
 
 import os, sys, platform, subprocess
 
-jcc_ver = '2.4'
-python_ver = '%d.%d.%d' %(sys.version_info[0:3])
+jcc_ver = '2.5'
 machine = platform.machine()
 
 if machine.startswith("iPod") or machine.startswith("iPhone"):
@@ -164,7 +163,7 @@ See %s/INSTALL for more information about shared mode.
                     raise NotImplementedError, patch_st_zip()
 
 except ImportError:
-    if python_ver < '2.4':
+    if sys.version_info < (2, 4):
         raise ImportError, 'setuptools is required when using Python 2.3'
     else:
         from distutils.core import setup, Extension

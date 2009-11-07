@@ -52,6 +52,7 @@ public class PythonSimilarityDelegator extends SimilarityDelegator {
     public native float sloppyFreq(int distance);
     public native float idf(int docFreq, int numDocs);
     public native float coord(int overlap, int maxOverlap);
-    public native float scorePayload(String fieldName, byte[] payload,
+    public native float scorePayload(int docId, String fieldName,
+                                     int start, int end, byte [] payload,
                                      int offset, int length);
 }

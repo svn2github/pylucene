@@ -584,10 +584,17 @@ def header(env, out, cls, typeset, packages, excludes, generics):
         if Modifier.isPublic(constructor.getModifiers()):
             if generics:
                 params = constructor.getGenericParameterTypes()
+                if len(params) == 1:
+                    if params[0] == cls:
+                        continue
+                    if ParameterizedType.instance_(params[0]):
+                        param = ParameterizedType.cast_(params[0])
+                        if param.getRawType() == cls:
+                            continue
             else:
                 params = constructor.getParameterTypes()
-            if len(params) == 1 and params[0] == cls:
-                continue
+                if len(params) == 1 and params[0] == cls:
+                    continue
             for param in params:
                 if not known(param, typeset, declares, packages, excludes,
                              generics):

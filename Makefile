@@ -169,16 +169,14 @@ $(SNOWBALL_JAR): $(LUCENE_JAR)
 $(ANALYZERS_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
 
-$(HIGHLIGHTER_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/highlighter; $(ANT) -Dversion=$(LUCENE_VER)
+$(REGEX_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/contrib/regex; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(MEMORY_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/memory; $(ANT) -Dversion=$(LUCENE_VER)
 
-$(REGEX_JAR): $(LUCENE_JAR)
-	rm -f $(LUCENE)/contrib/regex/src/java/org/apache/lucene/search/regex/JakartaRegexpCapabilities.java
-	rm -f $(LUCENE)/contrib/regex/src/java/org/apache/regexp/RegexpTunnel.java
-	cd $(LUCENE)/contrib/regex; $(ANT) -Dversion=$(LUCENE_VER)
+$(HIGHLIGHTER_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/contrib/highlighter; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(QUERIES_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/queries; $(ANT) -Dversion=$(LUCENE_VER)
@@ -187,8 +185,8 @@ $(EXTENSIONS_JAR): $(LUCENE_JAR)
 	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
 JARS=$(LUCENE_JAR) $(SNOWBALL_JAR) $(ANALYZERS_JAR) \
-     $(HIGHLIGHTER_JAR) $(MEMORY_JAR) \
-     $(REGEX_JAR) $(QUERIES_JAR) $(EXTENSIONS_JAR)
+     $(REGEX_JAR) $(MEMORY_JAR) $(HIGHLIGHTER_JAR) $(QUERIES_JAR) \
+     $(EXTENSIONS_JAR)
 
 
 jars: $(JARS)
@@ -207,10 +205,11 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --exclude org.apache.lucene.queryParser.TokenMgrError \
            --exclude org.apache.lucene.queryParser.QueryParserTokenManager \
            --exclude org.apache.lucene.queryParser.ParseException \
+           --exclude org.apache.lucene.search.regex.JakartaRegexpCapabilities \
+           --exclude org.apache.regexp.RegexpTunnel \
            --python lucene \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
-           --sequence org.apache.lucene.search.Hits 'length:()I' 'doc:(I)Lorg/apache/lucene/document/Document;' \
            --rename org.apache.lucene.search.highlight.SpanScorer=HighlighterSpanScorer \
            --version $(LUCENE_VER) \
            --module python/collections.py \
@@ -254,7 +253,7 @@ samples/LuceneInAction/index:
 
 test: install-test samples/LuceneInAction/index
 	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+#	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
@@ -263,6 +262,7 @@ SITE=../site/build/site/en
 distrib:
 	mkdir -p distrib
 	svn export . distrib/pylucene-$(VERSION)
+	tar -cf - --exclude build $(LUCENE) | tar -C distrib/pylucene-$(VERSION) -xvf -
 	mkdir distrib/pylucene-$(VERSION)/doc
 	tar -C $(SITE) -cf - . | tar -C distrib/pylucene-$(VERSION)/doc -xvf -
 	cd distrib; tar -cvzf $(ARCHIVE) pylucene-$(VERSION)

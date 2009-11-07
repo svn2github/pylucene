@@ -93,7 +93,7 @@ def parseArgs(params, current, generics):
             ''.join([callarg(params[i], i) for i in xrange(len(params))]))
 
 
-def declareVars(out, indent, params, current, generics):
+def declareVars(out, indent, params, current, generics, typeParams):
 
     for i in xrange(len(params)):
         param = params[i]
@@ -105,6 +105,7 @@ def declareVars(out, indent, params, current, generics):
                 param = param.getComponentType()
             if param.getTypeParameters():
                 line(out, indent, 'PyTypeObject **p%d;', i)
+                typeParams.add(i)
     
 
 def construct(out, indent, cls, inCase, constructor, names, generics):
@@ -114,9 +115,14 @@ def construct(out, indent, cls, inCase, constructor, names, generics):
         indent += 1
 
     params = constructor.getParameterTypes()
+    if generics:
+        typeParams = set()
+    else:
+        typeParams = None
+
     count = len(params)
 
-    declareVars(out, indent, params, cls, generics)
+    declareVars(out, indent, params, cls, generics, typeParams)
     line(out, indent, '%s object((jobject) NULL);', cppname(names[-1]))
 
     line(out)
@@ -179,7 +185,7 @@ def fieldValue(cls, value, fieldType):
     return result %(value)
 
 
-def returnValue(cls, returnType, value, genericRT=None):
+def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
 
     result = RESULTS.get(returnType.getName())
     if result:
@@ -238,7 +244,7 @@ def returnValue(cls, returnType, value, genericRT=None):
                     i += 1
             elif Method.instance_(gd):
                 for clsParam in gd.getTypeParameters():
-                    if genericRT == clsParam:
+                    if genericRT == clsParam and i in typeParams:
                         return 'return p%d != NULL && p%d[0] != NULL ? wrapType(p%d[0], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, i, value, ns, sep, n, value)
                     i += 1
 
@@ -258,11 +264,13 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
     returnType = method.getReturnType()
     if generics:
         genericRT = method.getGenericReturnType()
+        typeParams = set()
     else:
         genericRT = None
+        typeParams = None
     count = len(params)
 
-    declareVars(out, indent, params, cls, generics)
+    declareVars(out, indent, params, cls, generics, typeParams)
 
     returnName = returnType.getName()
     if returnName != 'void':
@@ -308,7 +316,8 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
         line(out, indent, '}')
         line(out, indent, 'return PyErr_SetArgsError("%s", arg);' %(name))
     elif returnName != 'void':
-        line(out, indent, returnValue(cls, returnType, 'result', genericRT))
+        line(out, indent, returnValue(cls, returnType, 'result',
+                                      genericRT, typeParams))
     else:
         line(out, indent, 'Py_RETURN_NONE;')
     if cardinality and (count or not inCase):

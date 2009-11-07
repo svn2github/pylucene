@@ -33,7 +33,14 @@ class SimpleSimilarity(PythonSimilarity):
     def idf(self, docFreq, numDocs):
         return 1.0
 
+    def idfTerms(self, terms, searcher):
+        return 1.0
+
     def coord(self, overlap, maxOverlap):
+        return 1.0
+
+    def scorePayload(self, docId, fieldName, start, end, payload,
+                     offset, length):
         return 1.0
 
 
