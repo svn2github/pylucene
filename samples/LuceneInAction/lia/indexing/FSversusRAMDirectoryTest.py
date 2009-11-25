@@ -19,8 +19,8 @@ from time import time
 from datetime import timedelta
 
 from lucene import \
-     IndexWriter, SimpleAnalyzer, Document, Field, System, \
-     FSDirectory, RAMDirectory
+     IndexWriter, SimpleAnalyzer, Document, Field, System, File, \
+     SimpleFSDirectory, RAMDirectory
 
 
 class FSversusRAMDirectoryTest(TestCase):
@@ -35,7 +35,7 @@ class FSversusRAMDirectoryTest(TestCase):
         fsIndexDir = os.path.join(System.getProperty("java.io.tmpdir", "tmp"),
                                   "fs-index")
         self.ramDir = RAMDirectory()
-        self.fsDir = FSDirectory.getDirectory(fsIndexDir, True)
+        self.fsDir = SimpleFSDirectory(File(fsIndexDir))
 
     def testTiming(self):
 
@@ -56,7 +56,8 @@ class FSversusRAMDirectoryTest(TestCase):
 
     def addDocuments(self, dir):
 
-        writer = IndexWriter(dir, SimpleAnalyzer(), True)
+        writer = IndexWriter(dir, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         #
         # change to adjust performance of indexing with FSDirectory
@@ -68,13 +69,13 @@ class FSversusRAMDirectoryTest(TestCase):
         for word in self.docs:
             doc = Document()
             doc.add(Field("keyword", word,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("unindexed", word,
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("unstored", word,
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
             doc.add(Field("text", word,
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
         writer.optimize()

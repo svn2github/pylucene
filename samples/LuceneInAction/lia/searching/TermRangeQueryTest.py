@@ -12,12 +12,18 @@
 #   limitations under the License.
 # ====================================================================
 
-class MockSpecialsAccessor(object):
+from lia.common.LiaTestCase import LiaTestCase
 
-    def __init__(self, isbns):
+from lucene import Term, IndexSearcher, TermRangeQuery
 
-        self._isbns = isbns
 
-    def isbns(self):
+class TermRangeQueryTest(LiaTestCase):
 
-        return self._isbns
+    def testTermRangeQuery(self):
+
+        searcher = IndexSearcher(self.directory, True)
+        query = TermRangeQuery("title2", "d", "j", True, True)
+
+        topDocs = searcher.search(query, 100)
+        self.assertEqual(3, topDocs.totalHits)
+        searcher.close()

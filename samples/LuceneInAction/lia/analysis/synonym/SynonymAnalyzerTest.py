@@ -16,7 +16,8 @@ from unittest import TestCase
 
 from lucene import \
      StandardAnalyzer, RAMDirectory, IndexWriter, Term, Document, Field, \
-     IndexSearcher, TermQuery, PhraseQuery, QueryParser
+     IndexSearcher, TermQuery, PhraseQuery, QueryParser, StringReader, \
+     TermAttribute, PositionIncrementAttribute, Version
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 from lia.analysis.synonym.SynonymAnalyzer import SynonymAnalyzer
@@ -30,16 +31,17 @@ class SynonymAnalyzerTest(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, self.synonymAnalyzer, True)
+        writer = IndexWriter(self.directory, self.synonymAnalyzer, True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         doc = Document()
         doc.add(Field("content",
                       "The quick brown fox jumps over the lazy dogs",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory)
+        self.searcher = IndexSearcher(self.directory, True)
 
     def tearDown(self):
 
@@ -47,42 +49,54 @@ class SynonymAnalyzerTest(TestCase):
 
     def testJumps(self):
 
-        tokens = AnalyzerUtils.tokensFromAnalysis(self.synonymAnalyzer, "jumps")
-        AnalyzerUtils.assertTokensEqual(self, tokens,
-                                        ["jumps", "hops", "leaps"])
+        stream = self.synonymAnalyzer.tokenStream("contents",
+                                                  StringReader("jumps"))
+        term = stream.addAttribute(TermAttribute.class_)
+        posIncr = stream.addAttribute(PositionIncrementAttribute.class_)
 
-        # ensure synonyms are in the same position as the original
-        self.assertEqual(1, tokens[0].getPositionIncrement(), "jumps")
-        self.assertEqual(0, tokens[1].getPositionIncrement(), "hops")
-        self.assertEqual(0, tokens[2].getPositionIncrement(), "leaps")
+        i = 0
+        expected = ["jumps", "hops", "leaps"]
+        while stream.incrementToken():
+            self.assertEqual(expected[i], term.term())
+            if i == 0:
+                expectedPos = 1
+            else:
+                expectedPos = 0
+
+            self.assertEqual(expectedPos, posIncr.getPositionIncrement())
+            i += 1
+
+        self.assertEqual(3, i)
 
     def testSearchByAPI(self):
 
         tq = TermQuery(Term("content", "hops"))
-        hits = self.searcher.search(tq)
-        self.assertEqual(1, len(hits))
+        topDocs = self.searcher.search(tq, 50)
+        self.assertEqual(1, topDocs.totalHits)
 
         pq = PhraseQuery()
         pq.add(Term("content", "fox"))
         pq.add(Term("content", "hops"))
-        hits = self.searcher.search(pq)
-        self.assertEquals(1, len(hits))
+        topDocs = self.searcher.search(pq, 50)
+        self.assertEquals(1, topDocs.totalHits)
 
     def testWithQueryParser(self):
 
-        query = QueryParser("content",
+        query = QueryParser(Version.LUCENE_CURRENT, "content",
                             self.synonymAnalyzer).parse('"fox jumps"')
-        hits = self.searcher.search(query)
+        topDocs = self.searcher.search(query, 50)
         # in Lucene 1.9, position increments are no longer ignored
-        self.assertEqual(1, len(hits), "!!!! what?!")
+        self.assertEqual(1, topDocs.totalHits, "!!!! what?!")
 
-        query = QueryParser("content", StandardAnalyzer()).parse('"fox jumps"')
-        hits = self.searcher.search(query)
-        self.assertEqual(1, len(hits), "*whew*")
+        query = QueryParser(Version.LUCENE_CURRENT, "content",
+                            StandardAnalyzer(Version.LUCENE_CURRENT)).parse('"fox jumps"')
+        topDocs = self.searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits, "*whew*")
 
     def main(cls):
 
-        query = QueryParser("content", cls.synonymAnalyzer).parse('"fox jumps"')
+        query = QueryParser(Version.LUCENE_CURRENT, "content",
+                            cls.synonymAnalyzer).parse('"fox jumps"')
         print "\"fox jumps\" parses to ", query.toString("content")
 
         print "From AnalyzerUtils.tokensFromAnalysis: "

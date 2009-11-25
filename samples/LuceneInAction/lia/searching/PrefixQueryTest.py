@@ -21,17 +21,17 @@ class PrefixQueryTest(LiaTestCase):
 
     def testPrefix(self):
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
 
         # search for programming books, including subcategories
         term = Term("category", "/technology/computers/programming")
         query = PrefixQuery(term)
 
-        hits = searcher.search(query)
-        programmingAndBelow = hits.length()
+        topDocs = searcher.search(query, 50)
+        programmingAndBelow = topDocs.totalHits
 
         # only programming books, not subcategories
-        hits = searcher.search(TermQuery(term))
-        justProgramming = hits.length()
+        topDocs = searcher.search(TermQuery(term), 50)
+        justProgramming = topDocs.totalHits
 
         self.assert_(programmingAndBelow > justProgramming)

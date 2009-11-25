@@ -18,8 +18,8 @@ package org.apache.pylucene.search;
 import java.io.IOException;
 
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.util.DocIdBitSet;
 
 
 public class PythonFilter extends Filter {
@@ -46,6 +46,6 @@ public class PythonFilter extends Filter {
     }
 
     public native void pythonDecRef();
-    public native DocIdBitSet getDocIdSet(IndexReader reader)
+    public native DocIdSet getDocIdSet(IndexReader reader)
         throws IOException;
 }

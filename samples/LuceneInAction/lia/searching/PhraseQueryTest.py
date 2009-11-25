@@ -25,10 +25,11 @@ class PhraseQueryTest(TestCase):
 
         # set up sample document
         directory = RAMDirectory()
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
         doc = Document()
         doc.add(Field("field", "the quick brown fox jumped over the lazy dog",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
         writer.close()
 
@@ -42,9 +43,9 @@ class PhraseQueryTest(TestCase):
         for word in phrase:
             query.add(Term("field", word))
 
-        hits = self.searcher.search(query)
+        topDocs = self.searcher.search(query, 50)
 
-        return len(hits) > 0
+        return topDocs.totalHits > 0
 
     def testSlopComparison(self):
 

@@ -21,7 +21,8 @@ class ChineseTest(LiaTestCase):
 
     def testChinese(self):
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(TermQuery(Term("contents", "道")))
+        searcher = IndexSearcher(self.directory, True)
+        query = TermQuery(Term("contents", "道"))
+        scoreDocs = searcher.search(query, 50).scoreDocs
 
-        self.assertEqual(1, hits.length(), "tao")
+        self.assertEqual(1, len(scoreDocs), "tao")

@@ -17,11 +17,12 @@ import os
 from unittest import TestCase
 
 from lucene import \
-     FSDirectory, System, \
-     Document, Field, SimpleAnalyzer, IndexWriter, IndexReader
+    SimpleFSDirectory, System, File, \
+    Document, Field, SimpleAnalyzer, IndexWriter, IndexReader
 
 
 class BaseIndexingTestCase(TestCase):
+
     keywords = ["1", "2"]
     unindexed = ["Netherlands", "Italy"]
     unstored = ["Amsterdam has lots of bridges",
@@ -32,24 +33,25 @@ class BaseIndexingTestCase(TestCase):
 
         indexDir = os.path.join(System.getProperty('java.io.tmpdir', 'tmp'),
                                 'index-dir')
-        self.dir = FSDirectory.getDirectory(indexDir, True)
+        self.dir = SimpleFSDirectory(File(indexDir))
         self.addDocuments(self.dir)
 
     def addDocuments(self, dir):
 
-        writer = IndexWriter(dir, self.getAnalyzer(), True)
+        writer = IndexWriter(dir, self.getAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
         writer.setUseCompoundFile(self.isCompound())
 
         for i in xrange(len(self.keywords)):
             doc = Document()
             doc.add(Field("id", self.keywords[i],
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("country", self.unindexed[i],
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("contents", self.unstored[i],
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
             doc.add(Field("city", self.text[i],
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
         writer.optimize()
@@ -65,13 +67,14 @@ class BaseIndexingTestCase(TestCase):
 
     def testIndexWriter(self):
 
-        writer = IndexWriter(self.dir, self.getAnalyzer(), False)
-        self.assertEqual(len(self.keywords), writer.docCount())
+        writer = IndexWriter(self.dir, self.getAnalyzer(), False,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
+        self.assertEqual(len(self.keywords), writer.numDocs())
         writer.close()
 
     def testIndexReader(self):
 
-        reader = IndexReader.open(self.dir)
+        reader = IndexReader.open(self.dir, True)
         self.assertEqual(len(self.keywords), reader.maxDoc())
         self.assertEqual(len(self.keywords), reader.numDocs())
         reader.close()

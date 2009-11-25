@@ -16,7 +16,7 @@ from lia.common.LiaTestCase import LiaTestCase
 
 from lucene import \
      SimpleAnalyzer, Term, IndexSearcher, TermQuery, \
-     Highlighter, QueryScorer, StringReader, Hit
+     Highlighter, QueryScorer, StringReader, Version
 
 
 class HighlightTest(LiaTestCase):
@@ -29,24 +29,24 @@ class HighlightTest(LiaTestCase):
         scorer = QueryScorer(query)
         highlighter = Highlighter(scorer)
 
-        tokenStream = SimpleAnalyzer().tokenStream("field", StringReader(text))
+        tokenStream = SimpleAnalyzer(Version.LUCENE_CURRENT).tokenStream("field", StringReader(text))
 
         self.assertEqual("The quick brown <B>fox</B> jumps over the lazy dog",
                          highlighter.getBestFragment(tokenStream, text))
 
     def testHits(self):
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
         query = TermQuery(Term("title", "action"))
-        hits = searcher.search(query)
+        scoreDocs = searcher.search(query, 50).scoreDocs
 
         scorer = QueryScorer(query)
         highlighter = Highlighter(scorer)
 
-        for hit in hits:
-            doc = Hit.cast_(hit).getDocument()
+        for scoreDoc in scoreDocs:
+            doc = searcher.doc(scoreDoc.doc)
             title = doc["title"]
-            stream = SimpleAnalyzer().tokenStream("title", StringReader(title))
+            stream = SimpleAnalyzer(Version.LUCENE_CURRENT).tokenStream("title", StringReader(title))
             fragment = highlighter.getBestFragment(stream, title)
     
             print fragment

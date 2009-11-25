@@ -14,8 +14,9 @@
 
 from lia.common.LiaTestCase import LiaTestCase
 
-from lucene import\
-    Term, BooleanQuery, IndexSearcher, RangeQuery, TermQuery, BooleanClause
+from lucene import Integer, \
+    Term, BooleanQuery, IndexSearcher, \
+    NumericRangeQuery, TermQuery, BooleanClause
 
 
 class BooleanQueryTest(LiaTestCase):
@@ -23,17 +24,19 @@ class BooleanQueryTest(LiaTestCase):
     def testAnd(self):
 
         searchingBooks = TermQuery(Term("subject", "search"))
-        currentBooks = RangeQuery(Term("pubmonth", "200401"),
-                                  Term("pubmonth", "200412"), True)
+        books2004 = NumericRangeQuery.newIntRange("pubmonth",
+                                                  Integer(200401),
+                                                  Integer(200412),
+                                                  True, True)
 
-        currentSearchingBooks = BooleanQuery()
-        currentSearchingBooks.add(searchingBooks, BooleanClause.Occur.MUST)
-        currentSearchingBooks.add(currentBooks, BooleanClause.Occur.MUST)
+        searchingBooks2004 = BooleanQuery()
+        searchingBooks2004.add(searchingBooks, BooleanClause.Occur.MUST)
+        searchingBooks2004.add(books2004, BooleanClause.Occur.MUST)
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(currentSearchingBooks)
+        searcher = IndexSearcher(self.directory, True)
+        scoreDocs = searcher.search(searchingBooks2004, 50).scoreDocs
 
-        self.assertHitsIncludeTitle(hits, "Lucene in Action")
+        self.assertHitsIncludeTitle(searcher, scoreDocs, "Lucene in Action")
 
     def testOr(self):
 
@@ -46,9 +49,11 @@ class BooleanQueryTest(LiaTestCase):
         enlightenmentBooks.add(methodologyBooks, BooleanClause.Occur.SHOULD)
         enlightenmentBooks.add(easternPhilosophyBooks, BooleanClause.Occur.SHOULD)
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(enlightenmentBooks)
+        searcher = IndexSearcher(self.directory, True)
+        scoreDocs = searcher.search(enlightenmentBooks, 50).scoreDocs
         print "or =", enlightenmentBooks
 
-        self.assertHitsIncludeTitle(hits, "Extreme Programming Explained")
-        self.assertHitsIncludeTitle(hits, u"Tao Te Ching \u9053\u5FB7\u7D93")
+        self.assertHitsIncludeTitle(searcher, scoreDocs,
+                                    "Extreme Programming Explained")
+        self.assertHitsIncludeTitle(searcher, scoreDocs,
+                                    u"Tao Te Ching \u9053\u5FB7\u7D93")

@@ -28,7 +28,8 @@ class DistanceSortingTest(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         self.addPoint(writer, "El Charro", "restaurant", 1, 2)
         self.addPoint(writer, "Cafe Poca Cosa", "restaurant", 5, 9)
@@ -37,25 +38,28 @@ class DistanceSortingTest(TestCase):
 
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory)
+        self.searcher = IndexSearcher(self.directory, True)
         self.query = TermQuery(Term("type", "restaurant"))
 
     def addPoint(self, writer, name, type, x, y):
 
         doc = Document()
-        doc.add(Field("name", name, Field.Store.YES, Field.Index.UN_TOKENIZED))
-        doc.add(Field("type", type, Field.Store.YES, Field.Index.UN_TOKENIZED))
-        doc.add(Field("location", "%d,%d" %(x, y),
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
+        doc.add(Field("name", name, Field.Store.YES, Field.Index.NOT_ANALYZED))
+        doc.add(Field("type", type, Field.Store.YES, Field.Index.NOT_ANALYZED))
+        doc.add(Field("x", str(x), Field.Store.YES,
+                      Field.Index.NOT_ANALYZED_NO_NORMS))
+        doc.add(Field("y", str(y), Field.Store.YES,
+                      Field.Index.NOT_ANALYZED_NO_NORMS));
+
         writer.addDocument(doc)
 
     def testNearestRestaurantToHome(self):
 
         sort = Sort(SortField("location", DistanceComparatorSource(0, 0)))
 
-        hits = self.searcher.search(self.query, sort)
-        self.assertEqual("El Charro", hits.doc(0).get("name"), "closest")
-        self.assertEqual("Los Betos", hits.doc(3).get("name"), "furthest")
+        scoreDocs = self.searcher.search(self.query, None, 50, sort).scoreDocs
+        self.assertEqual("El Charro", self.searcher.doc(scoreDocs[0].doc).get("name"), "closest")
+        self.assertEqual("Los Betos", self.searcher.doc(scoreDocs[3].doc).get("name"), "furthest")
 
     def testNeareastRestaurantToWork(self):
 
@@ -67,8 +71,9 @@ class DistanceSortingTest(TestCase):
 
         fieldDoc = FieldDoc.cast_(docs.scoreDocs[0])
         distance = Double.cast_(fieldDoc.fields[0]).doubleValue()
+
         self.assertEqual(sqrt(17), distance,
-                     "(10,10) -> (9,6) = sqrt(17)")
+                         "(10,10) -> (9,6) = sqrt(17)")
 
         document = self.searcher.doc(fieldDoc.doc)
         self.assertEqual("Los Betos", document["name"])

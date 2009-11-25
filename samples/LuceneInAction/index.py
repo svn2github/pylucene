@@ -1,6 +1,6 @@
 
 import os, sys, tarfile, lucene
-lucene.initVM(lucene.CLASSPATH)
+lucene.initVM()
 
 baseDir = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.append(baseDir)

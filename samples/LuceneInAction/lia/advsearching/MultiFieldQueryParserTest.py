@@ -15,7 +15,8 @@
 from lia.common.LiaTestCase import LiaTestCase
 
 from lucene import \
-    SimpleAnalyzer, MultiFieldQueryParser, IndexSearcher, BooleanClause
+    SimpleAnalyzer, MultiFieldQueryParser, IndexSearcher, BooleanClause, \
+    Version
 
 
 class MultiFieldQueryParserTest(LiaTestCase):
@@ -23,29 +24,32 @@ class MultiFieldQueryParserTest(LiaTestCase):
     def testDefaultOperator(self):
 
         SHOULD = BooleanClause.Occur.SHOULD
-        query = MultiFieldQueryParser.parse("development",
-                                            ["title", "subject"],
+        query = MultiFieldQueryParser.parse(Version.LUCENE_CURRENT,
+                                            "development", ["title", "subject"],
                                             [SHOULD, SHOULD],
                                             SimpleAnalyzer())
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(query)
+        searcher = IndexSearcher(self.directory, True)
+        scoreDocs = searcher.search(query, 50).scoreDocs
 
-        self.assertHitsIncludeTitle(hits, "Java Development with Ant")
+        self.assertHitsIncludeTitle(searcher, scoreDocs,
+                                    "Java Development with Ant")
 
         # has "development" in the subject field
-        self.assertHitsIncludeTitle(hits, "Extreme Programming Explained")
+        self.assertHitsIncludeTitle(searcher, scoreDocs,
+                                    "Extreme Programming Explained")
 
     def testSpecifiedOperator(self):
         
         MUST = BooleanClause.Occur.MUST
-        query = MultiFieldQueryParser.parse("development",
-                                            ["title", "subject"],
+        query = MultiFieldQueryParser.parse(Version.LUCENE_CURRENT,
+                                            "development", ["title", "subject"],
                                             [MUST, MUST],
                                             SimpleAnalyzer())
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(query)
+        searcher = IndexSearcher(self.directory, True)
+        scoreDocs = searcher.search(query, 50).scoreDocs
 
-        self.assertHitsIncludeTitle(hits, "Java Development with Ant")
-        self.assertEqual(1, hits.length(), "one and only one")
+        self.assertHitsIncludeTitle(searcher, scoreDocs,
+                                    "Java Development with Ant")
+        self.assertEqual(1, len(scoreDocs), "one and only one")

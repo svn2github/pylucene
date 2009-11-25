@@ -30,12 +30,13 @@ class AdvancedQueryParserTest(TestCase):
         self.analyzer = WhitespaceAnalyzer()
         self.directory = RAMDirectory()
 
-        writer = IndexWriter(self.directory, self.analyzer, True)
+        writer = IndexWriter(self.directory, self.analyzer, True, 
+                             IndexWriter.MaxFieldLength.LIMITED)
 
         for i in xrange(1, 501):
             doc = Document()
             doc.add(Field("id", NumberUtils.pad(i),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
 
         writer.close()
@@ -84,9 +85,9 @@ class AdvancedQueryParserTest(TestCase):
         self.assertEqual("id:[0000000037 TO 0000000346]",
                          query.toString("field"), "padded")
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(query)
-        self.assertEqual(310, hits.length())
+        searcher = IndexSearcher(self.directory, True)
+        scoreDocs = searcher.search(query, 1000).scoreDocs
+        self.assertEqual(310, len(scoreDocs))
 
         print parser.parse("special:[term TO *]")
         print parser.parse("special:[* TO term]")

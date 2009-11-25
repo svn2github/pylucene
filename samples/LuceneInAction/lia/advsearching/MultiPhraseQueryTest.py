@@ -15,42 +15,44 @@
 from unittest import TestCase
 from lucene import \
      WhitespaceAnalyzer, Document, Field, IndexWriter, Term, BooleanQuery, \
-     IndexSearcher, PhrasePrefixQuery, PhraseQuery, RAMDirectory, BooleanClause
+     IndexSearcher, MultiPhraseQuery, PhraseQuery, RAMDirectory, BooleanClause
 
 
-class PhrasePrefixQueryTest(TestCase):
+class MultiPhraseQueryTest(TestCase):
 
     def setUp(self):
 
         directory = RAMDirectory()
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         doc1 = Document()
         doc1.add(Field("field", "the quick brown fox jumped over the lazy dog",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc1)
 
         doc2 = Document()
         doc2.add(Field("field", "the fast fox hopped over the hound",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc2)
         writer.close()
 
-        self.searcher = IndexSearcher(directory)
+        self.searcher = IndexSearcher(directory, True)
 
     def testBasic(self):
         
-        query = PhrasePrefixQuery()
-        query.add([Term("field", "quick"), Term("field", "fast")])
+        query = MultiPhraseQuery()
+        query.add([Term("field", "quick"),
+                   Term("field", "fast")])
         query.add(Term("field", "fox"))
         print query
 
-        hits = self.searcher.search(query)
-        self.assertEqual(1, len(hits), "fast fox match")
+        topDocs = self.searcher.search(query, 10)
+        self.assertEqual(1, topDocs.totalHits, "fast fox match")
 
-        query.setSlop(1)
-        hits = self.searcher.search(query)
-        self.assertEqual(2, len(hits), "both match")
+        query.setSlop(1);
+        topDocs = self.searcher.search(query, 10)
+        self.assertEqual(2, topDocs.totalHits, "both match");
 
     def testAgainstOR(self):
 
@@ -66,8 +68,8 @@ class PhrasePrefixQueryTest(TestCase):
         query = BooleanQuery()
         query.add(quickFox, BooleanClause.Occur.SHOULD)
         query.add(fastFox, BooleanClause.Occur.SHOULD)
-        hits = self.searcher.search(query)
-        self.assertEqual(2, len(hits))
+        topDocs = self.searcher.search(query, 10)
+        self.assertEqual(2, topDocs.totalHits)
 
     def debug(self, hits):
 

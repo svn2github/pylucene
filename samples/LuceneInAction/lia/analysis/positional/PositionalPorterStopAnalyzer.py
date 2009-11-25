@@ -36,13 +36,14 @@ class PositionalPorterStopAnalyzer(PythonAnalyzer):
         super(PositionalPorterStopAnalyzer, self).__init__()
 
         if stopWords is None:
-            stopWords = StopAnalyzer.ENGLISH_STOP_WORDS
-
-        self.stopWords = set(stopWords)
+            self.stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET
+        else:
+            self.stopWords = set(stopWords)
 
     def tokenStream(self, fieldName, reader):
 
-        tokenStream = LowerCaseTokenizer(reader)
-        stopFilter = PositionalStopFilter(tokenStream, self.stopWords)
+        stopFilter = StopFilter(True, LowerCaseTokenizer(reader),
+                                self.stopWords)
+        stopFilter.setEnablePositionIncrements(True)
 
         return PorterStemFilter(stopFilter)

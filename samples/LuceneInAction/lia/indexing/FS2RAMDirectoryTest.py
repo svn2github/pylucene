@@ -22,12 +22,12 @@ class FS2RAMDirectoryTest(BaseIndexingTestCase):
 
     def testSlurp(self):
 
-        fsDirReader = IndexReader.open(self.dir)
+        fsDirReader = IndexReader.open(self.dir, True)
         self.assertEqual(len(self.keywords), fsDirReader.maxDoc())
         self.assertEqual(len(self.keywords), fsDirReader.numDocs())
 
         ramDir = RAMDirectory(self.dir)
-        ramDirReader = IndexReader.open(ramDir)
+        ramDirReader = IndexReader.open(ramDir, True)
         self.assertEqual(fsDirReader.maxDoc(), ramDirReader.maxDoc())
         self.assertEqual(fsDirReader.numDocs(), ramDirReader.numDocs())
 

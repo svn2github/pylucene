@@ -13,7 +13,7 @@
 # ====================================================================
 
 from unittest import TestCase
-from lucene import StopAnalyzer
+from lucene import StopAnalyzer, Version
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
 
@@ -21,25 +21,17 @@ class StopAnalyzerTest(TestCase):
 
     def setUp(self):
 
-        self.stopAnalyzer = StopAnalyzer()
+        self.stopAnalyzer = StopAnalyzer(Version.LUCENE_CURRENT)
 
     def testHoles(self):
         
         expected = ["one", "enough"]
 
-        AnalyzerUtils.assertTokensEqual(self,
-                                        self.tokensFrom("one is not enough"),
-                                        expected)
-        AnalyzerUtils.assertTokensEqual(self,
-                                        self.tokensFrom("one is enough"),
-                                        expected)
-        AnalyzerUtils.assertTokensEqual(self,
-                                        self.tokensFrom("one enough"),
-                                        expected)
-        AnalyzerUtils.assertTokensEqual(self,
-                                        self.tokensFrom("one but not enough"),
-                                        expected)
-
-    def tokensFrom(self, text):
-
-        return AnalyzerUtils.tokensFromAnalysis(self.stopAnalyzer, text)
+        AnalyzerUtils.assertAnalyzesTo(self.stopAnalyzer, "one is not enough",
+                                       expected)
+        AnalyzerUtils.assertAnalyzesTo(self.stopAnalyzer, "one is enough",
+                                       expected)
+        AnalyzerUtils.assertAnalyzesTo(self.stopAnalyzer, "one enough",
+                                       expected)
+        AnalyzerUtils.assertAnalyzesTo(self.stopAnalyzer, "one but not enough",
+                                       expected)

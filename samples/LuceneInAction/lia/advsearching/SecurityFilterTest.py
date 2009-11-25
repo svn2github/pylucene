@@ -14,8 +14,8 @@
 
 from unittest import TestCase
 from lucene import \
-     WhitespaceAnalyzer, Document, Field, IndexWriter, Term, MultiSearcher, \
-     QueryFilter, RAMDirectory, IndexSearcher, TermQuery
+     WhitespaceAnalyzer, Document, Field, IndexWriter, Term, \
+     QueryWrapperFilter, RAMDirectory, IndexSearcher, TermQuery
 
 
 class SecurityFilterTest(TestCase):
@@ -23,22 +23,23 @@ class SecurityFilterTest(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         # Elwood
         document = Document()
         document.add(Field("owner", "elwood",
-                           Field.Store.YES, Field.Index.UN_TOKENIZED))
+                           Field.Store.YES, Field.Index.NOT_ANALYZED))
         document.add(Field("keywords", "elwoods sensitive info",
-                           Field.Store.YES, Field.Index.TOKENIZED))
+                           Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(document)
 
         # Jake
         document = Document()
         document.add(Field("owner", "jake",
-                           Field.Store.YES, Field.Index.UN_TOKENIZED))
+                           Field.Store.YES, Field.Index.NOT_ANALYZED))
         document.add(Field("keywords", "jakes sensitive info",
-                           Field.Store.YES, Field.Index.TOKENIZED))
+                           Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(document)
 
         writer.close()
@@ -47,13 +48,14 @@ class SecurityFilterTest(TestCase):
 
         query = TermQuery(Term("keywords", "info"))
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(query)
-        self.assertEqual(2, len(hits), "Both documents match")
+        searcher = IndexSearcher(self.directory, True)
+        topDocs = searcher.search(query, 50)
+        self.assertEqual(2, topDocs.totalHits, "Both documents match")
 
-        jakeFilter = QueryFilter(TermQuery(Term("owner", "jake")))
+        jakeFilter = QueryWrapperFilter(TermQuery(Term("owner", "jake")))
 
-        hits = searcher.search(query, jakeFilter)
-        self.assertEqual(1, len(hits))
-        self.assertEqual("jakes sensitive info", hits[0].get("keywords"),
+        scoreDocs = searcher.search(query, jakeFilter, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
+        self.assertEqual("jakes sensitive info",
+                         searcher.doc(scoreDocs[0].doc).get("keywords"),
                          "elwood is safe")

@@ -25,19 +25,20 @@ class DocumentUpdateTest(BaseIndexingTestCase):
 
         self.assertEqual(1, self.getHitCount("city", "Amsterdam"))
 
-        reader = IndexReader.open(self.dir)
+        reader = IndexReader.open(self.dir, False)
         reader.deleteDocuments(Term("city", "Amsterdam"))
         reader.close()
 
-        writer = IndexWriter(self.dir, self.getAnalyzer(), False)
+        writer = IndexWriter(self.dir, self.getAnalyzer(), False,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
         doc = Document()
-        doc.add(Field("id", "1", Field.Store.YES, Field.Index.UN_TOKENIZED))
+        doc.add(Field("id", "1", Field.Store.YES, Field.Index.NOT_ANALYZED))
         doc.add(Field("country", "Russia",
                       Field.Store.YES, Field.Index.NO))
         doc.add(Field("contents", "St. Petersburg has lots of bridges",
-                      Field.Store.NO, Field.Index.TOKENIZED))
+                      Field.Store.NO, Field.Index.ANALYZED))
         doc.add(Field("city", "St. Petersburg",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
         writer.optimize()
         writer.close()
@@ -50,14 +51,12 @@ class DocumentUpdateTest(BaseIndexingTestCase):
 
         return WhitespaceAnalyzer()
 
-
     def getHitCount(self, fieldName, searchString):
 
-        searcher = IndexSearcher(self.dir)
+        searcher = IndexSearcher(self.dir, True)
         t = Term(fieldName, searchString)
         query = TermQuery(t)
-        hits = searcher.search(query)
-        hitCount = hits.length()
+        hitCount = len(searcher.search(query, 50).scoreDocs)
         searcher.close()
 
         return hitCount

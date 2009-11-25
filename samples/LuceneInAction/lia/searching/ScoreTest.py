@@ -31,29 +31,33 @@ class ScoreTest(LiaTestCase):
 
         class SimpleSimilarity(PythonSimilarity):
 
-            def lengthNorm(self, field, numTerms):
+            def lengthNorm(_self, field, numTerms):
                 return 1.0
 
-            def queryNorm(self, sumOfSquaredWeights):
+            def queryNorm(_self, sumOfSquaredWeights):
                 return 1.0
 
-            def tf(self, freq):
+            def tf(_self, freq):
                 return freq
 
-            def sloppyFreq(self, distance):
+            def sloppyFreq(_self, distance):
                 return 2.0
 
-            def idfTerms(self, terms, searcher):
+            def idfTerms(_self, terms, searcher):
                 return 1.0
 
-            def idfTerm(self, docFreq, numDocs):
+            def idf(_self, docFreq, numDocs):
                 return 1.0
 
-            def coord(self, overlap, maxOverlap):
+            def coord(_self, overlap, maxOverlap):
+                return 1.0
+
+            def scorePayload(_self, docId, fieldName, start, end, payload,
+                             offset, length):
                 return 1.0
 
         self.indexSingleFieldDocs([Field("contents", "x", Field.Store.YES,
-                                         Field.Index.TOKENIZED)])
+                                         Field.Index.ANALYZED)])
         searcher = IndexSearcher(self.directory)
         searcher.setSimilarity(SimpleSimilarity())
 
@@ -61,15 +65,16 @@ class ScoreTest(LiaTestCase):
         explanation = searcher.explain(query, 0)
         print explanation
 
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
 
-        self.assertEqual(hits.score(0), 1.0)
+        self.assertEqual(scoreDocs[0].score, 1.0)
         searcher.close()
 
     def indexSingleFieldDocs(self, fields):
 
-        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True)
+        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         for field in fields:
             doc = Document()
@@ -82,33 +87,38 @@ class ScoreTest(LiaTestCase):
     def testWildcard(self):
 
         self.indexSingleFieldDocs([Field("contents", "wild", Field.Store.YES,
-                                         Field.Index.TOKENIZED),
+                                         Field.Index.ANALYZED),
                                    Field("contents", "child", Field.Store.YES,
-                                         Field.Index.TOKENIZED),
+                                         Field.Index.ANALYZED),
                                    Field("contents", "mild", Field.Store.YES,
-                                         Field.Index.TOKENIZED),
+                                         Field.Index.ANALYZED),
                                    Field("contents", "mildew", Field.Store.YES,
-                                         Field.Index.TOKENIZED)])
+                                         Field.Index.ANALYZED)])
 
         searcher = IndexSearcher(self.directory)
         query = WildcardQuery(Term("contents", "?ild*"))
-        hits = searcher.search(query)
-        self.assertEqual(3, hits.length(), "child no match")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(3, len(scoreDocs), "child no match")
 
-        self.assertEqual(hits.score(0), hits.score(1), "score the same")
-        self.assertEqual(hits.score(1), hits.score(2), "score the same")
+        self.assertEqual(scoreDocs[0].score, scoreDocs[1].score,
+                         "score the same")
+        self.assertEqual(scoreDocs[1].score, scoreDocs[1].score,
+                         "score the same")
 
     def testFuzzy(self):
 
         self.indexSingleFieldDocs([Field("contents", "fuzzy", Field.Store.YES,
-                                         Field.Index.TOKENIZED),
+                                         Field.Index.ANALYZED),
                                    Field("contents", "wuzzy", Field.Store.YES,
-                                         Field.Index.TOKENIZED)])
+                                         Field.Index.ANALYZED)])
 
         searcher = IndexSearcher(self.directory)
         query = FuzzyQuery(Term("contents", "wuzza"))
-        hits = searcher.search(query)
-        self.assertEqual(2, hits.length(), "both close enough")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(2, len(scoreDocs), "both close enough")
 
-        self.assert_(hits.score(0) !=  hits.score(1), "wuzzy closer than fuzzy")
-        self.assertEqual("wuzzy", hits.doc(0).get("contents"), "wuzza bear")
+        self.assert_(scoreDocs[0].score != scoreDocs[1].score,
+                     "wuzzy closer than fuzzy")
+        self.assertEqual("wuzzy",
+                         searcher.doc(scoreDocs[0].doc).get("contents"),
+                         "wuzza bear")

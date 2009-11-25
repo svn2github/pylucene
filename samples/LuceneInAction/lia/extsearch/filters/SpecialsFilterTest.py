@@ -13,12 +13,12 @@
 # ====================================================================
 
 from lia.common.LiaTestCase import LiaTestCase
-from lia.extsearch.filters.MockSpecialsAccessor import MockSpecialsAccessor
+from lia.extsearch.filters.TestSpecialsAccessor import TestSpecialsAccessor
 from lia.extsearch.filters.SpecialsFilter import SpecialsFilter
 
 from lucene import \
-     WildcardQuery, FilteredQuery, TermQuery, BooleanQuery, RangeQuery, \
-     IndexSearcher, Term, BooleanClause
+     WildcardQuery, FilteredQuery, TermQuery, BooleanQuery, TermRangeQuery, \
+     IndexSearcher, Term, BooleanClause, MatchAllDocsQuery
 
 
 class SpecialsFilterTest(LiaTestCase):
@@ -27,24 +27,23 @@ class SpecialsFilterTest(LiaTestCase):
 
         super(SpecialsFilterTest, self).setUp()
 
-        self.allBooks = RangeQuery(Term("pubmonth", "190001"),
-                                   Term("pubmonth", "200512"), True)
-        self.searcher = IndexSearcher(self.directory)
+        self.allBooks = MatchAllDocsQuery()
+        self.searcher = IndexSearcher(self.directory, True)
 
     def testCustomFilter(self):
 
         isbns = ["0060812451", "0465026567"]
-        accessor = MockSpecialsAccessor(isbns)
+        accessor = TestSpecialsAccessor(isbns)
         
         filter = SpecialsFilter(accessor)
-        hits = self.searcher.search(self.allBooks, filter)
-        self.assertEquals(len(isbns), len(hits), "the specials")
+        topDocs = self.searcher.search(self.allBooks, filter, 50)
+        self.assertEquals(len(isbns), topDocs.totalHits, "the specials")
 
     def testFilteredQuery(self):
         
         isbns = ["0854402624"]  # Steiner
 
-        accessor = MockSpecialsAccessor(isbns)
+        accessor = TestSpecialsAccessor(isbns)
         filter = SpecialsFilter(accessor)
 
         educationBooks = WildcardQuery(Term("category", "*education*"))
@@ -56,6 +55,6 @@ class SpecialsFilterTest(LiaTestCase):
         logoOrEdBooks.add(logoBooks, BooleanClause.Occur.SHOULD)
         logoOrEdBooks.add(edBooksOnSpecial, BooleanClause.Occur.SHOULD)
 
-        hits = self.searcher.search(logoOrEdBooks)
+        topDocs = self.searcher.search(logoOrEdBooks, 50)
         print logoOrEdBooks
-        self.assertEqual(2, len(hits), "Papert and Steiner")
+        self.assertEqual(2, topDocs.totalHits, "Papert and Steiner")

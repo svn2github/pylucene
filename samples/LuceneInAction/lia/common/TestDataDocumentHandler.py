@@ -15,8 +15,8 @@
 import os
 
 from lucene import \
-    Document, Field, IndexWriter, StandardAnalyzer, DateField, \
-    SimpleDateFormat
+    Document, Field, IndexWriter, StandardAnalyzer, NumericField, \
+    SimpleDateFormat, Version, SimpleFSDirectory, File, DateTools, DateField
 
 # date culled from LuceneInAction.zip archive from Manning site
 samplesModified = SimpleDateFormat('yyyy-MM-dd').parse('2004-12-02')
@@ -26,7 +26,10 @@ class TestDataDocumentHandler(object):
 
     def createIndex(cls, dataDir, indexDir, useCompound):
 
-        writer = IndexWriter(indexDir, StandardAnalyzer(), True)
+        indexDir = SimpleFSDirectory(File(indexDir))
+        writer = IndexWriter(indexDir,
+                             StandardAnalyzer(Version.LUCENE_CURRENT), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
         writer.setUseCompoundFile(useCompound)
 
         for dir, dirnames, filenames in os.walk(dataDir):
@@ -70,32 +73,45 @@ class TestDataDocumentHandler(object):
         print "---------"
 
         doc.add(Field("isbn", isbn,
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
+                      Field.Store.YES, Field.Index.NOT_ANALYZED))
         doc.add(Field("category", category,
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
+                      Field.Store.YES, Field.Index.NOT_ANALYZED))
         doc.add(Field("title", title,
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED,
+                      Field.TermVector.WITH_POSITIONS_OFFSETS))
+        doc.add(Field("title2", title.lower(),
+                      Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS,
+                      Field.TermVector.WITH_POSITIONS_OFFSETS))
 
         # split multiple authors into unique field instances
         authors = author.split(',')
         for a in authors:
             doc.add(Field("author", a,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED,
+                          Field.TermVector.WITH_POSITIONS_OFFSETS))
 
         doc.add(Field("url", url,
-                      Field.Store.YES, Field.Index.NO))
+                      Field.Store.YES,
+                      Field.Index.NOT_ANALYZED_NO_NORMS))
         doc.add(Field("subject", subject,
-                      Field.Store.NO, Field.Index.TOKENIZED,
-                      Field.TermVector.YES))
-        doc.add(Field("pubmonth", pubmonth,
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
-        doc.add(Field("contents", ' '.join([title, subject, author]),
-                      Field.Store.NO, Field.Index.TOKENIZED))
+                      Field.Store.NO, Field.Index.ANALYZED,
+                      Field.TermVector.WITH_POSITIONS_OFFSETS))
+        doc.add(NumericField("pubmonth",
+                             Field.Store.YES,
+                             True).setIntValue(int(pubmonth)))
+
+        d = DateTools.stringToDate(pubmonth)
+        d = int(d.getTime() / (1000 * 3600 * 24.0))
+        doc.add(NumericField("pubmonthAsDay").setIntValue(d))
+
+        doc.add(Field("contents", ' '.join([title, subject, author, category]),
+                      Field.Store.NO, Field.Index.ANALYZED,
+                      Field.TermVector.WITH_POSITIONS_OFFSETS))
 
         doc.add(Field("path", path,
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
+                      Field.Store.YES, Field.Index.NOT_ANALYZED))
         doc.add(Field("modified", DateField.dateToString(samplesModified),
-                      Field.Store.YES, Field.Index.UN_TOKENIZED))
+                      Field.Store.YES, Field.Index.NOT_ANALYZED))
 
         writer.addDocument(doc)
 

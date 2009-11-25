@@ -18,7 +18,7 @@ from cStringIO import StringIO
 from lucene import \
      WhitespaceAnalyzer, Document, Field, IndexReader, IndexWriter, Term, \
      IndexSearcher, PhraseQuery, SpanFirstQuery, SpanNearQuery, SpanNotQuery, \
-     SpanOrQuery, SpanTermQuery, RAMDirectory, Hit
+     SpanOrQuery, SpanTermQuery, RAMDirectory, TermAttribute, StringReader
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
@@ -30,22 +30,23 @@ class SpanQueryTest(TestCase):
         self.directory = RAMDirectory()
         self.analyzer = WhitespaceAnalyzer()
 
-        writer = IndexWriter(self.directory, self.analyzer, True)
+        writer = IndexWriter(self.directory, self.analyzer, True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         doc = Document()
         doc.add(Field("f", "the quick brown fox jumps over the lazy dog",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("f", "the quick red fox jumps over the sleepy cat",
-                      Field.Store.YES, Field.Index.TOKENIZED))
+                      Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
 
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory)
-        self.reader = IndexReader.open(self.directory)
+        self.searcher = IndexSearcher(self.directory, True)
+        self.reader = IndexReader.open(self.directory, True)
 
         self.quick = SpanTermQuery(Term("f", "quick"))
         self.brown = SpanTermQuery(Term("f", "brown"))
@@ -58,19 +59,19 @@ class SpanQueryTest(TestCase):
 
     def assertOnlyBrownFox(self, query):
 
-        hits = self.searcher.search(query)
-        self.assertEqual(1, len(hits))
-        self.assertEqual(0, hits.id(0), "wrong doc")
+        topDocs = self.searcher.search(query, 50)
+        self.assertEqual(1, topDocs.totalHits)
+        self.assertEqual(0, topDocs.scoreDocs[0].doc, "wrong doc")
 
     def assertBothFoxes(self, query):
 
-        hits = self.searcher.search(query)
-        self.assertEqual(2, len(hits))
+        topDocs = self.searcher.search(query, 50)
+        self.assertEqual(2, topDocs.totalHits)
 
     def assertNoMatches(self, query):
 
-        hits = self.searcher.search(query)
-        self.assertEquals(0, len(hits))
+        topDocs = self.searcher.search(query, 50)
+        self.assertEquals(0, topDocs.totalHits)
 
     def testSpanTermQuery(self):
 
@@ -169,11 +170,10 @@ class SpanQueryTest(TestCase):
         print "%s:" % query
         numSpans = 0
 
-        hits = self.searcher.search(query)
+        scoreDocs = self.searcher.search(query, 50).scoreDocs
         scores = [0, 0]
-        for hit in hits:
-            hit = Hit.cast_(hit)
-            scores[hit.getId()] = hit.getScore()
+        for scoreDoc in scoreDocs:
+            scores[scoreDoc.doc] = scoreDoc.score
 
         while spans.next():
             numSpans += 1
@@ -183,16 +183,19 @@ class SpanQueryTest(TestCase):
 
             # for simplicity - assume tokens are in sequential,
             # positions, starting from 0
-            tokens = AnalyzerUtils.tokensFromAnalysis(self.analyzer, doc["f"])
+            stream = self.analyzer.tokenStream("contents",
+                                               StringReader(doc.get("f")))
+            term = stream.addAttribute(TermAttribute.class_)
+      
             buffer = StringIO()
             buffer.write("   ")
 
             i = 0
-            for token in tokens:
+            while stream.incrementToken():
                 if i == spans.start():
                     buffer.write("<")
 
-                buffer.write(token.termText())
+                buffer.write(term.term())
                 if i + 1 == spans.end():
                     buffer.write(">")
 

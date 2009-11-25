@@ -13,75 +13,78 @@
 # ====================================================================
 
 from math import sqrt
-from lucene import SortField, Term, IndexReader, \
-    PythonSortComparatorSource, PythonScoreDocComparator, Double
+from lucene import SortField, Term, IndexReader, FieldCache, \
+    PythonFieldComparatorSource, PythonFieldComparator, Double
 
 #
-# A SortComparatorSource implementation
+# A FieldComparatorSource implementation
 #
 
-class DistanceComparatorSource(PythonSortComparatorSource):
+class DistanceComparatorSource(PythonFieldComparatorSource):
 
     def __init__(self, x, y):
         super(DistanceComparatorSource, self).__init__()
+
         self.x = x
         self.y = y
 
-    def newComparator(self, reader, fieldName):
+    def newComparator(self, fieldName, numHits, sortPos, reversed):
 
-        #
-        # A ScoreDocComparator implementation
-        # 
-        class DistanceScoreDocLookupComparator(PythonScoreDocComparator):
+        class DistanceScoreDocLookupComparator(PythonFieldComparator):
 
-            def __init__(self, reader, fieldName, x, y):
-                super(DistanceScoreDocLookupComparator, self).__init__()
-                enumerator = reader.terms(Term(fieldName, ""))
-                self.distances = distances = [0.0] * reader.numDocs()
+            def __init__(_self, fieldName, numHits):
+                super(DistanceScoreDocLookupComparator, _self).__init__()
+                _self.values = [0.0] * numHits
+                _self.fieldName = fieldName
 
-                if reader.numDocs() > 0:
-                    termDocs = reader.termDocs()
-                    try:
-                        while True:
-                            term = enumerator.term()
-                            if term is None:
-                                raise RuntimeError, "no terms in field %s" %(fieldName)
-                            if term.field() != fieldName:
-                                break
-                            
-                            termDocs.seek(enumerator)
-                            while termDocs.next():
-                                xy = term.text().split(',')
-                                deltax = int(xy[0]) - x
-                                deltay = int(xy[1]) - y
+            def setNextReader(_self, reader, docBase):
+      
+                _self.xDoc = FieldCache.DEFAULT.getInts(reader, "x")
+                _self.yDoc = FieldCache.DEFAULT.getInts(reader, "y")
 
-                                distances[termDocs.doc()] = sqrt(deltax ** 2 +
-                                                                 deltay ** 2)
-            
-                            if not enumerator.next():
-                                break
-                    finally:
-                        termDocs.close()
+            def _getDistance(_self, doc):
 
-            def compare(self, i, j):
+                deltax = _self.xDoc[doc] - self.x
+                deltay = _self.yDoc[doc] - self.y
 
-                if self.distances[i.doc] < self.distances[j.doc]:
+                return sqrt(deltax * deltax + deltay * deltay)
+
+            def compare(_self, slot1, slot2):
+
+                if _self.values[slot1] < _self.values[slot2]:
                     return -1
-                if self.distances[i.doc] > self.distances[j.doc]:
+                if _self.values[slot1] > _self.values[slot2]:
                     return 1
+
                 return 0
 
-            def sortValue(self, i):
+            def setBottom(_self, slot):
 
-                return Double(self.distances[i.doc])
+                _self._bottom = _self.values[slot]
 
-            def sortType(self):
+            def compareBottom(_self, doc):
 
-                return SortField.FLOAT
+                docDistance = _self._getDistance(doc)
+                if _self._bottom < docDistance:
+                    return -1
+                if _self._bottom > docDistance:
+                     return 1
 
-        return DistanceScoreDocLookupComparator(reader, fieldName,
-                                                self.x, self.y)
+                return 0
+
+            def copy(_self, slot, doc):
+
+                _self.values[slot] = _self._getDistance(doc)
+
+            def value(_self, slot):
+
+                return Double(_self.values[slot])
+
+            def sortType(_self):
+                return SortField.CUSTOM
+
+        return DistanceScoreDocLookupComparator(fieldName, numHits)
 
     def __str__(self):
 
-        return "Distance from ("+x+","+y+")"
+        return "Distance from (" + self.x + "," + self.y + ")"

@@ -12,7 +12,8 @@
 #   limitations under the License.
 # ====================================================================
 
-from lucene import IndexReader, Term, BitSet, PythonFilter, JArray
+from lucene import \
+    IndexReader, Term, BitSet, PythonFilter, JArray, OpenBitSet
 
 #
 # A Filter extension, with a TermDocs wrapper working around the lack of
@@ -25,18 +26,20 @@ class SpecialsFilter(PythonFilter):
         super(SpecialsFilter, self).__init__()
         self.accessor = accessor
 
-    def bits(self, reader):
+    def getDocIdSet(self, reader):
 
-        bits = BitSet(reader.maxDoc())
+        bits = OpenBitSet(long(reader.maxDoc()))
         isbns = self.accessor.isbns()
+
+        docs = JArray(int)(1)
+        freqs = JArray(int)(1)
 
         for isbn in isbns:
             if isbn is not None:
                 termDocs = reader.termDocs(Term("isbn", isbn))
-                docs = JArray(int)(1)
-                freq = JArray(int)(1)
-                if termDocs.read(docs, freq) == 1:
-                    bits.set(docs[0])
+                count = termDocs.read(docs, freqs)
+                if count == 1:
+                    bits.set(long(docs[0]))
 
         return bits
 

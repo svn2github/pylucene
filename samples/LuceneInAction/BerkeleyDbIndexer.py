@@ -1,6 +1,6 @@
 
 import os, sys, lucene
-lucene.initVM(lucene.CLASSPATH)
+lucene.initVM()
 
 sys.path.append(os.path.dirname(os.path.abspath(sys.argv[0])))
 

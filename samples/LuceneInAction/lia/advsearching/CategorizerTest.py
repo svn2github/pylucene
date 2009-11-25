@@ -44,7 +44,7 @@ class CategorizerTest(LiaTestCase):
 
     def buildCategoryVectors(self):
 
-        reader = IndexReader.open(self.directory)
+        reader = IndexReader.open(self.directory, True)
 
         for id in xrange(reader.maxDoc()):
             doc = reader.document(id)

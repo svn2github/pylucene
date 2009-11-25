@@ -15,7 +15,9 @@
 import os
 
 from unittest import TestCase
-from lucene import FSDirectory, Document, System, SimpleDateFormat, Hit
+from lucene import \
+    SimpleFSDirectory, Document, \
+    System, SimpleDateFormat, File
 
 
 class LiaTestCase(TestCase):
@@ -27,7 +29,7 @@ class LiaTestCase(TestCase):
 
     def setUp(self):
 
-        self.directory = FSDirectory.getDirectory(self.indexDir, False)
+        self.directory = SimpleFSDirectory(File(self.indexDir))
 
     def tearDown(self):
 
@@ -36,25 +38,27 @@ class LiaTestCase(TestCase):
     #
     # For troubleshooting
     #
-    def dumpHits(self, hits):
+    def dumpHits(self, searcher, scoreDocs):
 
-        if not hits:
+        if not scoreDocs:
             print "No hits"
         else:
-            for hit in hits:
-                hit = Hit.cast_(hit)
-                print "%s: %s" %(hit.getScore(),
-                                 hit.getDocument().get('title'))
+            for scoreDoc in scoreDocs:
+                print "%s: %s" %(scoreDoc.score,
+                                 searcher.doc(scoreDoc.doc).get('title'))
 
-    def assertHitsIncludeTitle(self, hits, title):
+    def assertHitsIncludeTitle(self, searcher, scoreDocs, title,
+                               fail=False):
 
-        for hit in hits:
-            doc = Hit.cast_(hit).getDocument()
+        for scoreDoc in scoreDocs:
+            doc = searcher.doc(scoreDoc.doc)
             if title == doc.get("title"):
-                self.assert_(True)
+                if fail:
+                    self.fail("title '%s' found" %(title))
                 return
 
-        self.fail("title '%s' not found" %(title))
+        if not fail:
+            self.fail("title '%s' not found" %(title))
 
     def parseDate(self, s):
 

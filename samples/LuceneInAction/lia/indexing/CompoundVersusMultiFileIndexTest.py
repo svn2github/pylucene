@@ -19,7 +19,8 @@ from time import time
 from datetime import timedelta
 
 from lucene import \
-     IndexWriter, SimpleAnalyzer, FSDirectory, System, Document, Field
+     IndexWriter, SimpleAnalyzer, SimpleFSDirectory, Document, Field, \
+     System, File
 
 
 class CompoundVersusMultiFileIndexTest(TestCase):
@@ -39,8 +40,8 @@ class CompoundVersusMultiFileIndexTest(TestCase):
         self.rmdir(cIndexDir)
         self.rmdir(mIndexDir)
 
-        self.cDir = FSDirectory.getDirectory(cIndexDir, True)
-        self.mDir = FSDirectory.getDirectory(mIndexDir, True)
+        self.cDir = SimpleFSDirectory(File(cIndexDir))
+        self.mDir = SimpleFSDirectory(File(mIndexDir))
 
     def rmdir(self, dir):
 
@@ -69,7 +70,8 @@ class CompoundVersusMultiFileIndexTest(TestCase):
 
     def addDocuments(self, dir, isCompound):
 
-        writer = IndexWriter(dir, SimpleAnalyzer(), True)
+        writer = IndexWriter(dir, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.LIMITED)
         writer.setUseCompoundFile(isCompound)
 
         # change to adjust performance of indexing with FSDirectory
@@ -80,13 +82,13 @@ class CompoundVersusMultiFileIndexTest(TestCase):
         for word in self.docs:
             doc = Document()
             doc.add(Field("keyword", word,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             doc.add(Field("unindexed", word,
                           Field.Store.YES, Field.Index.NO))
             doc.add(Field("unstored", word,
-                          Field.Store.NO, Field.Index.TOKENIZED))
+                          Field.Store.NO, Field.Index.ANALYZED))
             doc.add(Field("text", word,
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
         writer.optimize()

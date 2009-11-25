@@ -24,15 +24,15 @@ class StopAnalyzerAlternativeTest(TestCase):
 
     def testStopAnalyzer2(self):
 
-        tokens = AnalyzerUtils.tokensFromAnalysis(StopAnalyzer2(),
-                                                  "The quick brown...")
-        AnalyzerUtils.assertTokensEqual(self, tokens, ["quick", "brown"])
+        AnalyzerUtils.assertAnalyzesTo(StopAnalyzer2(),
+                                       "The quick brown...",
+                                       ["quick", "brown"])
 
     def testStopAnalyzerFlawed(self):
 
-        tokens = AnalyzerUtils.tokensFromAnalysis(StopAnalyzerFlawed(),
-                                                  "The quick brown...")
-        self.assertEqual("the", tokens[0].termText())
+        AnalyzerUtils.assertAnalyzesTo(StopAnalyzerFlawed(),
+                                       "The quick brown...",
+                                       ["the", "quick", "brown"])
 
 
     #

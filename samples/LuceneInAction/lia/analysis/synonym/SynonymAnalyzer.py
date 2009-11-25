@@ -13,7 +13,7 @@
 # ====================================================================
 
 from lucene import \
-     LowerCaseFilter, StopFilter, \
+     LowerCaseFilter, StopFilter, Version, \
      StandardAnalyzer, StandardTokenizer, StandardFilter, PythonAnalyzer
 
 from lia.analysis.synonym.SynonymFilter import SynonymFilter
@@ -31,7 +31,8 @@ class SynonymAnalyzer(PythonAnalyzer):
 
     def tokenStream(self, fieldName, reader):
 
-        tokenStream = LowerCaseFilter(StandardFilter(StandardTokenizer(reader)))
-        tokenStream = StopFilter(tokenStream, StandardAnalyzer.STOP_WORDS)
+        tokenStream = LowerCaseFilter(StandardFilter(StandardTokenizer(Version.LUCENE_CURRENT, reader)))
+        tokenStream = StopFilter(True, tokenStream,
+                                 StandardAnalyzer.STOP_WORDS_SET)
         
         return SynonymFilter(tokenStream, self.engine)

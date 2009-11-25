@@ -17,7 +17,7 @@ from lia.common.LiaTestCase import LiaTestCase
 from lucene import \
      WhitespaceAnalyzer, StandardAnalyzer, Term, QueryParser, Locale, \
      BooleanQuery, FuzzyQuery, IndexSearcher, TermRangeQuery, TermQuery, \
-     BooleanClause
+     BooleanClause, Version
 
 
 class QueryParserTest(LiaTestCase):
@@ -26,7 +26,7 @@ class QueryParserTest(LiaTestCase):
 
         super(QueryParserTest, self).setUp()
         self.analyzer = WhitespaceAnalyzer()
-        self.searcher = IndexSearcher(self.directory)
+        self.searcher = IndexSearcher(self.directory, True)
 
     def testToString(self):
 
@@ -41,57 +41,60 @@ class QueryParserTest(LiaTestCase):
 
     def testPrefixQuery(self):
 
-        parser = QueryParser("category", StandardAnalyzer())
+        parser = QueryParser(Version.LUCENE_CURRENT, "category",
+                             StandardAnalyzer(Version.LUCENE_CURRENT))
         parser.setLowercaseExpandedTerms(False)
 
         print parser.parse("/Computers/technology*").toString("category")
 
     def testGrouping(self):
 
-        query = QueryParser("subject", self.analyzer).parse("(agile OR extreme) AND methodology")
-        hits = self.searcher.search(query)
+        query = QueryParser(Version.LUCENE_CURRENT, "subject",
+                            self.analyzer).parse("(agile OR extreme) AND methodology")
+        scoreDocs = self.searcher.search(query, 50).scoreDocs
 
-        self.assertHitsIncludeTitle(hits, "Extreme Programming Explained")
-        self.assertHitsIncludeTitle(hits, "The Pragmatic Programmer")
+        self.assertHitsIncludeTitle(self.searcher, scoreDocs,
+                                    "Extreme Programming Explained")
+        self.assertHitsIncludeTitle(self.searcher, scoreDocs,
+                                    "The Pragmatic Programmer")
 
-    def testRangeQuery(self):
+    def testTermRangeQuery(self):
 
-        parser = QueryParser("subject", self.analyzer) 
-        parser.setUseOldRangeQuery(True)
-
-        query = parser.parse("pubmonth:[200401 TO 200412]")
+        query = QueryParser(Version.LUCENE_CURRENT, "subject",
+                            self.analyzer).parse("title2:[K TO N]")
         self.assert_(TermRangeQuery.instance_(query))
 
-        hits = self.searcher.search(query)
-        self.assertHitsIncludeTitle(hits, "Lucene in Action")
+        scoreDocs = self.searcher.search(query, 10).scoreDocs
+        self.assertHitsIncludeTitle(self.searcher, scoreDocs, "Mindstorms")
 
-        query = QueryParser("pubmonth",
-                            self.analyzer).parse("{200201 TO 200208}")
+        query = QueryParser(Version.LUCENE_CURRENT, "subject",
+                            self.analyzer).parse("title2:{K TO Mindstorms}")
+        scoreDocs = self.searcher.search(query, 10).scoreDocs
+        self.assertHitsIncludeTitle(self.searcher, scoreDocs, "Mindstorms",
+                                    True)
 
-        hits = self.searcher.search(query)
-        self.assertEqual(0, hits.length(), "JDwA in 200208")
-  
     def testDateRangeQuery(self):
 
         # locale diff between jre and gcj 1/1/04 -> 01/01/04
         # expression = "modified:[1/1/04 TO 12/31/04]"
         
         expression = "modified:[01/01/04 TO 12/31/04]"
-        parser = QueryParser("subject", self.analyzer)
+        parser = QueryParser(Version.LUCENE_CURRENT, "subject", self.analyzer)
         parser.setLocale(Locale.US)
         query = parser.parse(expression)
         print expression, "parsed to", query
 
-        hits = self.searcher.search(query)
-        self.assert_(hits.length() > 0)
+        topDocs = self.searcher.search(query, 50)
+        self.assert_(topDocs.totalHits > 0)
 
     def testSlop(self):
 
-        q = QueryParser("field", self.analyzer).parse('"exact phrase"')
+        q = QueryParser(Version.LUCENE_CURRENT, "field",
+                        self.analyzer).parse('"exact phrase"')
         self.assertEqual("\"exact phrase\"", q.toString("field"),
                          "zero slop")
 
-        qp = QueryParser("field", self.analyzer)
+        qp = QueryParser(Version.LUCENE_CURRENT, "field", self.analyzer)
         qp.setPhraseSlop(5)
         q = qp.parse('"sloppy phrase"')
         self.assertEqual("\"sloppy phrase\"~5", q.toString("field"),
@@ -99,19 +102,22 @@ class QueryParserTest(LiaTestCase):
 
     def testPhraseQuery(self):
 
-        q = QueryParser("field",
-                        StandardAnalyzer()).parse('"This is Some Phrase*"')
+        analyzer = StandardAnalyzer(Version.LUCENE_24)
+        q = QueryParser(Version.LUCENE_24, "field",
+                        analyzer).parse('"This is Some Phrase*"')
         self.assertEqual("\"some phrase\"", q.toString("field"), "analyzed")
 
-        q = QueryParser("field", self.analyzer).parse('"term"')
+        q = QueryParser(Version.LUCENE_CURRENT, "field",
+                        self.analyzer).parse('"term"')
         self.assert_(TermQuery.instance_(q), "reduced to TermQuery")
 
     def testLowercasing(self):
 
-        q = QueryParser("field", self.analyzer).parse("PrefixQuery*")
+        q = QueryParser(Version.LUCENE_CURRENT, "field",
+                        self.analyzer).parse("PrefixQuery*")
         self.assertEqual("prefixquery*", q.toString("field"), "lowercased")
 
-        qp = QueryParser("field", self.analyzer)
+        qp = QueryParser(Version.LUCENE_CURRENT, "field", self.analyzer)
         qp.setLowercaseExpandedTerms(False)
         q = qp.parse("PrefixQuery*")
         self.assertEqual("PrefixQuery*", q.toString("field"), "not lowercased")
@@ -119,29 +125,25 @@ class QueryParserTest(LiaTestCase):
     def testWildcard(self):
 
         try:
-            QueryParser("field", self.analyzer).parse("*xyz")
+            QueryParser(Version.LUCENE_CURRENT, "field",
+                        self.analyzer).parse("*xyz")
             self.fail("Leading wildcard character should not be allowed")
         except:
             self.assert_(True)
 
     def testBoost(self):
 
-         q = QueryParser("field", self.analyzer).parse("term^2")
+         q = QueryParser(Version.LUCENE_CURRENT, "field",
+                         self.analyzer).parse("term^2")
          self.assertEqual("term^2.0", q.toString("field"))
 
     def testParseException(self):
 
         try:
-            QueryParser("contents", self.analyzer).parse("^&#")
+            QueryParser(Version.LUCENE_CURRENT, "contents",
+                        self.analyzer).parse("^&#")
         except:
             # expression is invalid, as expected
             self.assert_(True)
         else:
             self.fail("ParseException expected, but not thrown")
-
-#  public void testStopWord() throws ParseException {
-#    Query q = QueryParser.parse("the AND drag", "field",
-#        StopAnalyzer())
-#    //  QueryParser fails on the previous line - this is a known 
-#    //  issue
-#  }

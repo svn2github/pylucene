@@ -26,7 +26,7 @@ class StopAnalyzerFlawed(object):
     def __init__(self, stopWords=None):
 
         if stopWords is None:
-            self.stopWords = StopAnalyzer.ENGLISH_STOP_WORDS
+            self.stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET
         else:
             self.stopWords = stopWords
 
@@ -36,5 +36,5 @@ class StopAnalyzerFlawed(object):
 
     def tokenStream(self, fieldName, reader):
 
-        return LowerCaseFilter(StopFilter(LetterTokenizer(reader),
+        return LowerCaseFilter(StopFilter(True, LetterTokenizer(reader),
                                           self.stopWords))

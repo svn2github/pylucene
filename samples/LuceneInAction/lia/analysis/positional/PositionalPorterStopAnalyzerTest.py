@@ -16,7 +16,7 @@ from unittest import TestCase
 
 from lucene import \
      IndexWriter, Term, RAMDirectory, Document, Field, \
-     IndexSearcher, QueryParser
+     IndexSearcher, QueryParser, Version
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 from lia.analysis.positional.PositionalPorterStopAnalyzer import \
@@ -30,49 +30,52 @@ class PositionalPorterStopAnalyzerTest(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, self.porterAnalyzer, True)
+        writer = IndexWriter(self.directory, self.porterAnalyzer, True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
 
         doc = Document()
         doc.add(Field("contents",
                       "The quick brown fox jumps over the lazy dogs",
-                       Field.Store.YES, Field.Index.TOKENIZED))
+                       Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
         writer.close()
 
     def testStems(self):
         
         searcher = IndexSearcher(self.directory)
-        query = QueryParser("contents", self.porterAnalyzer).parse("laziness")
-        hits = searcher.search(query)
+        query = QueryParser(Version.LUCENE_CURRENT, "contents",
+                            self.porterAnalyzer).parse("laziness")
+        topDocs = searcher.search(query, 50)
 
-        self.assertEqual(1, hits.length(), "lazi")
+        self.assertEqual(1, topDocs.totalHits, "lazi")
 
-        query = QueryParser("contents",
+        query = QueryParser(Version.LUCENE_CURRENT, "contents",
                             self.porterAnalyzer).parse('"fox jumped"')
-        hits = searcher.search(query)
+        topDocs = searcher.search(query, 50)
 
-        self.assertEqual(1, hits.length(), "jump jumps jumped jumping")
+        self.assertEqual(1, topDocs.totalHits, "jump jumps jumped jumping")
 
     def testExactPhrase(self):
 
-        searcher = IndexSearcher(self.directory)
-        query = QueryParser("contents",
+        searcher = IndexSearcher(self.directory, True)
+        query = QueryParser(Version.LUCENE_24, "contents",
                             self.porterAnalyzer).parse('"over the lazy"')
-        hits = searcher.search(query)
+        topDocs = searcher.search(query, 50)
 
-        self.assertEqual(0, hits.length(), "exact match not found!")
+        self.assertEqual(0, topDocs.totalHits, "exact match not found!")
 
     def testWithSlop(self):
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
 
-        parser = QueryParser("contents", self.porterAnalyzer)
+        parser = QueryParser(Version.LUCENE_CURRENT, "contents",
+                             self.porterAnalyzer)
         parser.setPhraseSlop(1)
 
         query = parser.parse('"over the lazy"')
-        hits = searcher.search(query)
+        topDocs = searcher.search(query, 50)
 
-        self.assertEqual(1, hits.length(), "hole accounted for")
+        self.assertEqual(1, topDocs.totalHits, "hole accounted for")
 
     def main(cls):
 

@@ -1,12 +1,12 @@
 
 import os, sys, unittest, lucene
-lucene.initVM(lucene.CLASSPATH)
+lucene.initVM()
 
 baseDir = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.append(baseDir)
 
-import lia.extsearch.hitcollector.HitCollectorTest
+import lia.searching.NumericRangeQueryTest
 from lucene import System
 
 System.setProperty("index.dir", os.path.join(baseDir, 'index'))
-unittest.main(lia.extsearch.hitcollector.HitCollectorTest)
+unittest.main(lia.searching.NumericRangeQueryTest)

@@ -13,33 +13,25 @@
 # ====================================================================
 
 from lia.common.LiaTestCase import LiaTestCase
+from lia.extsearch.collector.BookLinkCollector import BookLinkCollector
 
-from lucene import Term, IndexSearcher, RangeQuery
+from lucene import IndexSearcher, TermQuery, Term
 
+class CollectorTest(LiaTestCase):
 
-class RangeQueryTest(LiaTestCase):
+    def testCollecting(self):
 
-    def setUp(self):
+        query = TermQuery(Term("contents", "junit"))
+        searcher = IndexSearcher(self.directory, True)
 
-        super(RangeQueryTest, self).setUp()
+        collector = BookLinkCollector(searcher)
+        searcher.search(query, collector)
 
-        self.begin = Term("pubmonth", "198805")
+        links = collector.getLinks()
+        self.assertEqual("java development with ant",
+                         links["http://www.manning.com/antbook"])
 
-        # pub date of TTC was October 1988
-        self.end = Term("pubmonth", "198810")
+        scoreDocs = searcher.search(query, 10).scoreDocs
+        self.dumpHits(searcher, scoreDocs)
 
-    def testInclusive(self):
-
-        query = RangeQuery(self.begin, self.end, True)
-        searcher = IndexSearcher(self.directory)
-
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(), "tao")
-
-    def testExclusive(self):
-
-        query = RangeQuery(self.begin, self.end, False)
-        searcher = IndexSearcher(self.directory)
-
-        hits = searcher.search(query)
-        self.assertEqual(0, hits.length(), "there is no tao")
+        searcher.close()

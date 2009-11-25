@@ -17,7 +17,7 @@ import os
 from unittest import TestCase
 
 from lucene import VERSION, \
-     IndexWriter, IndexReader, SimpleAnalyzer, FSDirectory, System
+     IndexWriter, IndexReader, SimpleAnalyzer, SimpleFSDirectory, System, File
 
 
 class LockTest(TestCase):
@@ -26,39 +26,22 @@ class LockTest(TestCase):
 
         indexDir = os.path.join(System.getProperty("java.io.tmpdir", "tmp"),
                                 "index")
-        self.dir = FSDirectory.getDirectory(indexDir, True)
+        self.dir = SimpleFSDirectory(File(indexDir))
 
     def testWriteLock(self):
 
-        if VERSION < '2.1.0':
-            writer1 = None
-            writer2 = None
-            gotException = False
-
-            try:
-                try:
-                    writer1 = IndexWriter(self.dir, SimpleAnalyzer(), True)
-                    writer2 = IndexWriter(self.dir, SimpleAnalyzer(), True)
-
-                    self.fail("We should never reach this point")
-                except:
-                    gotException = True
-            finally:
-                writer1.close()
-                self.assert_(writer2 is None)
-                self.assert_(gotException)
-
-    def testCommitLock(self):
-
-        reader1 = None
-        reader2 = None
+        writer1 = IndexWriter(self.dir, SimpleAnalyzer(),
+                              IndexWriter.MaxFieldLength.UNLIMITED)
+        writer2 = None
 
         try:
-            writer = IndexWriter(self.dir, SimpleAnalyzer(), True)
-            writer.close()
-
-            reader1 = IndexReader.open(self.dir)
-            reader2 = IndexReader.open(self.dir)
+            try:
+                writer2 = IndexWriter(self.dir, SimpleAnalyzer(),
+                                      IndexWriter.MaxFieldLength.UNLIMITED)
+                self.fail("We should never reach this point")
+            except:
+                pass
         finally:
-            reader1.close()
-            reader2.close()
+            IndexWriter.unlock(self.dir)
+            writer1.close()
+            self.assert_(writer2 is None)

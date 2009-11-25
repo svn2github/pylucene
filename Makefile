@@ -15,9 +15,9 @@
 #
 
 VERSION=3.0.0-0
-LUCENE_SVN_VER=HEAD
+LUCENE_SVN_VER=883080
 LUCENE_VER=3.0.0
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/trunk
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/branches/lucene_3_0
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
 
@@ -253,7 +253,7 @@ samples/LuceneInAction/index:
 
 test: install-test samples/LuceneInAction/index
 	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-#	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz

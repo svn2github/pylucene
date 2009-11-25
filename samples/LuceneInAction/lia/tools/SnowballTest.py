@@ -13,30 +13,19 @@
 # ====================================================================
 
 from unittest import TestCase
-from lucene import SnowballAnalyzer, Token, StringReader
+from lucene import SnowballAnalyzer, StringReader, Version
+from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
 
 class SnowballTest(TestCase):
 
     def testEnglish(self):
 
-        analyzer = SnowballAnalyzer("English")
-        self.assertAnalyzesTo(analyzer, "stemming algorithms",
-                              ["stem", "algorithm"])
+        analyzer = SnowballAnalyzer(Version.LUCENE_CURRENT, "English")
+        AnalyzerUtils.assertAnalyzesTo(analyzer, "stemming algorithms",
+                                       ["stem", "algorithm"])
 
     def testSpanish(self):
 
-        analyzer = SnowballAnalyzer("Spanish")
-        self.assertAnalyzesTo(analyzer, "algoritmos", ["algoritm"])
-
-    def assertAnalyzesTo(self, analyzer, input, output):
-
-        stream = analyzer.tokenStream("field", StringReader(input))
-
-        for text in output:
-            token = stream.next()
-            self.assert_(token)
-            self.assertEqual(text, token.termText())
-
-        self.assert_(not list(stream))
-        stream.close()
+        analyzer = SnowballAnalyzer(Version.LUCENE_CURRENT, "Spanish")
+        AnalyzerUtils.assertAnalyzesTo(analyzer, "algoritmos", ["algoritm"])

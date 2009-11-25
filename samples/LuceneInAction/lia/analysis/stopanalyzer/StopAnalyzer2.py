@@ -24,11 +24,11 @@ class StopAnalyzer2(object):
     def __init__(self, stopWords=None):
 
         if stopWords is None:
-            self.stopWords = StopAnalyzer.ENGLISH_STOP_WORDS
+            self.stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET
         else:
             self.stopWords = stopWords
 
     def tokenStream(self, fieldName, reader):
 
-        return StopFilter(LowerCaseFilter(LetterTokenizer(reader)),
+        return StopFilter(True, LowerCaseFilter(LetterTokenizer(reader)),
                           self.stopWords)

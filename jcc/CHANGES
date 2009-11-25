@@ -1,5 +1,5 @@
 
-Version 2.4 ->
+Version 2.4 -> 2.5
 ------------------
  - added env.jni_version for the JNI version as returned by JNI's GetVersion()
  - added env.java_version for java.lang.System.getProperty('java.version')

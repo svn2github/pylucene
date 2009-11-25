@@ -30,10 +30,10 @@ class SimpleSimilarity(PythonSimilarity):
     def sloppyFreq(self, distance):
         return 2.0
 
-    def idf(self, docFreq, numDocs):
+    def idfTerms(self, terms, searcher):
         return 1.0
 
-    def idfTerms(self, terms, searcher):
+    def idf(self, docFreq, numDocs):
         return 1.0
 
     def coord(self, overlap, maxOverlap):

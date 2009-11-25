@@ -14,8 +14,8 @@
 
 from lucene import \
     PythonQueryParser, PythonMultiFieldQueryParser, \
-    PhraseQuery, RangeQuery, SpanNearQuery, SpanTermQuery, \
-    Term, PhraseQuery
+    PhraseQuery, TermRangeQuery, SpanNearQuery, SpanTermQuery, \
+    Term, PhraseQuery, Version
 
 from lia.extsearch.queryparser.NumberUtils import NumberUtils
 
@@ -26,7 +26,7 @@ from lia.extsearch.queryparser.NumberUtils import NumberUtils
 class CustomQueryParser(PythonQueryParser):
 
     def __init__(self, field, analyzer):
-        super(CustomQueryParser, self).__init__(field, analyzer)
+        super(CustomQueryParser, self).__init__(Version.LUCENE_CURRENT, field, analyzer)
 
     def getFuzzyQuery(self, field, termText, minSimilarity):
         raise AssertionError, "Fuzzy queries not allowed"
@@ -45,24 +45,15 @@ class CustomQueryParser(PythonQueryParser):
             num1 = int(part1)
             num2 = int(part2)
 
-            return RangeQuery(Term(field, NumberUtils.pad(num1)),
-                              Term(field, NumberUtils.pad(num2)),
-                              inclusive)
+            return TermRangeQuery(field,
+                                  NumberUtils.pad(num1),
+                                  NumberUtils.pad(num2),
+                                  inclusive, True)
 
         if field == "special":
             print part1, "->", part2
 
-            if part1 == '*':
-                t1 = None
-            else:
-                t1 = Term("field", part1)
-
-            if part2 == '*':
-                t2 = None
-            else:
-                t2 = Term("field", part2)
-
-            return RangeQuery(t1, t2, inclusive)
+            return TermRangeQuery("field", part1, part2, inclusive, True)
 
         return super(CustomQueryParser,
                      self).getRangeQuery(field, part1, part2, inclusive)
@@ -94,7 +85,7 @@ class CustomQueryParser(PythonQueryParser):
 class MultiFieldCustomQueryParser(PythonMultiFieldQueryParser):
 
     def __init__(self, fields, analyzer):
-        super(MultiFieldCustomQueryParser, self).__init__(fields, analyzer)
+        super(MultiFieldCustomQueryParser, self).__init__(Version.LUCENE_CURRENT, fields, analyzer)
 
     def getFuzzyQuery(self, super, field, termText, minSimilarity):
         raise AssertionError, "Fuzzy queries not allowed"
@@ -113,24 +104,15 @@ class MultiFieldCustomQueryParser(PythonMultiFieldQueryParser):
             num1 = int(part1)
             num2 = int(part2)
 
-            return RangeQuery(Term(field, NumberUtils.pad(num1)),
-                              Term(field, NumberUtils.pad(num2)),
-                              inclusive)
+            return TermRangeQuery(field,
+                                  NumberUtils.pad(num1),
+                                  NumberUtils.pad(num2),
+                                  inclusive, True)
 
         if field == "special":
             print part1, "->", part2
 
-            if part1 == '*':
-                t1 = None
-            else:
-                t1 = Term("field", part1)
-
-            if part2 == '*':
-                t2 = None
-            else:
-                t2 = Term("field", part2)
-
-            return RangeQuery(t1, t2, inclusive)
+            return TermRangeQuery("field", part1, part2, inclusive, True)
 
         return super(CustomQueryParser,
                      self).getRangeQuery(field, part1, part2, inclusive)

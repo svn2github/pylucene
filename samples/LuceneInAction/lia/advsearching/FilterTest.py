@@ -14,9 +14,11 @@
 
 from lia.common.LiaTestCase import LiaTestCase
 
-from lucene import \
-     Term, BooleanQuery, IndexSearcher, TermQuery, DateField, \
-     CachingWrapperFilter, DateFilter, RangeQuery, QueryFilter, BooleanClause
+from lucene import Integer, \
+     IndexSearcher, Term, TermQuery, MatchAllDocsQuery, \
+     BooleanQuery, BooleanClause, CachingWrapperFilter, \
+     TermRangeFilter, NumericRangeFilter, FieldCacheRangeFilter, \
+     FieldCacheTermsFilter, QueryWrapperFilter, PrefixFilter
      
 
 class FilterTest(LiaTestCase):
@@ -25,34 +27,62 @@ class FilterTest(LiaTestCase):
 
         super(FilterTest, self).setUp()
 
-        self.allBooks = RangeQuery(Term("pubmonth", "190001"),
-                                   Term("pubmonth", "200512"), True)
-        self.searcher = IndexSearcher(self.directory)
-        hits = self.searcher.search(self.allBooks)
-        self.numAllBooks = len(hits)
+        self.allBooks = MatchAllDocsQuery()
+        self.searcher = IndexSearcher(self.directory, True)
+        scoreDocs = self.searcher.search(self.allBooks, 50).scoreDocs
+        self.numAllBooks = len(scoreDocs)
 
-    def testDateFilter(self):
+    def testTermRangeFilter(self):
 
-        jan1 = self.parseDate("2004-01-01")
-        jan31 = self.parseDate("2004-01-31")
-        dec31 = self.parseDate("2004-12-31")
+        filter = TermRangeFilter("title2", "d", "j", True, True)
+        scoreDocs = self.searcher.search(self.allBooks, filter, 50).scoreDocs
+        self.assertEqual(3, len(scoreDocs))
 
-        filter = DateFilter("modified", jan1, dec31)
+    def testNumericDateFilter(self):
 
-        hits = self.searcher.search(self.allBooks, filter)
-        self.assertEqual(self.numAllBooks, len(hits), "all modified in 2004")
+        filter = NumericRangeFilter.newIntRange("pubmonth",
+                                                Integer(198805),
+                                                Integer(198810),
+                                                True, True)
+        scoreDocs = self.searcher.search(self.allBooks, filter, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
 
-        filter = DateFilter("modified", jan1, jan31)
-        hits = self.searcher.search(self.allBooks, filter)
-        self.assertEqual(0, len(hits), "none modified in January")
+    def testFieldCacheRangeFilter(self):
 
-    def testQueryFilter(self):
+        filter = FieldCacheRangeFilter.newStringRange("title2", "d", "j",
+                                                      True, True)
+        scoreDocs = self.searcher.search(self.allBooks, filter, 50).scoreDocs
+        self.assertEqual(3, len(scoreDocs))
+
+        filter = FieldCacheRangeFilter.newIntRange("pubmonth",
+                                                   Integer(198805),
+                                                   Integer(198810),
+                                                   True, True)
+        scoreDocs = self.searcher.search(self.allBooks, filter, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
+
+    def testFieldCacheTermsFilter(self):
+
+        filter = FieldCacheTermsFilter("category",
+                                       ["/health/alternative/chinese",
+                                        "/technology/computers/ai",
+                                        "/technology/computers/programming"])
+        scoreDocs = self.searcher.search(self.allBooks, filter, 50).scoreDocs
+        self.assertEqual(7, len(scoreDocs), "expected 7 hits")
+
+    def testQueryWrapperFilter(self):
 
         categoryQuery = TermQuery(Term("category", "/philosophy/eastern"))
-        categoryFilter = QueryFilter(categoryQuery)
+        categoryFilter = QueryWrapperFilter(categoryQuery)
+        scoreDocs = self.searcher.search(self.allBooks, categoryFilter, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs), "only tao te ching")
 
-        hits = self.searcher.search(self.allBooks, categoryFilter)
-        self.assertEqual(1, len(hits), "only tao te ching")
+    def testSpanQueryFilter(self):
+        
+        categoryQuery = TermQuery(Term("category", "/philosophy/eastern"))
+        categoryFilter = QueryWrapperFilter(categoryQuery)
+        scoreDocs = self.searcher.search(self.allBooks, categoryFilter, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs), "only tao te ching")
 
     def testFilterAlternative(self):
 
@@ -62,30 +92,19 @@ class FilterTest(LiaTestCase):
         constrainedQuery.add(self.allBooks, BooleanClause.Occur.MUST)
         constrainedQuery.add(categoryQuery, BooleanClause.Occur.MUST)
 
-        hits = self.searcher.search(constrainedQuery)
-        self.assertEqual(1, len(hits), "only tao te ching")
+        scoreDocs = self.searcher.search(constrainedQuery, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs), "only tao te ching")
 
-    def testQueryFilterWithRangeQuery(self):
+    def testPrefixFilter(self):
 
-        jan1 = self.parseDate("2004-01-01")
-        dec31 = self.parseDate("2004-12-31")
-
-        start = Term("modified", DateField.dateToString(jan1))
-        end = Term("modified", DateField.dateToString(dec31))
-
-        rangeQuery = RangeQuery(start, end, True)
-
-        filter = QueryFilter(rangeQuery)
-        hits = self.searcher.search(self.allBooks, filter)
-        self.assertEqual(self.numAllBooks, len(hits), "all of 'em")
+        prefixFilter = PrefixFilter(Term("category", "/technology/computers"))
+        scoreDocs = self.searcher.search(self.allBooks, prefixFilter, 50).scoreDocs
+        self.assertEqual(8, len(scoreDocs),
+                         "only /technology/computers/* books")
 
     def testCachingWrapper(self):
 
-        jan1 = self.parseDate("2004-01-01")
-        dec31 = self.parseDate("2004-12-31")
-
-        dateFilter = DateFilter("modified", jan1, dec31)
-        cachingFilter = CachingWrapperFilter(dateFilter)
-
-        hits = self.searcher.search(self.allBooks, cachingFilter)
-        self.assertEqual(self.numAllBooks, len(hits), "all of 'em")
+        filter = TermRangeFilter("title2", "d", "j", True, True)
+        cachingFilter = CachingWrapperFilter(filter)
+        scoreDocs = self.searcher.search(self.allBooks, cachingFilter, 50).scoreDocs
+        self.assertEqual(3, len(scoreDocs))

@@ -15,44 +15,46 @@
 from lia.common.LiaTestCase import LiaTestCase
 
 from lucene import \
-     SimpleAnalyzer, Document, TermQuery, QueryParser, IndexSearcher, Term
+    SimpleAnalyzer, Document, TermQuery, QueryParser, IndexSearcher, Term, \
+    Version
 
 
 class BasicSearchingTest(LiaTestCase):
 
     def testTerm(self):
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
         t = Term("subject", "ant")
         query = TermQuery(t)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(), "JDwA")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs), "JDwA")
 
         t = Term("subject", "junit")
-        hits = searcher.search(TermQuery(t))
-        self.assertEqual(2, hits.length())
+        scoreDocs = searcher.search(TermQuery(t), 50).scoreDocs
+        self.assertEqual(2, len(scoreDocs))
 
         searcher.close()
 
     def testKeyword(self):
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
         t = Term("isbn", "1930110995")
         query = TermQuery(t)
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length(), "JUnit in Action")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs), "JUnit in Action")
 
     def testQueryParser(self):
 
-        searcher = IndexSearcher(self.directory)
+        searcher = IndexSearcher(self.directory, True)
 
-        query = QueryParser("contents",
+        query = QueryParser(Version.LUCENE_CURRENT, "contents",
                             SimpleAnalyzer()).parse("+JUNIT +ANT -MOCK")
-        hits = searcher.search(query)
-        self.assertEqual(1, hits.length())
-        d = hits.doc(0)
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
+        d = searcher.doc(scoreDocs[0].doc)
         self.assertEqual("Java Development with Ant", d.get("title"))
 
-        query = QueryParser("contents", SimpleAnalyzer()).parse("mock OR junit")
-        hits = searcher.search(query)
-        self.assertEqual(2, hits.length(), "JDwA and JIA")
+        query = QueryParser(Version.LUCENE_CURRENT, "contents",
+                            SimpleAnalyzer()).parse("mock OR junit")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(2, len(scoreDocs), "JDwA and JIA")

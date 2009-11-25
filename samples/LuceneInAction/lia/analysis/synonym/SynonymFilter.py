@@ -12,44 +12,50 @@
 #   limitations under the License.
 # ====================================================================
 
-from lucene import Token, PythonTokenFilter
+from lucene import Token, PythonTokenFilter, TermAttribute
+from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
 #
 # A TokenFilter extension
 #
 
 class SynonymFilter(PythonTokenFilter):
-
     TOKEN_TYPE_SYNONYM = "SYNONYM"
-    
-    def __init__(self, tokenStream, engine):
 
-        super(SynonymFilter, self).__init__(tokenStream)
+    def __init__(self, inStream, engine):
+        super(SynonymFilter, self).__init__(inStream)
 
         self.synonymStack = []
-        self.input = tokenStream
+        self.termAttr = self.addAttribute(TermAttribute.class_)
+        self.save = inStream.cloneAttributes()
         self.engine = engine
+        self.inStream = inStream
 
-    def next(self):
+    def incrementToken(self):
 
         if len(self.synonymStack) > 0:
-            return self.synonymStack.pop()
+            syn = self.synonymStack.pop()
+            self.restoreState(syn)
+            return True
 
-        # this raises StopIteration which is cleared to return null to java
-        token = self.input.next()
-        self.addAliasesToStack(token)
+        if not self.inStream.incrementToken():
+            return False
 
-        return token
+        self.addAliasesToStack()
 
-    def addAliasesToStack(self, token):
+        return True
 
-        synonyms = self.engine.getSynonyms(token.termText())
+    def addAliasesToStack(self):
 
+        synonyms = self.engine.getSynonyms(self.termAttr.term())
         if synonyms is None:
             return
 
+        current = self.captureState()
+
         for synonym in synonyms:
-            synToken = Token(synonym, token.startOffset(), token.endOffset(),
-                             self.TOKEN_TYPE_SYNONYM)
-            synToken.setPositionIncrement(0)
-            self.synonymStack.append(synToken)
+            self.save.restoreState(current)
+            AnalyzerUtils.setTerm(self.save, synonym)
+            AnalyzerUtils.setType(self.save, self.TOKEN_TYPE_SYNONYM)
+            AnalyzerUtils.setPositionIncrement(self.save, 0)
+            self.synonymStack.append(self.save.captureState())

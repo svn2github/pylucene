@@ -15,24 +15,27 @@
 from lia.common.LiaTestCase import LiaTestCase
 
 from lucene import \
-     QueryParser, StandardAnalyzer, PerFieldAnalyzerWrapper, WhitespaceAnalyzer
+    QueryParser, StandardAnalyzer, PerFieldAnalyzerWrapper, \
+    WhitespaceAnalyzer, Version
 
 
 class AnalysisParalysisTest(LiaTestCase):
 
     def testAnalyzer(self):
 
-        analyzer = StandardAnalyzer()
+        analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         queryString = "category:/philosophy/eastern"
 
-        query = QueryParser("contents", analyzer).parse(queryString)
+        query = QueryParser(Version.LUCENE_CURRENT,
+                            "contents", analyzer).parse(queryString)
 
         self.assertEqual("category:\"philosophy eastern\"",
                          query.toString("contents"), "path got split, yikes!")
 
         perFieldAnalyzer = PerFieldAnalyzerWrapper(analyzer)
         perFieldAnalyzer.addAnalyzer("category", WhitespaceAnalyzer())
-        query = QueryParser("contents", perFieldAnalyzer).parse(queryString)
+        query = QueryParser(Version.LUCENE_CURRENT,
+                            "contents", perFieldAnalyzer).parse(queryString)
 
         self.assertEqual("category:/philosophy/eastern",
                          query.toString("contents"),

@@ -12,26 +12,12 @@
 #   limitations under the License.
 # ====================================================================
 
-from lucene import Document, IndexSearcher, PythonHitCollector
+class TestSpecialsAccessor(object):
 
-#
-# A HitCollector extension
-#
+    def __init__(self, isbns):
 
-class BookLinkCollector(PythonHitCollector):
+        self._isbns = isbns
 
-    def __init__(self, searcher):
-        super(BookLinkCollector, self).__init__()
-        self.searcher = searcher
-        self.documents = {}
+    def isbns(self):
 
-    def collect(self, id, score):
-
-        doc = self.searcher.doc(id);
-        self.documents[doc["url"]] = doc["title"]
-
-        print "%s: %s" %(doc['title'], score)
-
-    def getLinks(self):
-
-        return self.documents.copy()
+        return self._isbns

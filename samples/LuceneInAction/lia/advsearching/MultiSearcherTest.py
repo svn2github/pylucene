@@ -15,7 +15,7 @@
 from unittest import TestCase
 from lucene import \
      WhitespaceAnalyzer, Document, Field, IndexWriter, Term, MultiSearcher, \
-     RangeQuery, RAMDirectory, IndexSearcher
+     TermRangeQuery, RAMDirectory, IndexSearcher
 
 
 class MultiSearcherTest(TestCase):
@@ -35,13 +35,15 @@ class MultiSearcherTest(TestCase):
         aTOmDirectory = RAMDirectory()
         nTOzDirectory = RAMDirectory()
 
-        aTOmWriter = IndexWriter(aTOmDirectory, analyzer, True)
-        nTOzWriter = IndexWriter(nTOzDirectory, analyzer, True)
+        aTOmWriter = IndexWriter(aTOmDirectory, analyzer, True,
+                                 IndexWriter.MaxFieldLength.UNLIMITED)
+        nTOzWriter = IndexWriter(nTOzDirectory, analyzer, True,
+                                 IndexWriter.MaxFieldLength.UNLIMITED)
 
         for animal in animals:
             doc = Document()
             doc.add(Field("animal", animal,
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
 
             if animal[0].lower() < "n":
                 aTOmWriter.addDocument(doc)
@@ -59,7 +61,7 @@ class MultiSearcherTest(TestCase):
         searcher = MultiSearcher(self.searchers)
 
         # range spans documents across both indexes
-        query = RangeQuery(Term("animal", "h"), Term("animal", "t"), True)
+        query = TermRangeQuery("animal", "h", "t", True, True)
 
-        hits = searcher.search(query)
-        self.assertEqual(12, hits.length(), "tarantula not included")
+        scoreDocs = searcher.search(query, 50).scoreDocs
+        self.assertEqual(12, len(scoreDocs), "tarantula not included")

@@ -20,7 +20,7 @@ class DocumentDeleteTest(BaseIndexingTestCase):
 
     def testDeleteBeforeIndexMerge(self):
 
-        reader = IndexReader.open(self.dir)
+        reader = IndexReader.open(self.dir, False)
         self.assertEqual(2, reader.maxDoc())
         self.assertEqual(2, reader.numDocs())
         reader.deleteDocument(1)
@@ -32,7 +32,7 @@ class DocumentDeleteTest(BaseIndexingTestCase):
 
         reader.close()
 
-        reader = IndexReader.open(self.dir)
+        reader = IndexReader.open(self.dir, True)
 
         self.assertEqual(2, reader.maxDoc())
         self.assertEqual(1, reader.numDocs())
@@ -41,17 +41,18 @@ class DocumentDeleteTest(BaseIndexingTestCase):
 
     def testDeleteAfterIndexMerge(self):
 
-        reader = IndexReader.open(self.dir)
+        reader = IndexReader.open(self.dir, False)
         self.assertEqual(2, reader.maxDoc())
         self.assertEqual(2, reader.numDocs())
         reader.deleteDocument(1)
         reader.close()
 
-        writer = IndexWriter(self.dir, self.getAnalyzer(), False)
+        writer = IndexWriter(self.dir, self.getAnalyzer(), False,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
         writer.optimize()
         writer.close()
 
-        reader = IndexReader.open(self.dir)
+        reader = IndexReader.open(self.dir, True)
 
         self.assert_(not reader.isDeleted(1))
         self.assert_(not reader.hasDeletions())

@@ -14,13 +14,14 @@
 
 import os
 
+from itertools import izip
 from unittest import TestCase
 from time import time
 from datetime import timedelta
 
 from lucene import \
-     IndexWriter, SimpleAnalyzer, Document, Field, System, \
-     Term, TermQuery, IndexSearcher, FSDirectory
+     IndexWriter, SimpleAnalyzer, Document, Field, System, File, \
+     Term, TermQuery, IndexSearcher, SimpleFSDirectory
 
 
 class FieldLengthTest(TestCase):
@@ -35,7 +36,7 @@ class FieldLengthTest(TestCase):
 
         indexDir = os.path.join(System.getProperty("java.io.tmpdir", "tmp"),
                                 "index-dir")
-        self.dir = FSDirectory.getDirectory(indexDir, True)
+        self.dir = SimpleFSDirectory(File(indexDir))
 
     def testFieldSize(self):
 
@@ -47,30 +48,30 @@ class FieldLengthTest(TestCase):
 
     def getHitCount(self, fieldName, searchString):
 
-        searcher = IndexSearcher(self.dir)
+        searcher = IndexSearcher(self.dir, True)
         t = Term(fieldName, searchString)
         query = TermQuery(t)
-        hits = searcher.search(query)
-        hitCount = hits.length()
+        hitCount = len(searcher.search(query, 50).scoreDocs)
         searcher.close()
 
         return hitCount
 
     def addDocuments(self, dir, maxFieldLength):
 
-        writer = IndexWriter(dir, SimpleAnalyzer(), True)
-        writer.setMaxFieldLength(maxFieldLength)
+        writer = IndexWriter(dir, SimpleAnalyzer(), True,
+                             IndexWriter.MaxFieldLength(maxFieldLength))
         
-        for i in xrange(len(self.keywords)):
+        for keyword, unindexed, unstored, text in \
+                izip(self.keywords, self.unindexed, self.unstored, self.text):
             doc = Document()
-            doc.add(Field("id", self.keywords[i],
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
-            doc.add(Field("country", self.unindexed[i],
+            doc.add(Field("id", keyword,
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
+            doc.add(Field("country", unindexed,
                           Field.Store.YES, Field.Index.NO))
-            doc.add(Field("contents", self.unstored[i],
-                          Field.Store.NO, Field.Index.TOKENIZED))
-            doc.add(Field("city", self.text[i],
-                          Field.Store.YES, Field.Index.TOKENIZED))
+            doc.add(Field("contents", unstored,
+                          Field.Store.NO, Field.Index.ANALYZED))
+            doc.add(Field("city", text,
+                          Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
         writer.optimize()
