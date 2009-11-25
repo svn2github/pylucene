@@ -15,7 +15,7 @@
 from sys import stdout
 
 from lucene import \
-     StandardAnalyzer, Term, TermQuery, StringReader, \
+     StandardAnalyzer, Term, TermQuery, StringReader, Version, \
      Fragmenter, Highlighter, QueryScorer, SimpleFragmenter, SimpleHTMLFormatter
 
 
@@ -51,7 +51,7 @@ class HighlightIt(object):
         fragmenter = SimpleFragmenter(50)
         highlighter.setTextFragmenter(fragmenter)
 
-        analyzer = StandardAnalyzer()
+        analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         tokenStream = analyzer.tokenStream("f", StringReader(cls.text))
         result = highlighter.getBestFragments(tokenStream, cls.text, 5, "...")
 

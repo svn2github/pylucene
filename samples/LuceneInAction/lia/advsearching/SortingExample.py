@@ -15,8 +15,9 @@
 import os
 
 from lucene import \
-     FSDirectory, Document, Field, IndexSearcher, SimpleAnalyzer, \
-     RangeQuery, Sort, SortField, DecimalFormat, System, Term
+    SimpleFSDirectory, Document, Field, IndexSearcher, StandardAnalyzer, \
+    MatchAllDocsQuery, Sort, SortField, DecimalFormat, System, File, \
+    TopFieldCollector, QueryParser, Version, BooleanQuery, BooleanClause
 
 
 class SortingExample(object):
@@ -25,51 +26,71 @@ class SortingExample(object):
 
         self.directory = directory
 
-    def displayHits(self, query, sort):
+    def displayResults(self, query, sort):
 
-        searcher = IndexSearcher(self.directory)
-        hits = searcher.search(query, sort)
+        searcher = IndexSearcher(self.directory, True)
+
+        fillFields = False
+        computeMaxScore = False
+        docsScoredInOrder = False
+        computeScores = True
+
+        collector = TopFieldCollector.create(sort, 20,
+                                             fillFields,
+                                             computeScores,
+                                             computeMaxScore,
+                                             docsScoredInOrder)
+
+        searcher.search(query, None, collector)
+        scoreDocs = collector.topDocs().scoreDocs
 
         print "\nResults for:", query, "sorted by", sort
         print "Title".rjust(30), "pubmonth".rjust(10), \
               "id".center(4), "score".center(15)
 
         scoreFormatter = DecimalFormat("0.######")
-        for i, doc in hits:
+        for scoreDoc in scoreDocs:
+            doc = searcher.doc(scoreDoc.doc)
             title = doc["title"]
             if len(title) > 30:
                 title = title[:30]
             print title.encode('ascii', 'replace').rjust(30), \
                   doc["pubmonth"].rjust(10), \
-                  str(hits.id(i)).center(4), \
-                  scoreFormatter.format(hits.score(i)).ljust(12)
+                  str(scoreDoc.doc).center(4), \
+                  scoreFormatter.format(scoreDoc.score).ljust(12)
             print "  ", doc["category"]
-            # print searcher.explain(query, hits.id(i))
+            # print searcher.explain(query, scoreDoc.doc)
 
         searcher.close()
 
     def main(cls, argv):
 
-        earliest = Term("pubmonth", "190001")
-        latest = Term("pubmonth", "201012")
-        allBooks = RangeQuery(earliest, latest, True)
+        allBooks = MatchAllDocsQuery()
+        parser = QueryParser(Version.LUCENE_CURRENT, "contents",
+                             StandardAnalyzer(Version.LUCENE_CURRENT))
+        query = BooleanQuery()
+        query.add(allBooks, BooleanClause.Occur.SHOULD)
+        query.add(parser.parse("java OR action"), BooleanClause.Occur.SHOULD)
 
         indexDir = System.getProperty("index.dir")
-        directory = FSDirectory.getDirectory(indexDir, False)
+        directory = SimpleFSDirectory(File(indexDir))
+
         example = SortingExample(directory)
+        example.displayResults(query, Sort.RELEVANCE)
+        example.displayResults(query, Sort.INDEXORDER)
+        example.displayResults(query, Sort(SortField("category",
+                                                     SortField.STRING)))
+        example.displayResults(query, Sort(SortField("pubmonth",
+                                                     SortField.INT, True)))
 
-        example.displayHits(allBooks, Sort.RELEVANCE)
-        example.displayHits(allBooks, Sort.INDEXORDER)
-        example.displayHits(allBooks, Sort("category"))
-        example.displayHits(allBooks, Sort("pubmonth", True))
+        example.displayResults(query,
+                               Sort([SortField("category", SortField.STRING),
+                                     SortField.FIELD_SCORE,
+                                     SortField("pubmonth", SortField.INT, True)]))
 
-        example.displayHits(allBooks,
-                            Sort([SortField("category"),
-                                  SortField.FIELD_SCORE,
-                                  SortField("pubmonth", SortField.INT, True)]))
-
-        example.displayHits(allBooks,
-                            Sort([SortField.FIELD_SCORE,
-                                  SortField("category")]))
+        example.displayResults(query,
+                               Sort([SortField.FIELD_SCORE,
+                                     SortField("category", SortField.STRING)]))
+        directory.close()
 
     main = classmethod(main)

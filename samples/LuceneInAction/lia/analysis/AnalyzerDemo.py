@@ -14,7 +14,7 @@
 
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
-from lucene import \
+from lucene import Version, \
      StopAnalyzer, SimpleAnalyzer, WhitespaceAnalyzer, StandardAnalyzer
 
 
@@ -25,8 +25,8 @@ class AnalyzerDemo(object):
     
     analyzers = [WhitespaceAnalyzer(),
                  SimpleAnalyzer(),
-                 StopAnalyzer(),
-                 StandardAnalyzer()]
+                 StopAnalyzer(Version.LUCENE_CURRENT),
+                 StandardAnalyzer(Version.LUCENE_CURRENT)]
 
     def main(cls, argv):
 
@@ -42,14 +42,14 @@ class AnalyzerDemo(object):
 
     def analyze(cls, text):
 
-        print'"Analyzing "', text, '"'
+        print 'Analyzing "%s"' %(text)
 
         for analyzer in cls.analyzers:
             name = type(analyzer).__name__
             print " %s:" %(name),
             AnalyzerUtils.displayTokens(analyzer, text)
-            print ''
-        print ''
+            print
+        print
 
     main = classmethod(main)
     analyze = classmethod(analyze)

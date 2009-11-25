@@ -16,7 +16,7 @@ import os
 
 from lucene import \
      Document, IndexReader, Term, BooleanQuery, IndexSearcher, TermQuery, \
-     FSDirectory, System, BooleanClause, Hit
+     SimpleFSDirectory, File, System, BooleanClause
 
 
 class BooksLikeThis(object):
@@ -24,9 +24,9 @@ class BooksLikeThis(object):
     def main(cls, argv):
 
         indexDir = System.getProperty("index.dir")
-        directory = FSDirectory.getDirectory(indexDir, False)
+        directory = SimpleFSDirectory(File(indexDir))
 
-        reader = IndexReader.open(directory)
+        reader = IndexReader.open(directory, True)
         blt = BooksLikeThis(reader)
 
         for id in xrange(reader.maxDoc()):
@@ -73,12 +73,11 @@ class BooksLikeThis(object):
                           BooleanClause.Occur.MUST_NOT)
 
         print "  Query:", likeThisQuery.toString("contents")
-        hits = self.searcher.search(likeThisQuery)
+        scoreDocs = self.searcher.search(likeThisQuery, 50).scoreDocs
 
         docs = []
-        for hit in hits:
-            hit = Hit.cast_(hit)
-            doc = hit.getDocument()
+        for scoreDoc in scoreDocs:
+            doc = self.searcher.doc(scoreDoc.doc)
             if len(docs) < max:
                 docs.append(doc)
             else:

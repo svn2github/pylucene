@@ -16,7 +16,7 @@ import os
 
 from lucene import \
      SimpleAnalyzer, Document, QueryParser, Explanation, \
-     IndexSearcher, FSDirectory, Hit
+     IndexSearcher, SimpleFSDirectory, File, Version
 
 
 class Explainer(object):
@@ -30,21 +30,18 @@ class Explainer(object):
             indexDir = argv[1]
             queryExpression = argv[2]
 
-            directory = FSDirectory.getDirectory(indexDir, False)
-
-            query = QueryParser("contents",
+            directory = SimpleFSDirectory(File(indexDir))
+            query = QueryParser(Version.LUCENE_CURRENT, "contents",
                                 SimpleAnalyzer()).parse(queryExpression)
 
             print "Query:", queryExpression
 
             searcher = IndexSearcher(directory)
-            hits = searcher.search(query)
+            scoreDocs = searcher.search(query, 50).scoreDocs
 
-            for hit in hits:
-                hit = Hit.cast_(hit)
-                doc = hit.getDocument()
-                id = hit.getId()
-                explanation = searcher.explain(query, id)
+            for scoreDoc in scoreDocs:
+                doc = searcher.doc(scoreDoc.doc)
+                explanation = searcher.explain(query, scoreDoc.doc)
                 print "----------"
                 print doc["title"].encode('utf-8')
                 print explanation

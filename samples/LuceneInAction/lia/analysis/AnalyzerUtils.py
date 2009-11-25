@@ -59,7 +59,7 @@ class AnalyzerUtils(object):
         term = tokenStream.addAttribute(TermAttribute.class_)
 
         while tokenStream.incrementToken():
-            print "[%s]" %(term.term())
+            print "[%s]" %(term.term()),
 
     def displayTokensWithPositions(cls, analyzer, text):
 

@@ -197,6 +197,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.util \
                      java.util.Arrays \
                      java.text.SimpleDateFormat \
+                     java.text.DecimalFormat \
                      java.text.Collator \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
@@ -254,6 +255,12 @@ samples/LuceneInAction/index:
 test: install-test samples/LuceneInAction/index
 	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+	$(PYTHON) samples/LuceneInAction/AnalyzerDemo.py
+	$(PYTHON) samples/LuceneInAction/AnalyzerUtils.py
+	$(PYTHON) samples/LuceneInAction/BooksLikeThis.py
+	$(PYTHON) samples/LuceneInAction/Explainer.py samples/LuceneInAction/index programming
+	$(PYTHON) samples/LuceneInAction/HighlightIt.py
+	$(PYTHON) samples/LuceneInAction/SortingExample.py
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
