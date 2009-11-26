@@ -76,12 +76,13 @@ class SortingExample(object):
         directory = SimpleFSDirectory(File(indexDir))
 
         example = SortingExample(directory)
+
         example.displayResults(query, Sort.RELEVANCE)
         example.displayResults(query, Sort.INDEXORDER)
-        example.displayResults(query, Sort(SortField("category",
-                                                     SortField.STRING)))
-        example.displayResults(query, Sort(SortField("pubmonth",
-                                                     SortField.INT, True)))
+        example.displayResults(query,
+                               Sort(SortField("category", SortField.STRING)))
+        example.displayResults(query,
+                               Sort(SortField("pubmonth", SortField.INT, True)))
 
         example.displayResults(query,
                                Sort([SortField("category", SortField.STRING),

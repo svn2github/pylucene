@@ -4,14 +4,13 @@ Version 2.4 -> 2.5
  - added env.jni_version for the JNI version as returned by JNI's GetVersion()
  - added env.java_version for java.lang.System.getProperty('java.version')
  - default value to initVM's classpath parameter now is importing module's
- - added (partial) support for Java generics
+ - added support for Java generics
  - added 'string_' property to JArray('byte') instances to extract byte string
  - fixed bug with passing list of extension objects
  - reworked iterator and enumeration 'next' templates to shortcut C++ wrappers
  - fixed bug in code comparing setuptools versions when >= 0.6c10
  - verified build against setuptools from distribute 0.6.6
  - renamed patch.43 to differentiate setuptools versions
- - 
 
 Version 2.3 -> 2.4
 ------------------

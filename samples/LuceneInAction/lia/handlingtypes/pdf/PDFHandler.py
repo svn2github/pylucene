@@ -35,7 +35,7 @@ class PDFHandler(object):
                     break
                 name, value = line.split(':', 1)
                 doc.add(Field(name.strip(), value.strip(),
-                              Field.Store.YES, Field.Index.UN_TOKENIZED))
+                              Field.Store.YES, Field.Index.NOT_ANALYZED))
 
             exitCode = process.wait()
             if exitCode != 0:
@@ -49,7 +49,7 @@ class PDFHandler(object):
         else:
             doc.add(Field("contents", StringReader(string)))
             doc.add(Field("filename", os.path.abspath(path),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
 
             exitCode = process.wait()

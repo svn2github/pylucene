@@ -30,7 +30,7 @@ class PlainTextHandler(object):
             doc = Document()
             doc.add(Field("contents", reader))
             doc.add(Field("filename", os.path.abspath(path),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
             reader.close()
 

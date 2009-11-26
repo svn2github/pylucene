@@ -3,10 +3,10 @@ Version 2.9.0 -> 3.0.0
 ----------------------
  - unit tests ported to new API
  - removed InstantiatedIndex contrib from default build
- - with (partial) JCC Java generics support, a lot less downcasting is needed
+ - with JCC 2.5's Java generics support, a lot less downcasting needed
  - Java Lucene sources now included in PyLucene source distribution
- - "Lucene in Action" samples converted to new Lucene 3.0 API
- - 
+ - "Lucene in Action" samples and tests converted to new Lucene 3.0 API
+ - PyLucene built with JCC 2.5
 
 Version 2.4.1 -> 2.9.0
 ----------------------

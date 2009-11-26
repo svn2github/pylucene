@@ -68,10 +68,10 @@ class BerkeleyDbSearcher(object):
         try:
             txn = env.txn_begin(None)
             directory = DbDirectory(txn, index, blocks, 0)
-            searcher = IndexSearcher(directory)
+            searcher = IndexSearcher(directory, True)
 
-            hits = searcher.search(TermQuery(Term("contents", "fox")))
-            print len(hits), "document(s) found"
+            topDocs = searcher.search(TermQuery(Term("contents", "fox")), 50)
+            print topDocs.totalHits, "document(s) found"
             searcher.close()
         except:
             if txn is not None:

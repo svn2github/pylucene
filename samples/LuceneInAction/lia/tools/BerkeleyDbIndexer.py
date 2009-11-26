@@ -77,12 +77,13 @@ class BerkeleyDbIndexer(object):
         try:
             txn = env.txn_begin(None)
             directory = DbDirectory(txn, index, blocks, 0)
-            writer = IndexWriter(directory, StandardAnalyzer(), create)
+            writer = IndexWriter(directory, StandardAnalyzer(), create,
+                                 IndexWriter.MaxFieldLength.UNLIMITED)
             writer.setUseCompoundFile(False)
 
             doc = Document()
             doc.add(Field("contents", "The quick brown fox...",
-                          Field.Store.YES, Field.Index.TOKENIZED))
+                          Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
             writer.optimize()

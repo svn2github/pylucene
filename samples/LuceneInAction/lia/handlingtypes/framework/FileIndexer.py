@@ -63,7 +63,8 @@ class FileIndexer(object):
         if not (os.path.exists(dataDir) and os.path.isdir(dataDir)):
             raise IOError, "%s does not exist or is not a directory" %(dataDir)
 
-        writer = IndexWriter(indexDir, StandardAnalyzer(), True)
+        writer = IndexWriter(indexDir, StandardAnalyzer(), True,
+                             IndexWriter.MaxFieldLength.UNLIMITED)
         writer.setUseCompoundFile(False)
 
         numIndexed = cls.indexDirectory(writer, dataDir)

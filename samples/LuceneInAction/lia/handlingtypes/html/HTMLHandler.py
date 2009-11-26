@@ -32,7 +32,7 @@ class HTMLHandler(object):
             doc = Document()
             doc.add(Field("contents", StringReader(string)))
             doc.add(Field("filename", os.path.abspath(path),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
 
             return doc
