@@ -235,8 +235,8 @@ clean:
 	if test -f $(LUCENE)/build.xml; then cd $(LUCENE); $(ANT) clean; fi
 	rm -rf build
 
-realclean: clean
-	rm -rf $(LUCENE)
+realclean:
+	rm -rf $(LUCENE) build samples/LuceneInAction/index
 
 
 BUILD_TEST:=$(PYLUCENE)/build/test
