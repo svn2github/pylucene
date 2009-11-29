@@ -255,12 +255,12 @@ samples/LuceneInAction/index:
 test: install-test samples/LuceneInAction/index
 	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-	$(PYTHON) samples/LuceneInAction/AnalyzerDemo.py
-	$(PYTHON) samples/LuceneInAction/AnalyzerUtils.py
-	$(PYTHON) samples/LuceneInAction/BooksLikeThis.py
-	$(PYTHON) samples/LuceneInAction/Explainer.py samples/LuceneInAction/index programming
-	$(PYTHON) samples/LuceneInAction/HighlightIt.py
-	$(PYTHON) samples/LuceneInAction/SortingExample.py
+	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerDemo.py
+	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerUtils.py
+	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/BooksLikeThis.py
+	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/Explainer.py samples/LuceneInAction/index programming
+	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/HighlightIt.py
+	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SortingExample.py
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
