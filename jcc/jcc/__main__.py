@@ -37,16 +37,16 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               multiple JCC-wrapped modules can be used within
                               the same Python runtime
     --sequence CLASS METHODSIGNATURE
-                            - Generate a pythonic sequence protocol wrapper for
+                            - generate a pythonic sequence protocol wrapper for
                               CLASS
     --mapping CLASS METHODSIGNATURE1 METHODSIGNATURE2
-                            - Generate a pythonic map protocol wrapper for CLASS
-
+                            - generate a pythonic map protocol wrapper for CLASS
     --rename CLASS1=NAME1,CLASS2=NAME2,...
-                            - Rename one or more Python wrapper classes to
+                            - rename one or more Python wrapper classes to
                               avoid name clashes due to the flattening of
                               the Java package namespaces as mapped into
                               Python
+    --no-generics           - disable support for Java generics
 
     If you're planning to use pythonic wrappers you should read the relevant
     documentation first:
