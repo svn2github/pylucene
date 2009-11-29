@@ -550,7 +550,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   {
                       PyTypeObject ***tp = va_arg(list, PyTypeObject ***);
 
-                      va_arg(list, PyTypeObject **(*)(void *));
+                      va_arg(list, getparametersfn);
                       *tp = NULL;
                   }
 #endif
@@ -576,7 +576,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   {
                       PyTypeObject ***tp = va_arg(list, PyTypeObject ***);
                       PyTypeObject **(*parameters_)(void *) = 
-                          va_arg(list, PyTypeObject **(*)(void *));
+                          va_arg(list, getparametersfn);
 
                       if (arg == Py_None)
                           *tp = NULL;

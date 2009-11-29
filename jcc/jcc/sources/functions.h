@@ -31,6 +31,7 @@ typedef intintobjargproc ssizessizeobjargproc;
 #endif
 
 typedef jclass (*getclassfn)(void);
+typedef PyTypeObject **(*getparametersfn)(void *);
 
 PyObject *PyErr_SetArgsError(char *name, PyObject *args);
 PyObject *PyErr_SetArgsError(PyObject *self, char *name, PyObject *args);
