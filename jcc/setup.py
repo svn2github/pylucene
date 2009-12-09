@@ -39,6 +39,7 @@ JDK = {
     'linux2': '/usr/lib/jvm/java-6-openjdk',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
     'win32': 'o:/Java/jdk1.6.0_02',
+    'freebsd7': '/usr/local/diablo-jdk1.6.0',
 }
 if 'JCC_JDK' in os.environ:
     JDK[platform] = os.environ['JCC_JDK']
@@ -52,6 +53,8 @@ INCLUDES = {
                '%(sunos5)s/include/solaris' %(JDK)],
     'win32': ['%(win32)s/include' %(JDK),
               '%(win32)s/include/win32' %(JDK)],
+    'freebsd7': ['%(freebsd7)s/include' %(JDK),
+                 '%(freebsd7)s/include/freebsd' %(JDK)],
 }
 
 CFLAGS = {
@@ -61,6 +64,7 @@ CFLAGS = {
     'sunos5': ['-features=iddollar',
                '-erroff=badargtypel2w,wbadinitl,wvarhidemem'],
     'win32': [],
+    'freebsd7': ['-fno-strict-aliasing', '-Wno-write-strings'],
 }
 
 # added to CFLAGS when JCC is invoked with --debug
@@ -70,6 +74,7 @@ DEBUG_CFLAGS = {
     'linux2': ['-O0', '-g', '-DDEBUG'],
     'sunos5': ['-DDEBUG'],
     'win32': ['/Od', '/DDEBUG'],
+    'freebsd7': ['-O0', '-g', '-DDEBUG'],
 }
 
 LFLAGS = {
@@ -89,6 +94,9 @@ LFLAGS = {
                '-L%(sunos5)s/jre/lib/i386/client' %(JDK), '-ljvm',
                '-R%(sunos5)s/jre/lib/i386:%(sunos5)s/jre/lib/i386/client' %(JDK)],
     'win32': ['/LIBPATH:%(win32)s/lib' %(JDK), 'jvm.lib'],
+    'freebsd7': ['-L%(freebsd7)s/jre/lib/i386' %(JDK), '-ljava', '-lverify',
+                 '-L%(freebsd7)s/jre/lib/i386/client' %(JDK), '-ljvm',
+                 '-Wl,-rpath=%(freebsd7)s/jre/lib/i386:%(freebsd7)s/jre/lib/i386/client' %(JDK)],
 }
 
 if platform == 'linux2':
@@ -100,6 +108,7 @@ JAVAC = {
     'linux2': ['javac'],
     'sunos5': ['javac'],
     'win32': ['javac.exe'],
+    'freebsd7': ['javac'],
 }
         
 
