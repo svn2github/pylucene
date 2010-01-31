@@ -2,6 +2,7 @@
 Version 2.5 ->
 ------------------
  - added freebsd7 settings to setup.py (Sujan Shakya)
+ - added support for unix-specific --home distutils install parameter
  - 
 
 Version 2.4 -> 2.5

@@ -1402,7 +1402,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
 
 
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
-            version, prefix, root, install_dir, use_distutils,
+            version, prefix, root, install_dir, home_dir, use_distutils,
             shared, compiler, modules, wininst, arch, generics):
 
     try:
@@ -1552,6 +1552,8 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         script_args.append('--root=%s' % root)
     if install_dir:
         script_args.append('--install-lib=%s' % install_dir)
+    if home_dir:
+        script_args.append('--home=%s' % home_dir)
 
     if dist:
         if wininst:

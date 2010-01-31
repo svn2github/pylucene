@@ -308,6 +308,7 @@ def jcc(args):
     prefix = None
     root = None
     install_dir = None
+    home_dir = None
     use_distutils = False
     shared = False
     dist = False
@@ -392,6 +393,9 @@ def jcc(args):
             elif arg == '--install-dir':
                 i += 1
                 install_dir = args[i]
+            elif arg == '--home':
+                i += 1
+                home_dir = args[i]
             elif arg == '--use-distutils':
                 use_distutils = True
             elif arg == '--shared':
@@ -435,7 +439,7 @@ def jcc(args):
         else:
             compile(env, os.path.dirname(args[0]), output, moduleName,
                     install, dist, debug, jars, version,
-                    prefix, root, install_dir, use_distutils,
+                    prefix, root, install_dir, home_dir, use_distutils,
                     shared, compiler, modules, wininst, arch, generics)
     else:
         for className in classNames:
@@ -551,7 +555,7 @@ def jcc(args):
             if build or install or dist:
                 compile(env, os.path.dirname(args[0]), output, moduleName,
                         install, dist, debug, jars, version,
-                        prefix, root, install_dir, use_distutils,
+                        prefix, root, install_dir, home_dir, use_distutils,
                         shared, compiler, modules, wininst, arch, generics)
 
 
