@@ -239,10 +239,10 @@ realclean:
 	rm -rf $(LUCENE) build samples/LuceneInAction/index
 
 
-BUILD_TEST:=$(PYLUCENE)/build/test
+BUILD_TEST:=$(PYLUCENE)/build/test:$(PYTHONPATH)
 
 ifeq ($(findstring CYGWIN,$(shell uname)),CYGWIN)
-BUILD_TEST:=`cygpath -aw $(BUILD_TEST)`
+BUILD_TEST:=`cygpath -awp $(BUILD_TEST)`
 endif
 
 install-test:
