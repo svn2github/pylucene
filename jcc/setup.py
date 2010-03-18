@@ -17,6 +17,8 @@ machine = platform.machine()
 
 if machine.startswith("iPod") or machine.startswith("iPhone"):
     platform = 'ipod'
+elif (sys.platform == "win32") and "--compiler=mingw32" in sys.argv:
+    platform = 'mingw32'
 else:
     platform = sys.platform
 
@@ -33,13 +35,22 @@ else:
 # JCC_LFLAGS and JCC_JAVAC environment variables using os.pathsep as value
 # separator.
 
+if sys.platform == "win32":
+    try:
+        from jcc.windows import JAVAHOME
+    except ImportError:
+        JAVAHOME = None
+else:
+    JAVAHOME = None
+
 JDK = {
     'darwin': '/System/Library/Frameworks/JavaVM.framework/Versions/Current',
     'ipod': '/usr/include/gcc',
     'linux2': '/usr/lib/jvm/java-6-openjdk',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
-    'win32': 'o:/Java/jdk1.6.0_02',
-    'freebsd7': '/usr/local/diablo-jdk1.6.0',
+    'win32': JAVAHOME,
+    'mingw32': JAVAHOME,
+    'freebsd7': '/usr/local/diablo-jdk1.6.0'
 }
 if 'JCC_JDK' in os.environ:
     JDK[platform] = os.environ['JCC_JDK']
@@ -53,6 +64,8 @@ INCLUDES = {
                '%(sunos5)s/include/solaris' %(JDK)],
     'win32': ['%(win32)s/include' %(JDK),
               '%(win32)s/include/win32' %(JDK)],
+    'mingw32': ['%(win32)s/include' %(JDK),
+                '%(win32)s/include/win32' %(JDK)],
     'freebsd7': ['%(freebsd7)s/include' %(JDK),
                  '%(freebsd7)s/include/freebsd' %(JDK)],
 }
@@ -64,6 +77,7 @@ CFLAGS = {
     'sunos5': ['-features=iddollar',
                '-erroff=badargtypel2w,wbadinitl,wvarhidemem'],
     'win32': [],
+    'mingw32': ['-Wno-write-strings'],
     'freebsd7': ['-fno-strict-aliasing', '-Wno-write-strings'],
 }
 
@@ -74,6 +88,7 @@ DEBUG_CFLAGS = {
     'linux2': ['-O0', '-g', '-DDEBUG'],
     'sunos5': ['-DDEBUG'],
     'win32': ['/Od', '/DDEBUG'],
+    'mingw32': ['-O0', '-g', '-DDEBUG'],
     'freebsd7': ['-O0', '-g', '-DDEBUG'],
 }
 
@@ -94,6 +109,7 @@ LFLAGS = {
                '-L%(sunos5)s/jre/lib/i386/client' %(JDK), '-ljvm',
                '-R%(sunos5)s/jre/lib/i386:%(sunos5)s/jre/lib/i386/client' %(JDK)],
     'win32': ['/LIBPATH:%(win32)s/lib' %(JDK), 'jvm.lib'],
+    'mingw32': ['-L%(mingw32)s/lib' %(JDK), '-ljvm'],
     'freebsd7': ['-L%(freebsd7)s/jre/lib/i386' %(JDK), '-ljava', '-lverify',
                  '-L%(freebsd7)s/jre/lib/i386/client' %(JDK), '-ljvm',
                  '-Wl,-rpath=%(freebsd7)s/jre/lib/i386:%(freebsd7)s/jre/lib/i386/client' %(JDK)],
@@ -107,7 +123,8 @@ JAVAC = {
     'ipod': ['jikes', '-cp', '/usr/share/classpath/glibj.zip'],
     'linux2': ['javac'],
     'sunos5': ['javac'],
-    'win32': ['javac.exe'],
+    'win32': ['%(win32)s/bin/javac.exe' % (JDK)],
+    'mingw32': ['%(mingw32)s/bin/javac.exe' % (JDK)],
     'freebsd7': ['javac'],
 }
         
