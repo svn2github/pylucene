@@ -17,7 +17,7 @@ machine = platform.machine()
 
 if machine.startswith("iPod") or machine.startswith("iPhone"):
     platform = 'ipod'
-elif (sys.platform == "win32") and "--compiler=mingw32" in sys.argv:
+elif sys.platform == "win32" and "--compiler=mingw32" in sys.argv:
     platform = 'mingw32'
 else:
     platform = sys.platform
