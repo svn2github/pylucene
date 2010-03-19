@@ -81,6 +81,7 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --root ROOTDIR
     --install-dir INSTALLDIR
     --prefix PREFIX
+    --home HOMEDIR
 '''
     print help
     sys.exit(0)
