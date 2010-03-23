@@ -1,4 +1,5 @@
 
+import os
 import distutils.cygwinccompiler, copy
 
 orig_Mingw32CCompiler = distutils.cygwinccompiler.Mingw32CCompiler
