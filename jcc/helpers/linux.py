@@ -43,7 +43,9 @@ See %s/INSTALL for more information about shared mode.
 ''' %(patch_version, st_egg, jccdir, patch_version, st_egg, jccdir)
 
 
-def patch_setuptools():
+def patch_setuptools(with_setuptools):
+
+    with_setuptools_c11 = ('00000000', '00000006', '*c', '00000011', '*final')
 
     try:
         from setuptools.command.build_ext import sh_link_shared_object

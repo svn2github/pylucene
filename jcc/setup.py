@@ -158,14 +158,13 @@ try:
     
     enable_shared = False
     with_setuptools_c7 = ('00000000', '00000006', '*c', '00000007', '*final')
-    with_setuptools_c11 = ('00000000', '00000006', '*c', '00000011', '*final')
 
     if with_setuptools >= with_setuptools_c7 and 'NO_SHARED' not in os.environ:
         if platform in ('darwin', 'ipod', 'win32'):
             enable_shared = True
         elif platform == 'linux2':
             from helpers.linux import patch_setuptools
-            enable_shared = patch_setuptools()
+            enable_shared = patch_setuptools(with_setuptools)
         elif platform == 'mingw32':
             enable_shared = True
             # need to monkeypatch the CygwinCCompiler class to generate
