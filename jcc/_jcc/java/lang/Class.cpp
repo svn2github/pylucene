@@ -46,6 +46,8 @@ namespace java {
             mid_isAssignableFrom,
             mid_getComponentType,
             mid_getSuperclass,
+            mid_getDeclaringClass,
+            mid_getEnclosingClass,
             mid_getInterfaces,
             mid_getName,
             mid_getModifiers,
@@ -109,6 +111,12 @@ namespace java {
                                      "()Ljava/lang/Class;");
                 _mids[mid_getSuperclass] =
                     env->getMethodID(cls, "getSuperclass",
+                                     "()Ljava/lang/Class;");
+                _mids[mid_getDeclaringClass] =
+                    env->getMethodID(cls, "getDeclaringClass",
+                                     "()Ljava/lang/Class;");
+                _mids[mid_getEnclosingClass] =
+                    env->getMethodID(cls, "getEnclosingClass",
                                      "()Ljava/lang/Class;");
                 _mids[mid_getInterfaces] =
                     env->getMethodID(cls, "getInterfaces",
@@ -228,6 +236,16 @@ namespace java {
             return Class(env->callObjectMethod(this$, _mids[mid_getSuperclass]));
         }
 
+        Class Class::getDeclaringClass() const
+        {
+            return Class(env->callObjectMethod(this$, _mids[mid_getDeclaringClass]));
+        }
+
+        Class Class::getEnclosingClass() const
+        {
+            return Class(env->callObjectMethod(this$, _mids[mid_getEnclosingClass]));
+        }
+
         JArray<Class> Class::getInterfaces() const
         {
             jobjectArray array = (jobjectArray)
@@ -296,6 +314,8 @@ namespace java {
         static PyObject *t_Class_isAssignableFrom(t_Class *self, PyObject *arg);
         static PyObject *t_Class_getComponentType(t_Class *self);
         static PyObject *t_Class_getSuperclass(t_Class *self);
+        static PyObject *t_Class_getDeclaringClass(t_Class *self);
+        static PyObject *t_Class_getEnclosingClass(t_Class *self);
         static PyObject *t_Class_getInterfaces(t_Class *self);
         static PyObject *t_Class_getName(t_Class *self);
         static PyObject *t_Class_getModifiers(t_Class *self);
@@ -332,6 +352,8 @@ namespace java {
             DECLARE_METHOD(t_Class, isAssignableFrom, METH_O),
             DECLARE_METHOD(t_Class, getComponentType, METH_NOARGS),
             DECLARE_METHOD(t_Class, getSuperclass, METH_NOARGS),
+            DECLARE_METHOD(t_Class, getDeclaringClass, METH_NOARGS),
+            DECLARE_METHOD(t_Class, getEnclosingClass, METH_NOARGS),
             DECLARE_METHOD(t_Class, getInterfaces, METH_NOARGS),
             DECLARE_METHOD(t_Class, getName, METH_NOARGS),
             DECLARE_METHOD(t_Class, getModifiers, METH_NOARGS),
@@ -514,6 +536,22 @@ namespace java {
             Class cls((jobject) NULL);
 
             OBJ_CALL(cls = self->object.getSuperclass());
+            return t_Class::wrap_Object(cls);
+        }
+
+        static PyObject *t_Class_getDeclaringClass(t_Class *self)
+        {
+            Class cls((jobject) NULL);
+
+            OBJ_CALL(cls = self->object.getDeclaringClass());
+            return t_Class::wrap_Object(cls);
+        }
+
+        static PyObject *t_Class_getEnclosingClass(t_Class *self)
+        {
+            Class cls((jobject) NULL);
+
+            OBJ_CALL(cls = self->object.getEnclosingClass());
             return t_Class::wrap_Object(cls);
         }
 

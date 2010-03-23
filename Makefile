@@ -14,10 +14,10 @@
 # site-packages directory.
 #
 
-VERSION=3.0.1-1
+VERSION=3.1-0
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=3.0.1
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_3_0_1
+LUCENE_VER=3.1
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/trunk/lucene
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
 
@@ -137,7 +137,6 @@ endif
 DEFINES=-DPYLUCENE_VER="\"$(VERSION)\"" -DLUCENE_VER="\"$(LUCENE_VER)\""
 
 LUCENE_JAR=$(LUCENE)/build/lucene-core-$(LUCENE_VER).jar
-SNOWBALL_JAR=$(LUCENE)/build/contrib/snowball/lucene-snowball-$(LUCENE_VER).jar
 ANALYZERS_JAR=$(LUCENE)/build/contrib/analyzers/common/lucene-analyzers-$(LUCENE_VER).jar
 HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_VER).jar
 MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
@@ -171,9 +170,6 @@ lucene:
 $(LUCENE_JAR): $(LUCENE)
 	cd $(LUCENE); $(ANT) -Dversion=$(LUCENE_VER)
 
-$(SNOWBALL_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/snowball; $(ANT) -Dversion=$(LUCENE_VER)
-
 $(ANALYZERS_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
 
@@ -192,7 +188,7 @@ $(QUERIES_JAR): $(LUCENE_JAR)
 $(EXTENSIONS_JAR): $(LUCENE_JAR)
 	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
-JARS=$(LUCENE_JAR) $(SNOWBALL_JAR) $(ANALYZERS_JAR) \
+JARS=$(LUCENE_JAR) $(ANALYZERS_JAR) \
      $(REGEX_JAR) $(MEMORY_JAR) $(HIGHLIGHTER_JAR) $(QUERIES_JAR) \
      $(EXTENSIONS_JAR)
 

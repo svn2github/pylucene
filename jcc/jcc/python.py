@@ -52,6 +52,29 @@ CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
              'java.lang.String': ('O', 'env->fromJString((jstring) %s, 0)', True) }
 
 
+def getTypeParameters(cls):
+
+    while True:
+        parameters = cls.getTypeParameters()
+        if parameters:
+            return parameters
+        cls = cls.getDeclaringClass()
+        if cls is None:
+            return []
+
+
+def getActualTypeArguments(pt):
+
+    while True:
+        arguments = pt.getActualTypeArguments()
+        if arguments:
+            return arguments
+        pt = pt.getOwnerType()
+        if pt is None or not ParameterizedType.instance_(pt):
+            return []
+        pt = ParameterizedType.cast_(pt)
+
+
 def parseArgs(params, current, generics):
 
     def signature(cls):
@@ -66,7 +89,7 @@ def parseArgs(params, current, generics):
             return array + 's'
         if clsName == 'java.lang.Object':
             return array + 'o'
-        if generics and cls.getTypeParameters():
+        if generics and getTypeParameters(cls):
             return array + 'K'
         else:
             return array + 'k'
@@ -83,7 +106,7 @@ def parseArgs(params, current, generics):
         if generics:
             while cls.isArray():
                 cls = cls.getComponentType()
-            if cls.getTypeParameters():
+            if getTypeParameters(cls):
                 ns, sep, n = rpartition(typename(cls, current, False), '::')
                 return ', &a%d, &p%d, %s%st_%s::parameters_' %(i, i, ns, sep, n)
         return ', &a%d' %(i)
@@ -103,7 +126,7 @@ def declareVars(out, indent, params, current, generics, typeParams):
         if generics:
             while param.isArray():
                 param = param.getComponentType()
-            if param.getTypeParameters():
+            if getTypeParameters(param):
                 line(out, indent, 'PyTypeObject **p%d;', i)
                 typeParams.add(i)
     
@@ -212,7 +235,7 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
         if ParameterizedType.instance_(genericRT):
             genericRT = ParameterizedType.cast_(genericRT)
             clsArgs = []
-            for clsArg in genericRT.getActualTypeArguments():
+            for clsArg in getActualTypeArguments(genericRT):
                 if Class.instance_(clsArg):
                     clsNames = Class.cast_(clsArg).getName().split('.')
                     clsArg = '&%s::%s$$Type' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
@@ -221,7 +244,7 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
                     gd = TypeVariable.cast_(clsArg).getGenericDeclaration()
                     if Class.instance_(gd):
                         i = 0
-                        for clsParam in gd.getTypeParameters():
+                        for clsParam in getTypeParameters(gd):
                             if clsArg == clsParam:
                                 clsArgs.append('self->parameters[%d]' %(i))
                                 break
@@ -234,16 +257,17 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
                     break
             else:
                 return 'return %s%st_%s::wrap_Object(%s, %s);' %(ns, sep, n, value, ', '.join(clsArgs))
+
         elif TypeVariable.instance_(genericRT):
             gd = TypeVariable.cast_(genericRT).getGenericDeclaration()
             i = 0
             if Class.instance_(gd):
-                for clsParam in gd.getTypeParameters():
+                for clsParam in getTypeParameters(gd):
                     if genericRT == clsParam:
                         return 'return self->parameters[%d] != NULL ? wrapType(self->parameters[%d], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, value, ns, sep, n, value)
                     i += 1
             elif Method.instance_(gd):
-                for clsParam in gd.getTypeParameters():
+                for clsParam in getTypeParameters(gd):
                     if genericRT == clsParam and i in typeParams:
                         return 'return p%d != NULL && p%d[0] != NULL ? wrapType(p%d[0], %s.this$) : %s%st_%s::wrap_Object(%s);' %(i, i, i, value, ns, sep, n, value)
                     i += 1
@@ -478,7 +502,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out_h, indent, 'extern PyTypeObject %s$$Type;', names[-1])
 
     if generics:
-        clsParams = cls.getTypeParameters()
+        clsParams = getTypeParameters(cls)
     else:
         clsParams = None
 

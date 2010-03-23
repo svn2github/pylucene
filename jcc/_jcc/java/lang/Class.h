@@ -58,6 +58,8 @@ namespace java {
             int isAssignableFrom(const Class& obj) const;
             Class getComponentType() const;
             Class getSuperclass() const;
+            Class getDeclaringClass() const;
+            Class getEnclosingClass() const;
             JArray<Class> getInterfaces() const;
             String getName() const;
             int getModifiers() const;

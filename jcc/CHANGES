@@ -7,6 +7,7 @@ Version 2.5 ->
  - updated MANIFEST.in as sdist started creating incomplete source archives
  - improved support for building on Windows with mingw32 (Bill Janssen)
  - added support for --find-jvm-dll jvm.dll (Bill Janssen)
+ - fixed bug with not inheriting type parameters to inner parameterized classes
  - 
 
 Version 2.4 -> 2.5

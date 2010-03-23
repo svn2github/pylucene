@@ -1,11 +1,8 @@
 
-import os
-import distutils.cygwinccompiler, copy
+import os, copy
+from distutils.cygwinccompiler import Mingw32CCompiler
 
-orig_Mingw32CCompiler = distutils.cygwinccompiler.Mingw32CCompiler
-
-
-class JCCMinGW32CCompiler(orig_Mingw32CCompiler):
+class JCCMinGW32CCompiler(Mingw32CCompiler):
 
     def link(self, target_desc, objects, output_filename, output_dir=None,
              libraries=None, library_dirs=None, runtime_library_dirs=None,

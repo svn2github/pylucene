@@ -42,6 +42,5 @@ class LockTest(TestCase):
             except:
                 pass
         finally:
-            IndexWriter.unlock(self.dir)
             writer1.close()
             self.assert_(writer2 is None)
