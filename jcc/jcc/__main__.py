@@ -1,5 +1,10 @@
 
 import sys
+
+if sys.platform == 'win32' and '--find-jvm-dll' in sys.argv:
+    from windows import add_jvm_dll_directory_to_path
+    add_jvm_dll_directory_to_path()
+
 from jcc import cpp
 
 if len(sys.argv) == 1 or '--help' in sys.argv:
@@ -63,6 +68,9 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --arch                  - Mac OS X only: filter the -arch parameters
                               Python was configured with to build leaner
                               binaries, faster
+    --find-jvm-dll          - Windows only: extract the directory containing
+                              jvm.dll from the registry and append it to the
+                              Path at runtime
 
   Actions:
     --build                 - generate the wrapper and compile it
@@ -70,7 +78,7 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --install               - install the wrapper in the local site-packages
 
   Distribution actions:
-    --use-distutils         - use distutils even when setuptools is availble
+    --use-distutils         - use distutils even when setuptools is available
     --bdist                 - generate a binary distutils-based distribution
                               or a setuptools-based .egg
     --wininst               - create an installer application for Microsoft

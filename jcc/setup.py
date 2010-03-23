@@ -35,9 +35,9 @@ else:
 # JCC_LFLAGS and JCC_JAVAC environment variables using os.pathsep as value
 # separator.
 
-if sys.platform == "win32":
+if platform in ("win32", "mingw32"):
     try:
-        from jcc.windows import JAVAHOME
+        from helpers.windows import JAVAHOME
     except ImportError:
         JAVAHOME = None
 else:
@@ -55,6 +55,26 @@ JDK = {
 if 'JCC_JDK' in os.environ:
     JDK[platform] = os.environ['JCC_JDK']
 
+
+if not JDK[platform]:
+    raise RuntimeError('''
+                       
+Can't determine where the Java JDK has been installed on this machine.
+
+Please set the environment variable JCC_JDK to that location before
+running setup.py.
+''')
+
+elif not os.path.isdir(JDK[platform]):
+    raise RuntimeError('''
+                       
+Java JDK directory '%s' does not exist.
+
+Please set the environment variable JCC_JDK to the correct location before
+running setup.py.
+''' %(JDK[platform]))
+
+
 INCLUDES = {
     'darwin': ['%(darwin)s/Headers' %(JDK)],
     'ipod': ['%(ipod)s/darwin/default' %(JDK)],
@@ -64,8 +84,8 @@ INCLUDES = {
                '%(sunos5)s/include/solaris' %(JDK)],
     'win32': ['%(win32)s/include' %(JDK),
               '%(win32)s/include/win32' %(JDK)],
-    'mingw32': ['%(win32)s/include' %(JDK),
-                '%(win32)s/include/win32' %(JDK)],
+    'mingw32': ['%(mingw32)s/include' %(JDK),
+                '%(mingw32)s/include/win32' %(JDK)],
     'freebsd7': ['%(freebsd7)s/include' %(JDK),
                  '%(freebsd7)s/include/freebsd' %(JDK)],
 }
@@ -77,7 +97,7 @@ CFLAGS = {
     'sunos5': ['-features=iddollar',
                '-erroff=badargtypel2w,wbadinitl,wvarhidemem'],
     'win32': [],
-    'mingw32': ['-Wno-write-strings'],
+    'mingw32': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'freebsd7': ['-fno-strict-aliasing', '-Wno-write-strings'],
 }
 
@@ -139,54 +159,20 @@ try:
     enable_shared = False
     with_setuptools_c7 = ('00000000', '00000006', '*c', '00000007', '*final')
     with_setuptools_c11 = ('00000000', '00000006', '*c', '00000011', '*final')
+
     if with_setuptools >= with_setuptools_c7 and 'NO_SHARED' not in os.environ:
         if platform in ('darwin', 'ipod', 'win32'):
             enable_shared = True
         elif platform == 'linux2':
-            try:
-                from setuptools.command.build_ext import sh_link_shared_object
-                enable_shared = True  # jcc/patches/patch.43 was applied
-            except ImportError:
-                import setuptools
-                jccdir = os.path.dirname(os.path.abspath(__file__))
-                st_egg = os.path.dirname(setuptools.__path__[0])
-                if with_setuptools < with_setuptools_c11:
-                    patch_version = '0.6c7'
-                else:
-                    patch_version = '0.6c11'
-
-                def patch_st_dir():
-                    return '''
-
-Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
-or the NO_SHARED environment variable must be set to turn off this error.
-
-    sudo patch -d %s -Nup0 < %s/jcc/patches/patch.43.%s
-
-See %s/INSTALL for more information about shared mode.
-''' %(patch_version, st_egg, jccdir, patch_version, jccdir)
-
-                def patch_st_zip():
-                    return '''
-
-Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
-or the NO_SHARED environment variable must be set to turn off this error.
-
-    mkdir tmp
-    cd tmp
-    unzip -q %s
-    patch -Nup0 < %s/jcc/patches/patch.43.%s
-    sudo zip %s -f
-    cd ..
-    rm -rf tmp
-
-See %s/INSTALL for more information about shared mode.
-''' %(patch_version, st_egg, jccdir, patch_version, st_egg, jccdir)
-
-                if os.path.isdir(st_egg):
-                    raise NotImplementedError, patch_st_dir()
-                else:
-                    raise NotImplementedError, patch_st_zip()
+            from helpers.linux import patch_setuptools
+            enable_shared = patch_setuptools()
+        elif platform == 'mingw32':
+            enable_shared = True
+            # need to monkeypatch the CygwinCCompiler class to generate
+            # jcc.lib in the correct place
+            from helpers.mingw32 import JCCMinGW32CCompiler
+            import distutils.cygwinccompiler
+            distutils.cygwinccompiler.Mingw32CCompiler = JCCMinGW32CCompiler
 
 except ImportError:
     if sys.version_info < (2, 4):

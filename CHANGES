@@ -1,4 +1,10 @@
 
+Version 3.0.0 ->
+----------------
+ - improved support for building on Windows with mingw32
+ - added wininst target to Makefile
+ - 
+
 Version 2.9.0 -> 3.0.0
 ----------------------
  - unit tests ported to new API

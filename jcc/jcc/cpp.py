@@ -313,6 +313,7 @@ def jcc(args):
     shared = False
     dist = False
     wininst = False
+    find_jvm_dll = False
     compiler = None
     generics = hasattr(_jcc, "Type")
     arch = []
@@ -418,6 +419,8 @@ def jcc(args):
                 arch.append(args[i])
             elif arg == '--no-generics':
                 generics = False
+            elif arg == '--find-jvm-dll':
+                find_jvm_dll = True
             else:
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
@@ -440,7 +443,8 @@ def jcc(args):
             compile(env, os.path.dirname(args[0]), output, moduleName,
                     install, dist, debug, jars, version,
                     prefix, root, install_dir, home_dir, use_distutils,
-                    shared, compiler, modules, wininst, arch, generics)
+                    shared, compiler, modules, wininst, find_jvm_dll,
+                    arch, generics)
     else:
         for className in classNames:
             if className in excludes:
@@ -556,7 +560,8 @@ def jcc(args):
                 compile(env, os.path.dirname(args[0]), output, moduleName,
                         install, dist, debug, jars, version,
                         prefix, root, install_dir, home_dir, use_distutils,
-                        shared, compiler, modules, wininst, arch, generics)
+                        shared, compiler, modules, wininst, find_jvm_dll,
+                        arch, generics)
 
 
 def header(env, out, cls, typeset, packages, excludes, generics):

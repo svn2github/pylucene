@@ -3,8 +3,10 @@ Version 2.5 ->
 ------------------
  - added freebsd7 settings to setup.py (Sujan Shakya)
  - added support for unix-specific --home distutils install parameter
- - added support for extracting JAVAHOME from windows registry (Bill Janssen)
+ - added support for extracting JAVAHOME from Windows registry (Bill Janssen)
  - updated MANIFEST.in as sdist started creating incomplete source archives
+ - improved support for building on Windows with mingw32 (Bill Janssen)
+ - added support for --find-jvm-dll jvm.dll (Bill Janssen)
  - 
 
 Version 2.4 -> 2.5

@@ -1403,7 +1403,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
 
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, home_dir, use_distutils,
-            shared, compiler, modules, wininst, arch, generics):
+            shared, compiler, modules, wininst, find_jvm_dll, arch, generics):
 
     try:
         if use_distutils:
@@ -1432,6 +1432,9 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         line(out, 0, "import os, sys")
         line(out)
         line(out, 0, "if sys.platform == 'win32':")
+        if find_jvm_dll:
+            line(out, 1, "from jcc.windows import add_jvm_dll_directory_to_path")
+            line(out, 1, "add_jvm_dll_directory_to_path()")
         line(out, 1, "import jcc, %s", extname)
         line(out, 0, "else:")
         line(out, 1, "import %s", extname)

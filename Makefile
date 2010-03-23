@@ -14,10 +14,10 @@
 # site-packages directory.
 #
 
-VERSION=3.0.0-1
+VERSION=3.0.1-1
 LUCENE_SVN_VER=HEAD
 LUCENE_VER=3.0.0
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_3_0_0
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/java/tags/lucene_3_0_1
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
 
@@ -117,6 +117,14 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #PYTHON=$(PREFIX_PYTHON)/python.exe
 #JCC=$(PYTHON) -m jcc --shared
 #NUM_FILES=3
+
+# Windows   (Win32, msys/MinGW, Python 2.6.4, Java 1.6, ant 1.7.1 (WinAnt))
+#PREFIX_PYTHON=/c/Python26
+#ANT=JAVA_HOME="c:\\Program Files\\Java\\jdk1.6.0_18" "/c/Program Files/WinAnt/bin/ant"
+#PYTHON=$(PREFIX_PYTHON)/python.exe
+#JCC=$(PYTHON) -m jcc.__main__ --shared --compiler mingw32
+#NUM_FILES=3
+
 
 #
 # No edits required below
@@ -228,6 +236,9 @@ install: jars
 bdist: jars
 	$(GENERATE) --bdist
 
+wininst: jars
+	$(GENERATE) --wininst
+
 all: sources jars compile
 	@echo build of $(PYLUCENE_LIB) complete
 
@@ -239,10 +250,10 @@ realclean:
 	rm -rf $(LUCENE) build samples/LuceneInAction/index
 
 
-BUILD_TEST:=$(PYLUCENE)/build/test:$(PYTHONPATH)
+BUILD_TEST:=$(PYLUCENE)/build/test
 
 ifeq ($(findstring CYGWIN,$(shell uname)),CYGWIN)
-BUILD_TEST:=`cygpath -awp $(BUILD_TEST)`
+BUILD_TEST:=`cygpath -aw $(BUILD_TEST)`
 endif
 
 install-test:
