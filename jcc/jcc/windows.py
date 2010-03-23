@@ -20,13 +20,13 @@ class WindowsRegistry(object):
 
     def get(self, key, name):
 
-        key = None
+        handle = None
         try:
-            key = _winreg.OpenKey(self.handle, keyname)
-            return _winreg.QueryValueEx(key, name)[0]
+            handle = _winreg.OpenKey(self.handle, key)
+            return _winreg.QueryValueEx(handle, name)[0]
         finally:
-            if key is not None:
-                key.Close()
+            if handle is not None:
+                handle.Close()
 
     def close(self):
         self.handle.Close()
@@ -70,7 +70,7 @@ def get_jvm_dll_directory(client_or_server="client"):
         if os.path.exists(os.path.join(path, "jvm.dll")):
             return path
 
-     return None
+    return None
 
 
 def add_jvm_dll_directory_to_path():

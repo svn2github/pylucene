@@ -143,8 +143,8 @@ JAVAC = {
     'ipod': ['jikes', '-cp', '/usr/share/classpath/glibj.zip'],
     'linux2': ['javac'],
     'sunos5': ['javac'],
-    'win32': ['%(win32)s/bin/javac.exe' % (JDK)],
-    'mingw32': ['%(mingw32)s/bin/javac.exe' % (JDK)],
+    'win32': ['%(win32)s/bin/javac.exe' %(JDK)],
+    'mingw32': ['%(mingw32)s/bin/javac.exe' %(JDK)],
     'freebsd7': ['javac'],
 }
         
