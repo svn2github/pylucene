@@ -131,7 +131,7 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #
 
 ifeq ($(DEBUG),1)
-DEBUG_OPT=--debug
+  DEBUG_OPT=--debug
 endif
 
 DEFINES=-DPYLUCENE_VER="\"$(VERSION)\"" -DLUCENE_VER="\"$(LUCENE_VER)\""
@@ -245,11 +245,15 @@ clean:
 realclean:
 	rm -rf $(LUCENE) build samples/LuceneInAction/index
 
-
+OS=$(shell uname)
 BUILD_TEST:=$(PYLUCENE)/build/test
 
-ifeq ($(findstring CYGWIN,$(shell uname)),CYGWIN)
-BUILD_TEST:=`cygpath -aw $(BUILD_TEST)`
+ifeq ($(findstring CYGWIN,$(OS)),CYGWIN)
+  BUILD_TEST:=`cygpath -aw $(BUILD_TEST)`
+else
+  ifeq ($(findstring MINGW,$(OS)),MINGW)
+    BUILD_TEST:=`$(PYTHON) -c "import os, sys; print os.path.normpath(sys.argv[1]).replace(chr(92), chr(92)*2)" $(BUILD_TEST)`
+  endif
 endif
 
 install-test:
