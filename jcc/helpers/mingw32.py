@@ -16,14 +16,14 @@ class JCCMinGW32CCompiler(Mingw32CCompiler):
         if dll_extension.lower() == ".dll":
             extra_preargs.extend(["-Wl,--out-implib,%s" %(os.path.join(os.path.dirname(dll_name), "jcc", "jcc.lib"))])
 
-        orig_Mingw32CCompiler.link(self, target_desc=target_desc,
-                                   objects=objects,
-                                   output_filename=output_filename, 
-                                   output_dir=output_dir, libraries=libraries,
-                                   library_dirs=library_dirs,
-                                   runtime_library_dirs=runtime_library_dirs,
-                                   export_symbols=export_symbols, debug=debug,
-                                   extra_preargs=extra_preargs,
-                                   extra_postargs=extra_postargs, 
-                                   build_temp=build_temp,
-                                   target_lang=target_lang)
+        Mingw32CCompiler.link(self, target_desc=target_desc,
+                              objects=objects,
+                              output_filename=output_filename, 
+                              output_dir=output_dir, libraries=libraries,
+                              library_dirs=library_dirs,
+                              runtime_library_dirs=runtime_library_dirs,
+                              export_symbols=export_symbols, debug=debug,
+                              extra_preargs=extra_preargs,
+                              extra_postargs=extra_postargs, 
+                              build_temp=build_temp,
+                              target_lang=target_lang)
