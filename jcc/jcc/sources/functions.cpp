@@ -499,6 +499,29 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           case 'o':         /* java.lang.Object */
             break;
 
+          case 'T':         /* tuple of python types with wrapfn_ */
+          {
+              static PyObject *wrapfn_ = PyString_FromString("wrapfn_");
+              int len = va_arg(list, int);
+
+              if (PyTuple_Check(arg))
+              {
+                  if (PyTuple_GET_SIZE(arg) != len)
+                      return -1;
+
+                  for (int i = 0; i < len; i++) {
+                      PyObject *type = PyTuple_GET_ITEM(arg, i);
+
+                      if (!(type == Py_None ||
+                            (PyType_Check(type) &&
+                             PyObject_HasAttr(type, wrapfn_))))
+                          return -1;
+                  }
+                  break;
+              }
+              return -1;
+          }
+
           default:
             return -1;
         }
@@ -881,6 +904,22 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               break;
           }
 
+          case 'T':         /* tuple of python types with wrapfn_ */
+          {
+              int len = va_arg(check, int);
+              PyTypeObject **types = va_arg(list, PyTypeObject **);
+
+              for (int i = 0; i < len; i++) {
+                  PyObject *type = PyTuple_GET_ITEM(arg, i);
+
+                  if (type == Py_None)
+                      types[i] = NULL;
+                  else
+                      types[i] = (PyTypeObject *) type;
+              }
+              break;
+          }
+
           default:
             return -1;
         }
@@ -1239,7 +1278,8 @@ void installType(PyTypeObject *type, PyObject *module, char *name,
 
 PyObject *wrapType(PyTypeObject *type, const jobject& obj)
 {
-    PyObject *cobj = PyObject_GetAttrString((PyObject *) type, "wrapfn_");
+    static PyObject *wrapfn_ = PyString_FromString("wrapfn_");
+    PyObject *cobj = PyObject_GetAttr((PyObject *) type, wrapfn_);
     PyObject *(*wrapfn)(const jobject&);
     
     if (cobj == NULL)

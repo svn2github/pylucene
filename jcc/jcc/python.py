@@ -563,6 +563,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
 
     line(out, indent, 'static PyObject *t_%s_cast_(PyTypeObject *type, PyObject *arg);', names[-1])
     line(out, indent, 'static PyObject *t_%s_instance_(PyTypeObject *type, PyObject *arg);', names[-1])
+    if clsParams:
+        line(out, indent,
+             'static PyObject *t_%s_of_(t_%s *self, PyObject *args);',
+             names[-1], names[-1])
 
     if constructors:
         line(out, indent, 'static int t_%s_init_(t_%s *self, PyObject *args, PyObject *kwds);', names[-1], names[-1])
@@ -799,6 +803,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
          'DECLARE_METHOD(t_%s, cast_, METH_O | METH_CLASS),', names[-1])
     line(out, indent + 1,
          'DECLARE_METHOD(t_%s, instance_, METH_O | METH_CLASS),', names[-1])
+    if clsParams:
+        line(out, indent + 1,
+             'DECLARE_METHOD(t_%s, of_, METH_VARARGS),', names[-1])
 
     for name, methods in allMethods:
         modifiers = methods[0].getModifiers()
@@ -1008,6 +1015,20 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out, indent + 2, 'Py_RETURN_FALSE;')
     line(out, indent + 1, 'Py_RETURN_TRUE;')
     line(out, indent, '}')
+
+    if clsParams:
+        line(out)
+        line(out, indent,
+             'static PyObject *t_%s_of_(t_%s *self, PyObject *args)',
+             names[-1], names[-1])
+        line(out, indent, '{')
+        line(out, indent + 1,
+             'if (!parseArg(args, "T", %d, &(self->parameters)))',
+             len(clsParams))
+        line(out, indent + 2, 'Py_RETURN_SELF;');
+        line(out, indent + 1,
+             'return PyErr_SetArgsError((PyObject *) self, "of_", args);')
+        line(out, indent, '}')
 
     if constructors:
         line(out)

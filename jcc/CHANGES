@@ -6,8 +6,9 @@ Version 2.5 ->
  - added support for extracting JAVAHOME from Windows registry (Bill Janssen)
  - updated MANIFEST.in as sdist started creating incomplete source archives
  - improved support for building on Windows with mingw32 (Bill Janssen)
- - added support for --find-jvm-dll jvm.dll (Bill Janssen)
+ - added support for --find-jvm-dll parameter (Bill Janssen)
  - fixed bug with not inheriting type parameters to inner parameterized classes
+ - added support for of_() method to set instance type parameters
  - 
 
 Version 2.4 -> 2.5

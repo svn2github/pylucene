@@ -113,8 +113,14 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
 {                                                                       \
     if (!!object)                                                       \
     {                                                                   \
-        t_name *self =                                                  \
-            (t_name *) name##$$Type.tp_alloc(&name##$$Type, 0);         \
+        if (!env->isInstanceOf(object, javaClass::initializeClass))     \
+        {                                                               \
+            PyErr_SetObject(PyExc_TypeError,                            \
+                            (PyObject *) &name##$$Type);                \
+            return NULL;                                                \
+        }                                                               \
+        t_name *self = (t_name *)                                       \
+            name##$$Type.tp_alloc(&name##$$Type, 0);                    \
         if (self)                                                       \
             self->object = javaClass(object);                           \
         return (PyObject *) self;                                       \
@@ -137,6 +143,12 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
             Py_RETURN_TRUE;                     \
         else                                    \
             Py_RETURN_FALSE;                    \
+    }
+
+#define Py_RETURN_SELF                                      \
+    {                                                       \
+        Py_INCREF(self);                                    \
+        return (PyObject *) self;                           \
     }
 
 

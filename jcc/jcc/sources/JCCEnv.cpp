@@ -160,6 +160,11 @@ jobject JCCEnv::enumerationNext(jobject obj) const
     return callObjectMethod(obj, _mids[mid_enumeration_nextElement]);
 }
 
+jboolean JCCEnv::isInstanceOf(jobject obj, jclass (*initializeClass)())
+{
+    return get_vm_env()->IsInstanceOf(obj, (*initializeClass)());
+}
+
 jclass JCCEnv::findClass(const char *className) const
 {
     jclass cls = NULL;

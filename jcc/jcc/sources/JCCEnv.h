@@ -137,6 +137,8 @@ public:
     virtual jstring getJavaVersion() const;
 
     virtual jclass findClass(const char *className) const;
+    virtual jboolean isInstanceOf(jobject obj, jclass (*initializeClass)());
+
     virtual void registerNatives(jclass cls, JNINativeMethod *methods,
                                  int n) const;
 
