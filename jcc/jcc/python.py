@@ -1295,7 +1295,11 @@ def python(env, out_h, out, cls, superCls, names, superNames,
              not returnType.isPrimitive() and '((jobject) NULL)' or '')
         line(out, indent + 1, 'OBJ_CALL(result = self->object.%s((%s) n));',
              methodName, typename(method.getParameterTypes()[0], cls, False))
-        line(out, indent + 1, returnValue(cls, returnType, 'result'))
+        if generics:
+            line(out, indent + 1, returnValue(cls, returnType, 'result',
+                                              method.getGenericReturnType()))
+        else:
+            line(out, indent + 1, returnValue(cls, returnType, 'result'))
         line(out, indent, '}')
 
     while indent:

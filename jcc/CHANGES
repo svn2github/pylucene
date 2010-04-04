@@ -9,6 +9,7 @@ Version 2.5 ->
  - added support for --find-jvm-dll parameter (Bill Janssen)
  - fixed bug with not inheriting type parameters to inner parameterized classes
  - added support for of_() method to set instance type parameters
+ - fixed bug with not heeding type parameter for --sequence get method
  - 
 
 Version 2.4 -> 2.5
