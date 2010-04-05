@@ -78,7 +78,6 @@ public:
 class _DLL_EXPORT JCCEnv {
 protected:
     jclass _sys, _obj, _thr;
-    jclass _Boolean, _Byte, _Character, _Double, _Float, _Integer, _Long, _Short;
     jmethodID *_mids;
 
     enum {

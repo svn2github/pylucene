@@ -90,15 +90,6 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
     _thr = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/RuntimeException"));
 #endif
 
-    _Boolean = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Boolean"));
-    _Byte = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Byte"));
-    _Character = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Character"));
-    _Double = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Double"));
-    _Float = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Float"));
-    _Integer = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Integer"));
-    _Long = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Long"));
-    _Short = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Short"));
-
     _mids = new jmethodID[max_mid];
 
     _mids[mid_sys_identityHashCode] =
@@ -128,21 +119,29 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
                             "nextElement", "()Ljava/lang/Object;");
 
     _mids[mid_Boolean_booleanValue] =
-        vm_env->GetMethodID(_Boolean, "booleanValue", "()Z");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Boolean"),
+                            "booleanValue", "()Z");
     _mids[mid_Byte_byteValue] = 
-        vm_env->GetMethodID(_Byte, "byteValue", "()B");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Byte"),
+                            "byteValue", "()B");
     _mids[mid_Character_charValue] =
-        vm_env->GetMethodID(_Character, "charValue", "()C");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Character"),
+                            "charValue", "()C");
     _mids[mid_Double_doubleValue] = 
-        vm_env->GetMethodID(_Double, "doubleValue", "()D");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Double"),
+                            "doubleValue", "()D");
     _mids[mid_Float_floatValue] =
-        vm_env->GetMethodID(_Float, "floatValue", "()F");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Float"),
+                            "floatValue", "()F");
     _mids[mid_Integer_intValue] = 
-        vm_env->GetMethodID(_Integer, "intValue", "()I");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Integer"),
+                            "intValue", "()I");
     _mids[mid_Long_longValue] = 
-        vm_env->GetMethodID(_Long, "longValue", "()J");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Long"),
+                            "longValue", "()J");
     _mids[mid_Short_shortValue] = 
-        vm_env->GetMethodID(_Short, "shortValue", "()S");
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Short"),
+                            "shortValue", "()S");
 }
 
 #if defined(_MSC_VER) || defined(__WIN32)
