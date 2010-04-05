@@ -10,6 +10,7 @@ Version 2.5 ->
  - fixed bug with not inheriting type parameters to inner parameterized classes
  - added support for of_() method to set instance type parameters
  - fixed bug with not heeding type parameter for --sequence get method
+ - parameterized return values are now unboxed
  - 
 
 Version 2.4 -> 2.5

@@ -30,7 +30,6 @@ typedef intobjargproc ssizeobjargproc;
 typedef intintobjargproc ssizessizeobjargproc;
 #endif
 
-typedef jclass (*getclassfn)(void);
 typedef PyTypeObject **(*getparametersfn)(void *);
 
 PyObject *PyErr_SetArgsError(char *name, PyObject *args);
@@ -71,6 +70,16 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...);
 
 int abstract_init(PyObject *self, PyObject *args, PyObject *kwds);
 PyObject *wrapType(PyTypeObject *type, const jobject& obj);
+
+PyObject *unboxBoolean(const jobject& obj);
+PyObject *unboxByte(const jobject &obj);
+PyObject *unboxChar(const jobject &obj);
+PyObject *unboxDouble(const jobject &obj);
+PyObject *unboxFloat(const jobject &obj);
+PyObject *unboxInteger(const jobject &obj);
+PyObject *unboxLong(const jobject &obj);
+PyObject *unboxShort(const jobject &obj);
+PyObject *unboxString(const jobject &obj);
 
 PyObject *j2p(const java::lang::String& js);
 java::lang::String p2j(PyObject *object);

@@ -23,6 +23,7 @@ namespace java {
 
         enum {
             mid__init_,
+            mid_intValue,
             max_mid
         };
 
@@ -37,6 +38,8 @@ namespace java {
 
                 _mids = new jmethodID[max_mid];
                 _mids[mid__init_] = env->getMethodID(cls, "<init>", "(I)V");
+                _mids[mid_intValue] =
+                    env->getMethodID(cls, "intValue", "()I");
 
                 class$ = (Class *) new JObject(cls);
             }
@@ -45,6 +48,11 @@ namespace java {
         }
 
         Integer::Integer(jint n) : Object(env->newObject(initializeClass, &_mids, mid__init_, n)) {
+        }
+
+        jint Integer::intValue() const
+        {
+            return env->callIntMethod(this$, _mids[mid_intValue]);
         }
     }
 }

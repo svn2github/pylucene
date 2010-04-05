@@ -67,6 +67,7 @@ extern JCCEnv *env;
 
 #endif
 
+typedef jclass (*getclassfn)(void);
 
 class countedRef {
 public:
@@ -77,6 +78,7 @@ public:
 class _DLL_EXPORT JCCEnv {
 protected:
     jclass _sys, _obj, _thr;
+    jclass _Boolean, _Byte, _Character, _Double, _Float, _Integer, _Long, _Short;
     jmethodID *_mids;
 
     enum {
@@ -88,6 +90,14 @@ protected:
         mid_obj_getClass,
         mid_iterator_next,
         mid_enumeration_nextElement,
+        mid_Boolean_booleanValue,
+        mid_Byte_byteValue,
+        mid_Character_charValue,
+        mid_Double_doubleValue,
+        mid_Float_floatValue,
+        mid_Integer_intValue,
+        mid_Long_longValue,
+        mid_Short_shortValue,
         max_mid
     };
 
@@ -137,7 +147,8 @@ public:
     virtual jstring getJavaVersion() const;
 
     virtual jclass findClass(const char *className) const;
-    virtual jboolean isInstanceOf(jobject obj, jclass (*initializeClass)());
+    virtual jboolean isInstanceOf(jobject obj,
+                                  getclassfn initializeClass) const;
 
     virtual void registerNatives(jclass cls, JNINativeMethod *methods,
                                  int n) const;
@@ -148,7 +159,7 @@ public:
     virtual jobject newGlobalRef(jobject obj, int id);
     virtual jobject deleteGlobalRef(jobject obj, int id);
 
-    virtual jobject newObject(jclass (*initializeClass)(), jmethodID **mids,
+    virtual jobject newObject(getclassfn initializeClass, jmethodID **mids,
                               int m, ...);
 
     virtual jobjectArray newObjectArray(jclass cls, int size);
@@ -211,6 +222,15 @@ public:
                                          jmethodID mid, ...) const;
     virtual void callStaticVoidMethod(jclass cls,
                                       jmethodID mid, ...) const;
+
+    virtual jboolean booleanValue(jobject obj) const;
+    virtual jbyte byteValue(jobject obj) const;
+    virtual jchar charValue(jobject obj) const;
+    virtual jdouble doubleValue(jobject obj) const;
+    virtual jfloat floatValue(jobject obj) const;
+    virtual jint intValue(jobject obj) const;
+    virtual jlong longValue(jobject obj) const;
+    virtual jshort shortValue(jobject obj) const;
 
     virtual jmethodID getMethodID(jclass cls, const char *name,
                                   const char *signature) const;

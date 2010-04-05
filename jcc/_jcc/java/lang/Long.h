@@ -32,6 +32,8 @@ namespace java {
                 initializeClass();
             }
             Long(jlong);
+
+            jlong longValue() const;
         };
 
         extern PyTypeObject Long$$Type;

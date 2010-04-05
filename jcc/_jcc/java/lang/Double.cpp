@@ -23,6 +23,7 @@ namespace java {
 
         enum {
             mid__init_,
+            mid_doubleValue,
             max_mid
         };
 
@@ -37,6 +38,8 @@ namespace java {
 
                 _mids = new jmethodID[max_mid];
                 _mids[mid__init_] = env->getMethodID(cls, "<init>", "(D)V");
+                _mids[mid_doubleValue] =
+                    env->getMethodID(cls, "doubleValue", "()D");
 
                 class$ = (Class *) new JObject(cls);
             }
@@ -45,6 +48,11 @@ namespace java {
         }
 
         Double::Double(jdouble n) : Object(env->newObject(initializeClass, &_mids, mid__init_, n)) {
+        }
+
+        jdouble Double::doubleValue() const
+        {
+            return env->callDoubleMethod(this$, _mids[mid_doubleValue]);
         }
     }
 }

@@ -25,9 +25,13 @@ namespace java {
         extern PyTypeObject Exception$$Type;
         extern PyTypeObject RuntimeException$$Type;
         extern PyTypeObject Boolean$$Type;
+        extern PyTypeObject Byte$$Type;
+        extern PyTypeObject Character$$Type;
         extern PyTypeObject Integer$$Type;
-        extern PyTypeObject Long$$Type;
         extern PyTypeObject Double$$Type;
+        extern PyTypeObject Float$$Type;
+        extern PyTypeObject Long$$Type;
+        extern PyTypeObject Short$$Type;
         
         namespace reflect {
             void __install__(PyObject *module);
@@ -42,9 +46,13 @@ namespace java {
             INSTALL_TYPE(Exception, m);
             INSTALL_TYPE(RuntimeException, m);
             INSTALL_TYPE(Boolean, m);
+            INSTALL_TYPE(Byte, m);
+            INSTALL_TYPE(Character, m);
+            INSTALL_TYPE(Double, m);
+            INSTALL_TYPE(Float, m);
             INSTALL_TYPE(Integer, m);
             INSTALL_TYPE(Long, m);
-            INSTALL_TYPE(Double, m);
+            INSTALL_TYPE(Short, m);
             reflect::__install__(m);
         }
     }

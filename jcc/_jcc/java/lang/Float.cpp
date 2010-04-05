@@ -16,30 +16,29 @@
 #include "JCCEnv.h"
 #include "java/lang/Object.h"
 #include "java/lang/Class.h"
-#include "java/lang/Long.h"
+#include "java/lang/Float.h"
 
 namespace java {
     namespace lang {
 
         enum {
-            mid__init_,
-            mid_longValue,
+            mid_floatValue,
             max_mid
         };
 
-        Class *Long::class$ = NULL;
-        jmethodID *Long::_mids = NULL;
-        
-        jclass Long::initializeClass()
+        Class *Float::class$ = NULL;
+        jmethodID *Float::_mids = NULL;
+
+        jclass Float::initializeClass()
         {
             if (!class$)
             {
-                jclass cls = env->findClass("java/lang/Long");
+                jclass cls = env->findClass("java/lang/Float");
 
                 _mids = new jmethodID[max_mid];
-                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(J)V");
-                _mids[mid_longValue] =
-                    env->getMethodID(cls, "longValue", "()J");
+                _mids[mid_floatValue] =
+                    env->getMethodID(cls, "floatValue",
+                                     "()F");
 
                 class$ = (Class *) new JObject(cls);
             }
@@ -47,12 +46,9 @@ namespace java {
             return (jclass) class$->this$;
         }
 
-        Long::Long(jlong n) : Object(env->newObject(initializeClass, &_mids, mid__init_, n)) {
-        }
-
-        jlong Long::longValue() const
+        jfloat Float::floatValue() const
         {
-            return env->callLongMethod(this$, _mids[mid_longValue]);
+            return env->callFloatMethod(this$, _mids[mid_floatValue]);
         }
     }
 }
@@ -65,11 +61,11 @@ namespace java {
 namespace java {
     namespace lang {
 
-        static PyMethodDef t_Long__methods_[] = {
+        static PyMethodDef t_Float__methods_[] = {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Long, t_Long, Object, java::lang::Long,
+        DECLARE_TYPE(Float, t_Float, Object, java::lang::Float,
                      abstract_init, 0, 0, 0, 0, 0);
     }
 }

@@ -32,7 +32,7 @@ if python_ver < '2.4':
 
 
 RESULTS = { 'boolean': 'Py_RETURN_BOOL(%s);',
-            'byte': 'return PyInt_FromLong(%s);',
+            'byte': 'return PyInt_FromLong((long) %s);',
             'char': 'return PyUnicode_FromUnicode((Py_UNICODE *) &%s, 1);',
             'double': 'return PyFloat_FromDouble((double) %s);',
             'float': 'return PyFloat_FromDouble((double) %s);',
@@ -50,6 +50,16 @@ CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
              'long': ('L', '(long long) %s', False),
              'short': ('i', '(int) %s', False),
              'java.lang.String': ('O', 'env->fromJString((jstring) %s, 0)', True) }
+
+BOXED = set(('java.lang.Boolean',
+             'java.lang.Byte',
+             'java.lang.Char',
+             'java.lang.Double',
+             'java.lang.Float',
+             'java.lang.Integer',
+             'java.lang.Long',
+             'java.lang.Short',
+             'java.lang.String'))
 
 
 def getTypeParameters(cls):
@@ -971,8 +981,12 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out, indent, '{')
     line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
          names[-1], cppname(names[-1]), generics and 1 or 0)
-    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(t_%s::wrap_jobject));',
-         names[-1], names[-1])
+
+    if cls.getName() in BOXED:
+        wrapfn_ = "unbox%s" %(names[-1])
+    else:
+        wrapfn_ = "t_%s::wrap_jobject" %(names[-1])
+    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
 
     if isExtension:
         line(out, indent + 1, 'jclass cls = %s::initializeClass();',

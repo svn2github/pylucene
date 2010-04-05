@@ -20,9 +20,13 @@
 #include "java/lang/String.h"
 #include "java/lang/Throwable.h"
 #include "java/lang/Boolean.h"
+#include "java/lang/Byte.h"
+#include "java/lang/Character.h"
+#include "java/lang/Double.h"
+#include "java/lang/Float.h"
 #include "java/lang/Integer.h"
 #include "java/lang/Long.h"
-#include "java/lang/Double.h"
+#include "java/lang/Short.h"
 #include "java/util/Iterator.h"
 #include "JArray.h"
 #include "functions.h"
@@ -1156,26 +1160,12 @@ PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
 
     jobject jobj = ((t_Object *) obj)->object.this$;
 
-    if (jobj)
+    if (jobj && !env->isInstanceOf(jobj, initializeClass))
     {
-        jclass cls;
+        if (reportError)
+            PyErr_SetObject(PyExc_TypeError, obj);
 
-        try {
-            cls = (*initializeClass)();
-        } catch (JCCEnv::pythonError e) {
-            return NULL;
-        } catch (JCCEnv::exception e) {
-            PyErr_SetJavaError(e.throwable);
-            return NULL;
-        }
-
-        if (!env->get_vm_env()->IsInstanceOf(jobj, cls))
-        {
-            if (reportError)
-                PyErr_SetObject(PyExc_TypeError, obj);
-
-            return NULL;
-        }
+        return NULL;
     }
 
     return obj;
@@ -1289,6 +1279,163 @@ PyObject *wrapType(PyTypeObject *type, const jobject& obj)
     Py_DECREF(cobj);
 
     return wrapfn(obj);
+}
+
+PyObject *unboxBoolean(const jobject& obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Boolean::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Boolean$$Type);
+            return NULL;
+        }
+        
+        if (env->booleanValue(obj))
+            Py_RETURN_TRUE;
+
+        Py_RETURN_FALSE;
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxByte(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Byte::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Byte$$Type);
+            return NULL;
+        }
+        
+        return PyInt_FromLong((long) env->byteValue(obj));
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxChar(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Character::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Character$$Type);
+            return NULL;
+        }
+        
+        jchar c = env->charValue(obj);
+        return PyUnicode_FromUnicode((Py_UNICODE *) &c, 1);
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxDouble(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Double::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Double$$Type);
+            return NULL;
+        }
+        
+        return PyFloat_FromDouble((double) env->doubleValue(obj));
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxFloat(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Float::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Float$$Type);
+            return NULL;
+        }
+        
+        return PyFloat_FromDouble((double) env->floatValue(obj));
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxInteger(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Integer::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Integer$$Type);
+            return NULL;
+        }
+        
+        return PyInt_FromLong((long) env->intValue(obj));
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxLong(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Long::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Long$$Type);
+            return NULL;
+        }
+        
+        return PyLong_FromLongLong((PY_LONG_LONG) env->longValue(obj));
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxShort(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::Short::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::Short$$Type);
+            return NULL;
+        }
+        
+        return PyInt_FromLong((long) env->shortValue(obj));
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject *unboxString(const jobject &obj)
+{
+    if (obj != NULL)
+    {
+        if (!env->isInstanceOf(obj, java::lang::String::initializeClass))
+        {
+            PyErr_SetObject(PyExc_TypeError,
+                            (PyObject *) &java::lang::String$$Type);
+            return NULL;
+        }
+        
+        return env->fromJString((jstring) obj, 0);
+    }
+
+    Py_RETURN_NONE;
 }
 
 #ifdef _java_generics

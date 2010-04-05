@@ -12,8 +12,8 @@
  *   limitations under the License.
  */
 
-#ifndef _Double_H
-#define _Double_H
+#ifndef _Character_H
+#define _Character_H
 
 #include <Python.h>
 #include "java/lang/Object.h"
@@ -22,30 +22,29 @@
 namespace java {
     namespace lang {
 
-        class Double : public Object {
+        class Character : public Object {
         public:
             static Class *class$;
             static jmethodID *_mids;
             static jclass initializeClass();
 
-            explicit Double(jobject obj) : Object(obj) {
+            explicit Character(jobject obj) : Object(obj) {
                 initializeClass();
             }
-            Double(jdouble);
 
-            jdouble doubleValue() const;
+            jchar charValue() const;
         };
 
-        extern PyTypeObject Double$$Type;
+        extern PyTypeObject Character$$Type;
 
-        class t_Double {
+        class t_Character {
         public:
             PyObject_HEAD
-            Double object;
-            static PyObject *wrap_Object(const Double& object);
+            Character object;
+            static PyObject *wrap_Object(const Character& object);
             static PyObject *wrap_jobject(const jobject& object);
         };
     }
 }
 
-#endif /* _Double_H */
+#endif /* _Character_H */

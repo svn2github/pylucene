@@ -32,6 +32,8 @@ namespace java {
                 initializeClass();
             }
 
+            int booleanValue() const;
+
             static Boolean *TRUE;
             static Boolean *FALSE;
         };

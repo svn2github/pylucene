@@ -16,30 +16,29 @@
 #include "JCCEnv.h"
 #include "java/lang/Object.h"
 #include "java/lang/Class.h"
-#include "java/lang/Long.h"
+#include "java/lang/Character.h"
 
 namespace java {
     namespace lang {
 
         enum {
-            mid__init_,
-            mid_longValue,
+            mid_charValue,
             max_mid
         };
 
-        Class *Long::class$ = NULL;
-        jmethodID *Long::_mids = NULL;
-        
-        jclass Long::initializeClass()
+        Class *Character::class$ = NULL;
+        jmethodID *Character::_mids = NULL;
+
+        jclass Character::initializeClass()
         {
             if (!class$)
             {
-                jclass cls = env->findClass("java/lang/Long");
+                jclass cls = env->findClass("java/lang/Character");
 
                 _mids = new jmethodID[max_mid];
-                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(J)V");
-                _mids[mid_longValue] =
-                    env->getMethodID(cls, "longValue", "()J");
+                _mids[mid_charValue] =
+                    env->getMethodID(cls, "charValue",
+                                     "()C");
 
                 class$ = (Class *) new JObject(cls);
             }
@@ -47,12 +46,9 @@ namespace java {
             return (jclass) class$->this$;
         }
 
-        Long::Long(jlong n) : Object(env->newObject(initializeClass, &_mids, mid__init_, n)) {
-        }
-
-        jlong Long::longValue() const
+        jchar Character::charValue() const
         {
-            return env->callLongMethod(this$, _mids[mid_longValue]);
+            return env->callCharMethod(this$, _mids[mid_charValue]);
         }
     }
 }
@@ -65,11 +61,11 @@ namespace java {
 namespace java {
     namespace lang {
 
-        static PyMethodDef t_Long__methods_[] = {
+        static PyMethodDef t_Character__methods_[] = {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Long, t_Long, Object, java::lang::Long,
+        DECLARE_TYPE(Character, t_Character, Object, java::lang::Character,
                      abstract_init, 0, 0, 0, 0, 0);
     }
 }

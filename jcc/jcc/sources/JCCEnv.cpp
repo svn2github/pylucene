@@ -89,6 +89,16 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
 #else
     _thr = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/RuntimeException"));
 #endif
+
+    _Boolean = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Boolean"));
+    _Byte = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Byte"));
+    _Character = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Character"));
+    _Double = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Double"));
+    _Float = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Float"));
+    _Integer = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Integer"));
+    _Long = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Long"));
+    _Short = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Short"));
+
     _mids = new jmethodID[max_mid];
 
     _mids[mid_sys_identityHashCode] =
@@ -116,6 +126,23 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
     _mids[mid_enumeration_nextElement] =
         vm_env->GetMethodID(vm_env->FindClass("java/util/Enumeration"),
                             "nextElement", "()Ljava/lang/Object;");
+
+    _mids[mid_Boolean_booleanValue] =
+        vm_env->GetMethodID(_Boolean, "booleanValue", "()Z");
+    _mids[mid_Byte_byteValue] = 
+        vm_env->GetMethodID(_Byte, "byteValue", "()B");
+    _mids[mid_Character_charValue] =
+        vm_env->GetMethodID(_Character, "charValue", "()C");
+    _mids[mid_Double_doubleValue] = 
+        vm_env->GetMethodID(_Double, "doubleValue", "()D");
+    _mids[mid_Float_floatValue] =
+        vm_env->GetMethodID(_Float, "floatValue", "()F");
+    _mids[mid_Integer_intValue] = 
+        vm_env->GetMethodID(_Integer, "intValue", "()I");
+    _mids[mid_Long_longValue] = 
+        vm_env->GetMethodID(_Long, "longValue", "()J");
+    _mids[mid_Short_shortValue] = 
+        vm_env->GetMethodID(_Short, "shortValue", "()S");
 }
 
 #if defined(_MSC_VER) || defined(__WIN32)
@@ -160,7 +187,7 @@ jobject JCCEnv::enumerationNext(jobject obj) const
     return callObjectMethod(obj, _mids[mid_enumeration_nextElement]);
 }
 
-jboolean JCCEnv::isInstanceOf(jobject obj, jclass (*initializeClass)())
+jboolean JCCEnv::isInstanceOf(jobject obj, getclassfn initializeClass) const
 {
     return get_vm_env()->IsInstanceOf(obj, (*initializeClass)());
 }
@@ -290,7 +317,7 @@ jobject JCCEnv::deleteGlobalRef(jobject obj, int id)
     return NULL;
 }
 
-jobject JCCEnv::newObject(jclass (*initializeClass)(), jmethodID **mids,
+jobject JCCEnv::newObject(getclassfn initializeClass, jmethodID **mids,
                           int m, ...)
 {
     jclass cls = (*initializeClass)();
@@ -504,6 +531,47 @@ void JCCEnv::callStaticVoidMethod(jclass cls, jmethodID mid, ...) const
     va_end(ap);
 
     reportException();
+}
+
+
+jboolean JCCEnv::booleanValue(jobject obj) const
+{
+    return get_vm_env()->CallBooleanMethod(obj, _mids[mid_Boolean_booleanValue]);
+}
+
+jbyte JCCEnv::byteValue(jobject obj) const
+{
+    return get_vm_env()->CallByteMethod(obj, _mids[mid_Byte_byteValue]);
+}
+
+jchar JCCEnv::charValue(jobject obj) const
+{
+    return get_vm_env()->CallCharMethod(obj, _mids[mid_Character_charValue]);
+}
+
+jdouble JCCEnv::doubleValue(jobject obj) const
+{
+    return get_vm_env()->CallDoubleMethod(obj, _mids[mid_Double_doubleValue]);
+}
+
+jfloat JCCEnv::floatValue(jobject obj) const
+{
+    return get_vm_env()->CallFloatMethod(obj, _mids[mid_Float_floatValue]);
+}
+
+jint JCCEnv::intValue(jobject obj) const
+{
+    return get_vm_env()->CallIntMethod(obj, _mids[mid_Integer_intValue]);
+}
+
+jlong JCCEnv::longValue(jobject obj) const
+{
+    return get_vm_env()->CallLongMethod(obj, _mids[mid_Long_longValue]);
+}
+
+jshort JCCEnv::shortValue(jobject obj) const
+{
+    return get_vm_env()->CallShortMethod(obj, _mids[mid_Short_shortValue]);
 }
 
 

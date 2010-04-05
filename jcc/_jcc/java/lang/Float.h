@@ -12,8 +12,8 @@
  *   limitations under the License.
  */
 
-#ifndef _Double_H
-#define _Double_H
+#ifndef _Float_H
+#define _Float_H
 
 #include <Python.h>
 #include "java/lang/Object.h"
@@ -22,30 +22,29 @@
 namespace java {
     namespace lang {
 
-        class Double : public Object {
+        class Float : public Object {
         public:
             static Class *class$;
             static jmethodID *_mids;
             static jclass initializeClass();
 
-            explicit Double(jobject obj) : Object(obj) {
+            explicit Float(jobject obj) : Object(obj) {
                 initializeClass();
             }
-            Double(jdouble);
 
-            jdouble doubleValue() const;
+            jfloat floatValue() const;
         };
 
-        extern PyTypeObject Double$$Type;
+        extern PyTypeObject Float$$Type;
 
-        class t_Double {
+        class t_Float {
         public:
             PyObject_HEAD
-            Double object;
-            static PyObject *wrap_Object(const Double& object);
+            Float object;
+            static PyObject *wrap_Object(const Float& object);
             static PyObject *wrap_jobject(const jobject& object);
         };
     }
 }
 
-#endif /* _Double_H */
+#endif /* _Float_H */

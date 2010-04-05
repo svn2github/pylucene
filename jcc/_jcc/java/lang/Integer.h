@@ -32,6 +32,8 @@ namespace java {
                 initializeClass();
             }
             Integer(jint);
+
+            jint intValue() const;
         };
 
         extern PyTypeObject Integer$$Type;
