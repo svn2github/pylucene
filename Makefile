@@ -46,70 +46,70 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.6, Java 1.6)
 #PREFIX_PYTHON=/opt/local
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64 --arch i386
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Mac OS X  (Python 2.3.5, Java 1.5, setuptools 0.6c7, Intel Mac OS X 10.4)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-i386.egg/jcc/__init__.py
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Mac OS X  (Python 2.3.5, Java 1.5, setuptools 0.6c7, PPC Mac OS X 10.4)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-ppc.egg/jcc/__init__.py
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Linux     (Ubuntu 6.06, Python 2.4, Java 1.5, no setuptools)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) $(PREFIX_PYTHON)/lib/python2.4/site-packages/jcc/__init__.py
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Linux     (Ubuntu 8.10 64-bit, Python 2.5.2, OpenJDK 1.6, setuptools 0.6c9)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=2
+#NUM_FILES=3
 
 # FreeBSD
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Solaris   (Solaris 11, Python 2.4 32-bit, Sun Studio 12, Java 1.6)
 #PREFIX_PYTHON=/usr
 #ANT=/usr/local/apache-ant-1.7.0/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) $(PREFIX_PYTHON)/lib/python2.4/site-packages/jcc/__init__.py
-#NUM_FILES=2
+#NUM_FILES=3
 
 # Windows   (Win32, Python 2.5.1, Java 1.6, ant 1.7.0)
 #PREFIX_PYTHON=/cygdrive/o/Python-2.5.2/PCbuild
@@ -215,6 +215,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --python lucene \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
+           --sequence java.util.AbstractList 'size:()I' 'get:(I)Ljava/lang/Object;' \
            --rename org.apache.lucene.search.highlight.SpanScorer=HighlighterSpanScorer \
            --version $(LUCENE_VER) \
            --module python/collections.py \
