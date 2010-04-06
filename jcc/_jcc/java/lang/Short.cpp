@@ -22,6 +22,7 @@ namespace java {
     namespace lang {
 
         enum {
+            mid__init_,
             mid_shortValue,
             max_mid
         };
@@ -36,14 +37,17 @@ namespace java {
                 jclass cls = env->findClass("java/lang/Short");
 
                 _mids = new jmethodID[max_mid];
+                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(S)V");
                 _mids[mid_shortValue] =
-                    env->getMethodID(cls, "shortValue",
-                                     "()S");
+                    env->getMethodID(cls, "shortValue", "()S");
 
                 class$ = (Class *) new JObject(cls);
             }
 
             return (jclass) class$->this$;
+        }
+
+        Short::Short(jshort n) : Object(env->newObject(initializeClass, &_mids, mid__init_, n)) {
         }
 
         jshort Short::shortValue() const

@@ -31,6 +31,7 @@ namespace java {
             explicit Float(jobject obj) : Object(obj) {
                 initializeClass();
             }
+            Float(jfloat);
 
             jfloat floatValue() const;
         };

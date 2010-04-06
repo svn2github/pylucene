@@ -31,6 +31,7 @@ namespace java {
             explicit Character(jobject obj) : Object(obj) {
                 initializeClass();
             }
+            Character(jchar);
 
             jchar charValue() const;
         };

@@ -22,6 +22,7 @@ namespace java {
     namespace lang {
 
         enum {
+            mid__init_,
             mid_byteValue,
             max_mid
         };
@@ -36,14 +37,17 @@ namespace java {
                 jclass cls = env->findClass("java/lang/Byte");
 
                 _mids = new jmethodID[max_mid];
+                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(B)V");
                 _mids[mid_byteValue] =
-                    env->getMethodID(cls, "byteValue",
-                                     "()B");
+                    env->getMethodID(cls, "byteValue", "()B");
 
                 class$ = (Class *) new JObject(cls);
             }
 
             return (jclass) class$->this$;
+        }
+
+        Byte::Byte(jbyte b) : Object(env->newObject(initializeClass, &_mids, mid__init_, b)) {
         }
 
         jbyte Byte::byteValue() const

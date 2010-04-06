@@ -31,6 +31,7 @@ typedef intintobjargproc ssizessizeobjargproc;
 #endif
 
 typedef PyTypeObject **(*getparametersfn)(void *);
+typedef int (*boxfn)(PyTypeObject *, PyObject *, java::lang::Object *);
 
 PyObject *PyErr_SetArgsError(char *name, PyObject *args);
 PyObject *PyErr_SetArgsError(PyObject *self, char *name, PyObject *args);
@@ -72,14 +73,25 @@ int abstract_init(PyObject *self, PyObject *args, PyObject *kwds);
 PyObject *wrapType(PyTypeObject *type, const jobject& obj);
 
 PyObject *unboxBoolean(const jobject& obj);
-PyObject *unboxByte(const jobject &obj);
-PyObject *unboxChar(const jobject &obj);
-PyObject *unboxDouble(const jobject &obj);
-PyObject *unboxFloat(const jobject &obj);
-PyObject *unboxInteger(const jobject &obj);
-PyObject *unboxLong(const jobject &obj);
-PyObject *unboxShort(const jobject &obj);
-PyObject *unboxString(const jobject &obj);
+PyObject *unboxByte(const jobject& obj);
+PyObject *unboxChar(const jobject& obj);
+PyObject *unboxDouble(const jobject& obj);
+PyObject *unboxFloat(const jobject& obj);
+PyObject *unboxInteger(const jobject& obj);
+PyObject *unboxLong(const jobject& obj);
+PyObject *unboxShort(const jobject& obj);
+PyObject *unboxString(const jobject& obj);
+
+int boxBoolean(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxByte(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxCharacter(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxDouble(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxFloat(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxInteger(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxLong(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxShort(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxString(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxObject(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 
 PyObject *j2p(const java::lang::String& js);
 java::lang::String p2j(PyObject *object);
@@ -89,6 +101,7 @@ PyObject *make_descriptor(getclassfn initializeClass);
 PyObject *make_descriptor(getclassfn initializeClass, int generics);
 PyObject *make_descriptor(PyObject *value);
 PyObject *make_descriptor(PyObject *(*wrapfn)(const jobject &));
+PyObject *make_descriptor(boxfn fn);
 PyObject *make_descriptor(jboolean value);
 PyObject *make_descriptor(jbyte value);
 PyObject *make_descriptor(jchar value);

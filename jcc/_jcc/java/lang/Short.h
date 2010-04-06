@@ -31,6 +31,7 @@ namespace java {
             explicit Short(jobject obj) : Object(obj) {
                 initializeClass();
             }
+            Short(jshort);
 
             jshort shortValue() const;
         };

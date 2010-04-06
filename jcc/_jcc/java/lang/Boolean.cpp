@@ -22,6 +22,7 @@ namespace java {
     namespace lang {
 
         enum {
+            mid__init_,
             mid_booleanValue,
             max_mid
         };
@@ -39,9 +40,9 @@ namespace java {
                 jclass cls = env->findClass("java/lang/Boolean");
 
                 _mids = new jmethodID[max_mid];
+                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(Z)V");
                 _mids[mid_booleanValue] =
-                    env->getMethodID(cls, "booleanValue",
-                                     "()Z");
+                    env->getMethodID(cls, "booleanValue", "()Z");
 
                 class$ = (Class *) new JObject(cls);
 
@@ -50,6 +51,9 @@ namespace java {
             }
 
             return (jclass) class$->this$;
+        }
+
+        Boolean::Boolean(jboolean b) : Object(env->newObject(initializeClass, &_mids, mid__init_, b)) {
         }
 
         int Boolean::booleanValue() const

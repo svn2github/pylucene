@@ -31,6 +31,7 @@ namespace java {
             explicit Byte(jobject obj) : Object(obj) {
                 initializeClass();
             }
+            Byte(jbyte);
 
             jbyte byteValue() const;
         };

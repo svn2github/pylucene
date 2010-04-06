@@ -13,6 +13,7 @@
 #
 
 import os, sys, platform, shutil, _jcc
+from itertools import izip
 
 from cpp import PRIMITIVES, INDENT, HALF_INDENT
 from cpp import cppname, cppnames, typename
@@ -85,9 +86,16 @@ def getActualTypeArguments(pt):
         pt = ParameterizedType.cast_(pt)
 
 
-def parseArgs(params, current, generics):
+def parseArgs(params, current, generics, genericParams=None):
 
-    def signature(cls):
+    def signature(cls, genericPT=None):
+        if generics and TypeVariable.instance_(genericPT):
+            if cls.getName() == 'java.lang.Object':
+                gd = TypeVariable.cast_(genericPT).getGenericDeclaration()
+                if gd == current:
+                    for clsParam in getTypeParameters(gd):
+                        if genericPT == clsParam:
+                            return 'O'
         array = ''
         while cls.isArray():
             array += '['
@@ -99,17 +107,32 @@ def parseArgs(params, current, generics):
             return array + 's'
         if clsName == 'java.lang.Object':
             return array + 'o'
+        if clsName in BOXED:
+            return array + 'O'
         if generics and getTypeParameters(cls):
             return array + 'K'
         else:
             return array + 'k'
 
-    def checkarg(cls):
+    def checkarg(cls, genericPT=None):
+        if generics and TypeVariable.instance_(genericPT):
+            if cls.getName() == 'java.lang.Object':
+                gd = TypeVariable.cast_(genericPT).getGenericDeclaration()
+                if gd == current:
+                    i = 0
+                    for clsParam in getTypeParameters(gd):
+                        if genericPT == clsParam:
+                            return ', self->parameters[%d]' %(i)
+                        i += 1
         while cls.isArray():
             cls = cls.getComponentType()
+        clsName = cls.getName()
         if (cls.isPrimitive() or
-            cls.getName() in ('java.lang.String', 'java.lang.Object')):
+            clsName in ('java.lang.String', 'java.lang.Object')):
             return ''
+        if clsName in BOXED:
+            clsNames = clsName.split('.')
+            return ', &%s::%s$$Type' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
         return ', %s::initializeClass' %(typename(cls, current, False))
 
     def callarg(cls, i):
@@ -121,8 +144,16 @@ def parseArgs(params, current, generics):
                 return ', &a%d, &p%d, %s%st_%s::parameters_' %(i, i, ns, sep, n)
         return ', &a%d' %(i)
 
-    return (''.join([signature(param) for param in params]),
-            ''.join([checkarg(param) for param in params]),
+    if genericParams:
+        sig = ''.join([signature(param, genericParam)
+                       for param, genericParam in izip(params, genericParams)])
+        check = ''.join([checkarg(param, genericParam)
+                         for param, genericParam in izip(params, genericParams)])
+    else:
+        sig = ''.join([signature(param) for param in params])
+        check = ''.join([checkarg(param) for param in params])
+
+    return (sig, check,
             ''.join([callarg(params[i], i) for i in xrange(len(params))]))
 
 
@@ -298,9 +329,11 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
     returnType = method.getReturnType()
     if generics:
         genericRT = method.getGenericReturnType()
+        genericParams = method.getGenericParameterTypes()
         typeParams = set()
     else:
         genericRT = None
+        genericParams = None
         typeParams = None
     count = len(params)
 
@@ -322,7 +355,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
             line(out, indent, 'if (arg)')
         else:
             line(out, indent, 'if (!parseArg%s(arg%s, "%s"%s%s))',
-                 s, s, *parseArgs(params, cls, generics))
+                 s, s, *parseArgs(params, cls, generics, genericParams))
         line(out, indent, '{')
         indent += 1
 
@@ -984,9 +1017,13 @@ def python(env, out_h, out, cls, superCls, names, superNames,
 
     if cls.getName() in BOXED:
         wrapfn_ = "unbox%s" %(names[-1])
+        boxfn_ = "box%s" %(names[-1])
     else:
         wrapfn_ = "t_%s::wrap_jobject" %(names[-1])
+        boxfn_ = "boxObject"
+
     line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
+    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
 
     if isExtension:
         line(out, indent + 1, 'jclass cls = %s::initializeClass();',

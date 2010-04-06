@@ -31,6 +31,7 @@ namespace java {
             explicit Boolean(jobject obj) : Object(obj) {
                 initializeClass();
             }
+            Boolean(jboolean);
 
             int booleanValue() const;
 

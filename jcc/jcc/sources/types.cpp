@@ -419,6 +419,11 @@ PyObject *make_descriptor(PyObject *(*wrapfn)(const jobject &))
     return make_descriptor(PyCObject_FromVoidPtr((void *) wrapfn, NULL));
 }
 
+PyObject *make_descriptor(boxfn fn)
+{
+    return make_descriptor(PyCObject_FromVoidPtr((void *) fn, NULL));
+}
+
 PyObject *make_descriptor(jboolean b)
 {
     t_descriptor *self = (t_descriptor *)

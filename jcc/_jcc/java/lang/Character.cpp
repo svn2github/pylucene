@@ -22,6 +22,7 @@ namespace java {
     namespace lang {
 
         enum {
+            mid__init_,
             mid_charValue,
             max_mid
         };
@@ -36,14 +37,17 @@ namespace java {
                 jclass cls = env->findClass("java/lang/Character");
 
                 _mids = new jmethodID[max_mid];
+                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(C)V");
                 _mids[mid_charValue] =
-                    env->getMethodID(cls, "charValue",
-                                     "()C");
+                    env->getMethodID(cls, "charValue", "()C");
 
                 class$ = (Class *) new JObject(cls);
             }
 
             return (jclass) class$->this$;
+        }
+
+        Character::Character(jchar c) : Object(env->newObject(initializeClass, &_mids, mid__init_, c)) {
         }
 
         jchar Character::charValue() const

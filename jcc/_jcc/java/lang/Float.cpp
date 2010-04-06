@@ -22,6 +22,7 @@ namespace java {
     namespace lang {
 
         enum {
+            mid__init_,
             mid_floatValue,
             max_mid
         };
@@ -36,14 +37,17 @@ namespace java {
                 jclass cls = env->findClass("java/lang/Float");
 
                 _mids = new jmethodID[max_mid];
+                _mids[mid__init_] = env->getMethodID(cls, "<init>", "(F)V");
                 _mids[mid_floatValue] =
-                    env->getMethodID(cls, "floatValue",
-                                     "()F");
+                    env->getMethodID(cls, "floatValue", "()F");
 
                 class$ = (Class *) new JObject(cls);
             }
 
             return (jclass) class$->this$;
+        }
+
+        Float::Float(jfloat f) : Object(env->newObject(initializeClass, &_mids, mid__init_, f)) {
         }
 
         jfloat Float::floatValue() const

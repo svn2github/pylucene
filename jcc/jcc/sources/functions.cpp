@@ -91,6 +91,40 @@ PyObject *findClass(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+#ifdef _java_generics
+static boxfn get_boxfn(PyTypeObject *type)
+{
+    static PyObject *boxfn_ = PyString_FromString("boxfn_");
+    PyObject *cobj = PyObject_GetAttr((PyObject *) type, boxfn_);
+    boxfn fn;
+    
+    if (cobj == NULL)
+        return NULL;
+
+    fn = (boxfn) PyCObject_AsVoidPtr(cobj);
+    Py_DECREF(cobj);
+
+    return fn;
+}
+#endif
+
+static int is_instance_of(PyObject *arg, PyTypeObject *type)
+{
+    static PyObject *class_ = PyString_FromString("class_");
+    PyObject *clsObj = PyObject_GetAttr((PyObject *) type, class_);
+    int result;
+
+    if (clsObj == NULL)
+        return -1;
+
+    result = env->get_vm_env()->
+        IsInstanceOf(((t_Object *) arg)->object.this$,
+                     (jclass) ((t_Object *) clsObj)->object.this$);
+    Py_DECREF(clsObj);
+
+    return result;
+}
+
 
 #if defined(_MSC_VER) || defined(__SUNPRO_CC)
 int __parseArgs(PyObject *args, char *types, ...)
@@ -503,6 +537,21 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           case 'o':         /* java.lang.Object */
             break;
 
+#ifdef _java_generics
+          case 'O':         /* java.lang.Object with type param */
+          {
+              PyTypeObject *type = va_arg(list, PyTypeObject *);
+
+              if (type != NULL)
+              {
+                  boxfn fn = get_boxfn(type);
+    
+                  if (fn == NULL || fn(type, arg, NULL) < 0)
+                      return -1;
+              }
+              break;
+          }
+#endif
           case 'T':         /* tuple of python types with wrapfn_ */
           {
               static PyObject *wrapfn_ = PyString_FromString("wrapfn_");
@@ -566,6 +615,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                 case 'K':
                   getclassfn initializeClass = va_arg(check, getclassfn);
                   cls = (*initializeClass)();
+                  break;
               }
 
               if (array)
@@ -849,6 +899,9 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           }
 
           case 'o':           /* java.lang.Object  */
+#ifdef _java_generics
+          case 'O':           /* java.lang.Object with type param */
+#endif
           {
               if (array)
               {
@@ -866,43 +919,23 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               {
                   Object *obj = va_arg(list, Object *);
 
-                  if (arg == Py_None)
-                      *obj = Object(NULL);
-                  else if (PyObject_TypeCheck(arg, &Object$$Type))
-                      *obj = ((t_Object *) arg)->object;
-                  else if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type))
+#ifdef _java_generics
+                  if (types[pos] == 'O')
                   {
-                      arg = ((t_fp *) arg)->object;
-                      if (PyObject_TypeCheck(arg, &Object$$Type))
-                          *obj = ((t_Object *) arg)->object;
-                      else
-                          return -1;
-                  }
-                  else if (PyString_Check(arg) || PyUnicode_Check(arg))
-                  {
-                      *obj = p2j(arg);
-                      if (PyErr_Occurred())
-                          return -1;
-                  }
-                  else if (arg == Py_True)
-                      *obj = *Boolean::TRUE;
-                  else if (arg == Py_False)
-                      *obj = *Boolean::FALSE;
-                  else if (PyInt_Check(arg))
-                  {
-                      long ln = PyInt_AS_LONG(arg);
-                      int n = (int) ln;
+                      PyTypeObject *type = va_arg(check, PyTypeObject *);
 
-                      if (ln != (long) n)
-                          *obj = Long((jlong) ln);
-                      else
-                          *obj = Integer((jint) n);
+                      if (type != NULL)
+                      {
+                          boxfn fn = get_boxfn(type);
+
+                          if (fn == NULL || fn(type, arg, obj) < 0)
+                              return -1;
+
+                          break;
+                      }
                   }
-                  else if (PyLong_Check(arg))
-                      *obj = Long((jlong) PyLong_AsLongLong(arg));
-                  else if (PyFloat_Check(arg))
-                      *obj = Double((jdouble) PyFloat_AS_DOUBLE(arg));
-                  else
+#endif
+                  if (boxObject(NULL, arg, obj) < 0)
                       return -1;
               }
               break;
@@ -1437,6 +1470,423 @@ PyObject *unboxString(const jobject &obj)
 
     Py_RETURN_NONE;
 }
+
+static int boxJObject(PyTypeObject *type, PyObject *arg,
+                      java::lang::Object *obj)
+{
+    if (arg == Py_None)
+    {
+        if (obj != NULL)
+            *obj = Object(NULL);
+    }
+    else if (PyObject_TypeCheck(arg, &Object$$Type))
+    {
+        if (type != NULL && !is_instance_of(arg, type))
+            return -1;
+
+        if (obj != NULL)
+            *obj = ((t_Object *) arg)->object;
+    }
+    else if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type))
+    {
+        arg = ((t_fp *) arg)->object;
+        if (PyObject_TypeCheck(arg, &Object$$Type))
+        {
+            if (type != NULL && !is_instance_of(arg, type))
+                return -1;
+
+            if (obj != NULL)
+                *obj = ((t_Object *) arg)->object;
+        }
+        else
+            return -1;
+    }
+    else
+        return 1;
+
+    return 0;
+}
+
+int boxBoolean(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (arg == Py_True)
+    {
+        if (obj != NULL)
+            *obj = *Boolean::TRUE;
+    }
+    else if (arg == Py_False)
+    {
+        if (obj != NULL)
+            *obj = *Boolean::FALSE;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxByte(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        int n = PyInt_AS_LONG(arg);
+        jbyte b = (jbyte) n;
+
+        if (b == n)
+        {
+            if (obj != NULL)
+                *obj = Byte(b);
+        }
+        else
+            return -1;
+    }
+    else if (PyLong_Check(arg))
+    {
+        PY_LONG_LONG ln = PyLong_AsLongLong(arg);
+        jbyte b = (jbyte) ln;
+
+        if (b == ln)
+        {
+            if (obj != NULL)
+                *obj = Byte(b);
+        }
+        else
+            return -1;
+    }
+    else if (PyFloat_Check(arg))
+    {
+        double d = PyFloat_AS_DOUBLE(arg);
+        jbyte b = (jbyte) d;
+
+        if (b == d)
+        {
+            if (obj != NULL)
+                *obj = Byte(b);
+        }
+        else
+            return -1;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxCharacter(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyString_Check(arg))
+    {
+        char *c;
+        Py_ssize_t len;
+
+        if (PyString_AsStringAndSize(arg, &c, &len) < 0 || len != 1)
+            return -1;
+
+        if (obj != NULL)
+            *obj = Character((jchar) c[0]);
+    }
+    else if (PyUnicode_Check(arg))
+    {
+        Py_ssize_t len = PyUnicode_GetSize(arg);
+
+        if (len != 1)
+            return -1;
+
+        if (obj != NULL)
+            *obj = Character((jchar) PyUnicode_AsUnicode(arg)[0]);
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxDouble(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Double((jdouble) PyInt_AS_LONG(arg));
+    }
+    else if (PyLong_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Double((jdouble) PyLong_AsLongLong(arg));
+    }
+    else if (PyFloat_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Double(PyFloat_AS_DOUBLE(arg));
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxFloat(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Float((jfloat) PyInt_AS_LONG(arg));
+    }
+    else if (PyLong_Check(arg))
+    {
+        PY_LONG_LONG ln = PyLong_AsLongLong(arg);
+        float f = (float) ln;
+
+        if ((PY_LONG_LONG) f == ln)
+        {
+            if (obj != NULL)
+                *obj = Float(f);
+        }
+        else
+            return -1;
+    }
+    else if (PyFloat_Check(arg))
+    {
+        double d = PyFloat_AS_DOUBLE(arg);
+        float f = (float) d;
+
+        if ((double) f == d)
+        {
+            if (obj != NULL)
+                *obj = Float(f);
+        }
+        else
+            return -1;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxInteger(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Integer((jint) PyInt_AS_LONG(arg));
+    }
+    else if (PyLong_Check(arg))
+    {
+        PY_LONG_LONG ln = PyLong_AsLongLong(arg);
+        int n = (int) ln;
+
+        if (n == ln)
+        {
+            if (obj != NULL)
+                *obj = Integer(n);
+        }
+        else
+            return -1;
+    }
+    else if (PyFloat_Check(arg))
+    {
+        double d = PyFloat_AS_DOUBLE(arg);
+        int n = (int) d;
+
+        if ((double) n == d)
+        {
+            if (obj != NULL)
+                *obj = Integer(n);
+        }
+        else
+            return -1;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxLong(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Long((jlong) PyInt_AS_LONG(arg));
+    }
+    else if (PyLong_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Long((jlong) PyLong_AsLongLong(arg));
+    }
+    else if (PyFloat_Check(arg))
+    {
+        double d = PyFloat_AS_DOUBLE(arg);
+        PY_LONG_LONG n = (PY_LONG_LONG) d;
+
+        if ((double) n == d)
+        {
+            if (obj != NULL)
+                *obj = Long((jlong) n);
+        }
+        else
+            return -1;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxShort(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        int n = (int) PyInt_AS_LONG(arg);
+        short sn = (short) n;
+
+        if (sn == n)
+        {
+            if (obj != NULL)
+                *obj = Short((jshort) sn);
+        }
+        else
+            return -1;
+    }
+    else if (PyLong_Check(arg))
+    {
+        PY_LONG_LONG ln = PyLong_AsLongLong(arg);
+        short sn = (short) ln;
+
+        if (sn == ln)
+        {
+            if (obj != NULL)
+                *obj = Short((jshort) sn);
+        }
+        else
+            return -1;
+    }
+    else if (PyFloat_Check(arg))
+    {
+        double d = PyFloat_AS_DOUBLE(arg);
+        short sn = (short) (int) d;
+
+        if ((double) sn == d)
+        {
+            if (obj != NULL)
+                *obj = Short((jshort) sn);
+        }
+        else
+            return -1;
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxString(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyString_Check(arg) || PyUnicode_Check(arg))
+    {
+        if (obj != NULL)
+        {
+            *obj = p2j(arg);
+            if (PyErr_Occurred())
+                return -1;
+        }
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
+int boxObject(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (obj != NULL)
+    {
+        if (PyString_Check(arg) || PyUnicode_Check(arg))
+        {
+            *obj = p2j(arg);
+            if (PyErr_Occurred())
+                return -1;
+        }
+        else if (arg == Py_True)
+            *obj = *Boolean::TRUE;
+        else if (arg == Py_False)
+            *obj = *Boolean::FALSE;
+        else if (PyInt_Check(arg))
+        {
+            long ln = PyInt_AS_LONG(arg);
+            int n = (int) ln;
+
+            if (ln != (long) n)
+                *obj = Long((jlong) ln);
+            else
+                *obj = Integer((jint) n);
+        }
+        else if (PyLong_Check(arg))
+            *obj = Long((jlong) PyLong_AsLongLong(arg));
+        else if (PyFloat_Check(arg))
+            *obj = Double((jdouble) PyFloat_AS_DOUBLE(arg));
+        else
+            return -1;
+    }
+    else if (!(PyString_Check(arg) || PyUnicode_Check(arg) ||
+               arg == Py_True || arg == Py_False ||
+               PyInt_Check(arg) || PyLong_Check(arg) ||
+               PyFloat_Check(arg)))
+        return -1;
+
+    return 0;
+}
+
 
 #ifdef _java_generics
 PyObject *typeParameters(PyTypeObject *types[], size_t size)
