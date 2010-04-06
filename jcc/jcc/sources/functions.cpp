@@ -91,7 +91,6 @@ PyObject *findClass(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-#ifdef _java_generics
 static boxfn get_boxfn(PyTypeObject *type)
 {
     static PyObject *boxfn_ = PyString_FromString("boxfn_");
@@ -106,7 +105,6 @@ static boxfn get_boxfn(PyTypeObject *type)
 
     return fn;
 }
-#endif
 
 static int is_instance_of(PyObject *arg, PyTypeObject *type)
 {
@@ -537,7 +535,6 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           case 'o':         /* java.lang.Object */
             break;
 
-#ifdef _java_generics
           case 'O':         /* java.lang.Object with type param */
           {
               PyTypeObject *type = va_arg(list, PyTypeObject *);
@@ -551,7 +548,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               }
               break;
           }
-#endif
+
           case 'T':         /* tuple of python types with wrapfn_ */
           {
               static PyObject *wrapfn_ = PyString_FromString("wrapfn_");
@@ -899,9 +896,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           }
 
           case 'o':           /* java.lang.Object  */
-#ifdef _java_generics
           case 'O':           /* java.lang.Object with type param */
-#endif
           {
               if (array)
               {
@@ -919,7 +914,6 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               {
                   Object *obj = va_arg(list, Object *);
 
-#ifdef _java_generics
                   if (types[pos] == 'O')
                   {
                       PyTypeObject *type = va_arg(check, PyTypeObject *);
@@ -934,7 +928,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                           break;
                       }
                   }
-#endif
+
                   if (boxObject(NULL, arg, obj) < 0)
                       return -1;
               }

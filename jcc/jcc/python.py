@@ -147,13 +147,13 @@ def parseArgs(params, current, generics, genericParams=None):
     if genericParams:
         sig = ''.join([signature(param, genericParam)
                        for param, genericParam in izip(params, genericParams)])
-        check = ''.join([checkarg(param, genericParam)
-                         for param, genericParam in izip(params, genericParams)])
+        chk = ''.join([checkarg(param, genericParam)
+                       for param, genericParam in izip(params, genericParams)])
     else:
         sig = ''.join([signature(param) for param in params])
-        check = ''.join([checkarg(param) for param in params])
+        chk = ''.join([checkarg(param) for param in params])
 
-    return (sig, check,
+    return (sig, chk,
             ''.join([callarg(params[i], i) for i in xrange(len(params))]))
 
 
