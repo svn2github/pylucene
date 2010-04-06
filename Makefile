@@ -140,7 +140,6 @@ LUCENE_JAR=$(LUCENE)/build/lucene-core-$(LUCENE_VER).jar
 ANALYZERS_JAR=$(LUCENE)/build/contrib/analyzers/common/lucene-analyzers-$(LUCENE_VER).jar
 HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_VER).jar
 MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
-REGEX_JAR=$(LUCENE)/build/contrib/regex/lucene-regex-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
 EXTENSIONS_JAR=build/jar/extensions.jar
 
@@ -173,9 +172,6 @@ $(LUCENE_JAR): $(LUCENE)
 $(ANALYZERS_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
 
-$(REGEX_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/regex; $(ANT) -Dversion=$(LUCENE_VER)
-
 $(MEMORY_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/memory; $(ANT) -Dversion=$(LUCENE_VER)
 
@@ -189,7 +185,7 @@ $(EXTENSIONS_JAR): $(LUCENE_JAR)
 	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
 JARS=$(LUCENE_JAR) $(ANALYZERS_JAR) \
-     $(REGEX_JAR) $(MEMORY_JAR) $(HIGHLIGHTER_JAR) $(QUERIES_JAR) \
+     $(MEMORY_JAR) $(HIGHLIGHTER_JAR) $(QUERIES_JAR) \
      $(EXTENSIONS_JAR)
 
 

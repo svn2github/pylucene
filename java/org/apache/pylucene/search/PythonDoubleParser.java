@@ -16,6 +16,7 @@
 package org.apache.pylucene.search;
 
 import org.apache.lucene.search.FieldCache;
+import org.apache.lucene.util.BytesRef;
 
 /**
  * @author Andi Vajda
@@ -45,5 +46,5 @@ public class PythonDoubleParser implements FieldCache.DoubleParser {
     }
 
     public native void pythonDecRef();
-    public native double parseDouble(String string);
+    public native double parseDouble(BytesRef ref);
 }

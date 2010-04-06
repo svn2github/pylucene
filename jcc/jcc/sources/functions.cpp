@@ -1345,7 +1345,7 @@ PyObject *unboxByte(const jobject &obj)
     Py_RETURN_NONE;
 }
 
-PyObject *unboxChar(const jobject &obj)
+PyObject *unboxCharacter(const jobject &obj)
 {
     if (obj != NULL)
     {

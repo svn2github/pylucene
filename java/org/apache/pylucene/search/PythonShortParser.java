@@ -16,6 +16,7 @@
 package org.apache.pylucene.search;
 
 import org.apache.lucene.search.FieldCache;
+import org.apache.lucene.util.BytesRef;
 
 /**
  * @author Andi Vajda
@@ -45,5 +46,5 @@ public class PythonShortParser implements FieldCache.ShortParser {
     }
 
     public native void pythonDecRef();
-    public native short parseShort(String string);
+    public native short parseShort(BytesRef ref);
 }

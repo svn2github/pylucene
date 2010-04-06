@@ -54,7 +54,7 @@ CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
 
 BOXED = set(('java.lang.Boolean',
              'java.lang.Byte',
-             'java.lang.Char',
+             'java.lang.Character',
              'java.lang.Double',
              'java.lang.Float',
              'java.lang.Integer',

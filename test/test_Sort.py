@@ -297,27 +297,27 @@ class SortTestCase(TestCase):
         
         class intParser(PythonIntParser):
             def parseInt(_self, val):
-                return (ord(val[0]) - ord('A')) * 123456
+                return (val.bytes[0] - ord('A')) * 123456
 
         class floatParser(PythonFloatParser):
             def parseFloat(_self, val):
-                return math.sqrt(ord(val[0]))
+                return math.sqrt(val.bytes[0])
 
         class longParser(PythonLongParser):
             def parseLong(_self, val):
-                return (ord(val[0]) - ord('A')) * 1234567890L
+                return (val.bytes[0] - ord('A')) * 1234567890L
 
         class doubleParser(PythonDoubleParser):
             def parseDouble(_self, val):
-                return math.pow(ord(val[0]), ord(val[0]) - ord('A'))
+                return math.pow(val.bytes[0], val.bytes[0] - ord('A'))
 
         class byteParser(PythonByteParser):
             def parseByte(_self, val):
-                return chr(ord(val[0]) - ord('A'))
+                return chr(val.bytes[0] - ord('A'))
 
         class shortParser(PythonShortParser):
             def parseShort(_self, val):
-                return ord(val[0]) - ord('A')
+                return val.bytes[0] - ord('A')
 
         sort = Sort()
         sort.setSort([SortField("parser", intParser()),
@@ -1003,7 +1003,7 @@ class MyFieldComparator(PythonFieldComparator):
         
         class intParser(PythonIntParser):
             def parseInt(_self, val):
-                return (ord(val[0]) - ord('A')) * 123456
+                return (val.bytes[0] - ord('A')) * 123456
                 
         self.docValues = FieldCache.DEFAULT.getInts(reader, "parser",
                                                     intParser())

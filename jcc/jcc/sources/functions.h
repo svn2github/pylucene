@@ -74,7 +74,7 @@ PyObject *wrapType(PyTypeObject *type, const jobject& obj);
 
 PyObject *unboxBoolean(const jobject& obj);
 PyObject *unboxByte(const jobject& obj);
-PyObject *unboxChar(const jobject& obj);
+PyObject *unboxCharacter(const jobject& obj);
 PyObject *unboxDouble(const jobject& obj);
 PyObject *unboxFloat(const jobject& obj);
 PyObject *unboxInteger(const jobject& obj);
