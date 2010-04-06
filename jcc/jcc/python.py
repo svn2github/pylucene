@@ -52,15 +52,23 @@ CALLARGS = { 'boolean': ('O', '(%s ? Py_True : Py_False)', False),
              'short': ('i', '(int) %s', False),
              'java.lang.String': ('O', 'env->fromJString((jstring) %s, 0)', True) }
 
-BOXED = set(('java.lang.Boolean',
-             'java.lang.Byte',
-             'java.lang.Character',
-             'java.lang.Double',
-             'java.lang.Float',
-             'java.lang.Integer',
-             'java.lang.Long',
-             'java.lang.Short',
-             'java.lang.String'))
+BOXED = { 'java.lang.Boolean': (True, True),
+          'java.lang.Byte': (True, True),
+          'java.lang.Character': (True, True),
+          'java.lang.CharSequence': (True, False),
+          'java.lang.Double': (True, True),
+          'java.lang.Float': (True, True),
+          'java.lang.Integer': (True, True),
+          'java.lang.Long': (True, True),
+          'java.lang.Short': (True, True),
+          'java.lang.String': (True, True) }
+
+
+def is_boxed(clsName):
+    return BOXED.get(clsName, (False, False))[0]
+
+def is_unboxed(clsName):
+    return BOXED.get(clsName, (False, False))[1]
 
 
 def getTypeParameters(cls):
@@ -107,7 +115,7 @@ def parseArgs(params, current, generics, genericParams=None):
             return array + 's'
         if clsName == 'java.lang.Object':
             return array + 'o'
-        if clsName in BOXED:
+        if is_boxed(clsName):
             return array + 'O'
         if generics and getTypeParameters(cls):
             return array + 'K'
@@ -130,7 +138,7 @@ def parseArgs(params, current, generics, genericParams=None):
         if (cls.isPrimitive() or
             clsName in ('java.lang.String', 'java.lang.Object')):
             return ''
-        if clsName in BOXED:
+        if is_boxed(clsName):
             clsNames = clsName.split('.')
             return ', &%s::%s$$Type' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
         return ', %s::initializeClass' %(typename(cls, current, False))
@@ -1015,7 +1023,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
          names[-1], cppname(names[-1]), generics and 1 or 0)
 
-    if cls.getName() in BOXED:
+    if is_unboxed(cls.getName()):
         wrapfn_ = "unbox%s" %(names[-1])
         boxfn_ = "box%s" %(names[-1])
     else:

@@ -85,6 +85,7 @@ PyObject *unboxString(const jobject& obj);
 int boxBoolean(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxByte(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxCharacter(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxCharSequence(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxDouble(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxFloat(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxInteger(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);

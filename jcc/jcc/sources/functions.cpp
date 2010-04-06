@@ -1610,6 +1610,28 @@ int boxCharacter(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
     return 0;
 }
 
+int boxCharSequence(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyString_Check(arg) || PyUnicode_Check(arg))
+    {
+        if (obj != NULL)
+        {
+            *obj = p2j(arg);
+            if (PyErr_Occurred())
+                return -1;
+        }
+    }
+    else
+        return -1;
+    
+    return 0;
+}
+
 int boxDouble(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
 {
     int result = boxJObject(type, arg, obj);
