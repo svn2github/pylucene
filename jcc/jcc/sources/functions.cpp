@@ -1784,6 +1784,34 @@ int boxLong(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
     return 0;
 }
 
+int boxNumber(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
+{
+    int result = boxJObject(type, arg, obj);
+
+    if (result <= 0)
+        return result;
+
+    if (PyInt_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Integer((jint) PyInt_AS_LONG(arg));
+    }
+    else if (PyLong_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Long((jlong) PyLong_AsLongLong(arg));
+    }
+    else if (PyFloat_Check(arg))
+    {
+        if (obj != NULL)
+            *obj = Double((jdouble) PyFloat_AS_DOUBLE(arg));
+    }
+    else
+        return -1;
+
+    return 0;
+}
+
 int boxShort(PyTypeObject *type, PyObject *arg, java::lang::Object *obj)
 {
     int result = boxJObject(type, arg, obj);

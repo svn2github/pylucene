@@ -60,6 +60,7 @@ BOXED = { 'java.lang.Boolean': (True, True),
           'java.lang.Float': (True, True),
           'java.lang.Integer': (True, True),
           'java.lang.Long': (True, True),
+          'java.lang.Number': (True, False),
           'java.lang.Short': (True, True),
           'java.lang.String': (True, True) }
 

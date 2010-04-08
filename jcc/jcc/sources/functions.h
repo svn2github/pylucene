@@ -90,6 +90,7 @@ int boxDouble(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxFloat(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxInteger(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxLong(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
+int boxNumber(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxShort(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxString(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
 int boxObject(PyTypeObject *type, PyObject *arg, java::lang::Object *obj);
