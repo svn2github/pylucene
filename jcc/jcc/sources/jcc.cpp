@@ -458,14 +458,118 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
     }
 }
 
-extern "C" {
-
 #ifdef _jcc_lib
-    static void raise_error(JNIEnv *vm_env, const char *message)
+
+static void raise_error(JNIEnv *vm_env, const char *message)
+{
+    jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
+    vm_env->ThrowNew(cls, message);
+}
+
+static void _PythonVM_init(JNIEnv *vm_env, jobject self,
+                           jstring programName, jobjectArray args)
+{
+    const char *str = vm_env->GetStringUTFChars(programName, JNI_FALSE);
+#ifdef linux
+    char buf[32];
+
+    // load python runtime for other .so modules to link (such as _time.so)
+    sprintf(buf, "libpython%d.%d.so", PY_MAJOR_VERSION, PY_MINOR_VERSION);
+    dlopen(buf, RTLD_NOW | RTLD_GLOBAL);
+#endif
+
+    Py_SetProgramName((char *) str);
+
+    PyEval_InitThreads();
+    Py_Initialize();
+
+    if (args)
     {
-        jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
-        vm_env->ThrowNew(cls, message);
+        int argc = vm_env->GetArrayLength(args);
+        char **argv = (char **) calloc(argc + 1, sizeof(char *));
+
+        argv[0] = (char *) str;
+        for (int i = 0; i < argc; i++) {
+            jstring arg = (jstring) vm_env->GetObjectArrayElement(args, i);
+            argv[i + 1] = (char *) vm_env->GetStringUTFChars(arg, JNI_FALSE);
+        }
+
+        PySys_SetArgv(argc + 1, argv);
+
+        for (int i = 0; i < argc; i++) {
+            jstring arg = (jstring) vm_env->GetObjectArrayElement(args, i);
+            vm_env->ReleaseStringUTFChars(arg, argv[i + 1]);
+        }
+        free(argv);
     }
+    else
+        PySys_SetArgv(1, (char **) &str);
+
+    vm_env->ReleaseStringUTFChars(programName, str);
+    PyEval_ReleaseLock();
+}
+
+static jobject _PythonVM_instantiate(JNIEnv *vm_env, jobject self,
+                                     jstring moduleName, jstring className)
+{
+    PythonGIL gil(vm_env);
+
+    const char *modStr = vm_env->GetStringUTFChars(moduleName, JNI_FALSE);
+    PyObject *module =
+        PyImport_ImportModule((char *) modStr);  // python 2.4 cast
+
+    vm_env->ReleaseStringUTFChars(moduleName, modStr);
+
+    if (!module)
+    {
+        raise_error(vm_env, "import failed");
+        return NULL;
+    }
+
+    const char *clsStr = vm_env->GetStringUTFChars(className, JNI_FALSE);
+    PyObject *cls =
+        PyObject_GetAttrString(module, (char *) clsStr); // python 2.4 cast
+    PyObject *obj;
+    jobject jobj;
+
+    vm_env->ReleaseStringUTFChars(className, clsStr);
+    Py_DECREF(module);
+
+    if (!cls)
+    {
+        raise_error(vm_env, "class not found");
+        return NULL;
+    }
+
+    obj = PyObject_CallFunctionObjArgs(cls, NULL);
+    Py_DECREF(cls);
+
+    if (!obj)
+    {
+        raise_error(vm_env, "instantiation failed");
+        return NULL;
+    }
+
+    PyObject *cObj = PyObject_GetAttrString(obj, "_jobject");
+
+    if (!cObj)
+    {
+        raise_error(vm_env, "instance does not proxy a java object");
+        Py_DECREF(obj);
+
+        return NULL;
+    }
+
+    jobj = (jobject) PyCObject_AsVoidPtr(cObj);
+    Py_DECREF(cObj);
+
+    jobj = vm_env->NewLocalRef(jobj);
+    Py_DECREF(obj);
+
+    return jobj;
+}
+
+extern "C" {
 
     JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     {
@@ -481,202 +585,135 @@ extern "C" {
 
     JNIEXPORT void JNICALL Java_org_apache_jcc_PythonVM_init(JNIEnv *vm_env, jobject self, jstring programName, jobjectArray args)
     {
-        const char *str = vm_env->GetStringUTFChars(programName, JNI_FALSE);
-#ifdef linux
-        char buf[32];
-
-        // load python runtime for other .so modules to link (such as _time.so)
-        sprintf(buf, "libpython%d.%d.so", PY_MAJOR_VERSION, PY_MINOR_VERSION);
-        dlopen(buf, RTLD_NOW | RTLD_GLOBAL);
-#endif
-
-	Py_SetProgramName((char *) str);
-
-        PyEval_InitThreads();
-	Py_Initialize();
-
-        if (args)
-        {
-            int argc = vm_env->GetArrayLength(args);
-            char **argv = (char **) calloc(argc + 1, sizeof(char *));
-
-            argv[0] = (char *) str;
-            for (int i = 0; i < argc; i++) {
-                jstring arg = (jstring) vm_env->GetObjectArrayElement(args, i);
-                argv[i + 1] = (char *) vm_env->GetStringUTFChars(arg, JNI_FALSE);
-            }
-
-            PySys_SetArgv(argc + 1, argv);
-
-            for (int i = 0; i < argc; i++) {
-                jstring arg = (jstring) vm_env->GetObjectArrayElement(args, i);
-                vm_env->ReleaseStringUTFChars(arg, argv[i + 1]);
-            }
-            free(argv);
-        }
-        else
-            PySys_SetArgv(1, (char **) &str);
-
-        vm_env->ReleaseStringUTFChars(programName, str);
-        PyEval_ReleaseLock();
+        return _PythonVM_init(vm_env, self, programName, args);
     }
 
     JNIEXPORT jobject JNICALL Java_org_apache_jcc_PythonVM_instantiate(JNIEnv *vm_env, jobject self, jstring moduleName, jstring className)
     {
-        PythonGIL gil(vm_env);
-
-        const char *modStr = vm_env->GetStringUTFChars(moduleName, JNI_FALSE);
-        PyObject *module =
-            PyImport_ImportModule((char *) modStr);  // python 2.4 cast
-
-        vm_env->ReleaseStringUTFChars(moduleName, modStr);
-
-        if (!module)
-        {
-            raise_error(vm_env, "import failed");
-            return NULL;
-        }
-
-        const char *clsStr = vm_env->GetStringUTFChars(className, JNI_FALSE);
-        PyObject *cls =
-            PyObject_GetAttrString(module, (char *) clsStr); // python 2.4 cast
-        PyObject *obj;
-        jobject jobj;
-
-        vm_env->ReleaseStringUTFChars(className, clsStr);
-        Py_DECREF(module);
-
-        if (!cls)
-        {
-            raise_error(vm_env, "class not found");
-            return NULL;
-        }
-
-        obj = PyObject_CallFunctionObjArgs(cls, NULL);
-        Py_DECREF(cls);
-
-        if (!obj)
-        {
-            raise_error(vm_env, "instantiation failed");
-            return NULL;
-        }
-
-        PyObject *cObj = PyObject_GetAttrString(obj, "_jobject");
-
-        if (!cObj)
-        {
-            raise_error(vm_env, "instance does not proxy a java object");
-            Py_DECREF(obj);
-
-            return NULL;
-        }
-
-        jobj = (jobject) PyCObject_AsVoidPtr(cObj);
-        Py_DECREF(cObj);
-
-        jobj = vm_env->NewLocalRef(jobj);
-        Py_DECREF(obj);
-
-        return jobj;
-    }
-#endif
-
-    void JNICALL PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
-    {
-        PythonGIL gil(vm_env);
-
-        if (!PyErr_Occurred())
-            return;
-
-        PyObject *type, *value, *tb, *errorName;
-        jclass jcls = vm_env->GetObjectClass(self);
-
-        PyErr_Fetch(&type, &value, &tb);
-
-        errorName = PyObject_GetAttrString(type, "__name__");
-        if (errorName != NULL)
-        {
-            jfieldID fid =
-                vm_env->GetFieldID(jcls, "errorName", "Ljava/lang/String;");
-            jstring str = env->fromPyString(errorName);
-
-            vm_env->SetObjectField(self, fid, str);
-            vm_env->DeleteLocalRef(str);
-            Py_DECREF(errorName);
-        }
-
-        if (value != NULL)
-        {
-            PyObject *message = PyObject_Str(value);
-
-            if (message != NULL)
-            {
-                jfieldID fid =
-                    vm_env->GetFieldID(jcls, "message", "Ljava/lang/String;");
-                jstring str = env->fromPyString(message);
-
-                vm_env->SetObjectField(self, fid, str);
-                vm_env->DeleteLocalRef(str);
-                Py_DECREF(message);
-            }
-        }
-
-        PyObject *module = NULL, *cls = NULL, *stringIO = NULL, *result = NULL;
-        PyObject *_stderr = PySys_GetObject("stderr");
-        if (!_stderr)
-            goto err;
-
-        module = PyImport_ImportModule("cStringIO");
-        if (!module)
-            goto err;
-
-        cls = PyObject_GetAttrString(module, "StringIO");
-        Py_DECREF(module);
-        if (!cls)
-            goto err;
-
-        stringIO = PyObject_CallObject(cls, NULL);
-        Py_DECREF(cls);
-        if (!stringIO)
-            goto err;
-
-        Py_INCREF(_stderr);
-        PySys_SetObject("stderr", stringIO);
-
-        PyErr_Restore(type, value, tb);
-        PyErr_Print();
-
-        result = PyObject_CallMethod(stringIO, "getvalue", NULL);
-        Py_DECREF(stringIO);
-
-        if (result != NULL)
-        {
-            jfieldID fid =
-                vm_env->GetFieldID(jcls, "traceback", "Ljava/lang/String;");
-            jstring str = env->fromPyString(result);
-
-            vm_env->SetObjectField(self, fid, str);
-            vm_env->DeleteLocalRef(str);
-            Py_DECREF(result);
-        }
-
-        PySys_SetObject("stderr", _stderr);
-        Py_DECREF(_stderr);
-
-        return;
-
-      err:
-        PyErr_Restore(type, value, tb);
+        return _PythonVM_instantiate(vm_env, self, moduleName, className);
     }
 
-    void JNICALL PythonException_clear(JNIEnv *vm_env, jobject self)
+    JNIEXPORT jint JNICALL Java_org_apache_jcc_PythonVM_acquireThreadState(JNIEnv *vm_env)
     {
-        PythonGIL gil(vm_env);
-        PyErr_Clear();
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyThreadState *tstate = PyGILState_GetThisThreadState();
+        int result = -1;
+
+        if (tstate != NULL && tstate->gilstate_counter >= 1)
+            result = ++tstate->gilstate_counter;
+
+        PyGILState_Release(state);
+        return result;
+    }
+
+    JNIEXPORT jint JNICALL Java_org_apache_jcc_PythonVM_releaseThreadState(JNIEnv *vm_env)
+    {
+        PyGILState_STATE state = PyGILState_Ensure();
+        PyThreadState *tstate = PyGILState_GetThisThreadState();
+        int result = -1;
+
+        if (tstate != NULL && tstate->gilstate_counter >= 1)
+            result = --tstate->gilstate_counter;
+
+        PyGILState_Release(state);
+        return result;
     }
 };
 
-#ifdef _jcc_lib
+void JNICALL PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
+{
+    PythonGIL gil(vm_env);
+
+    if (!PyErr_Occurred())
+        return;
+
+    PyObject *type, *value, *tb, *errorName;
+    jclass jcls = vm_env->GetObjectClass(self);
+
+    PyErr_Fetch(&type, &value, &tb);
+
+    errorName = PyObject_GetAttrString(type, "__name__");
+    if (errorName != NULL)
+    {
+        jfieldID fid =
+            vm_env->GetFieldID(jcls, "errorName", "Ljava/lang/String;");
+        jstring str = env->fromPyString(errorName);
+
+        vm_env->SetObjectField(self, fid, str);
+        vm_env->DeleteLocalRef(str);
+        Py_DECREF(errorName);
+    }
+
+    if (value != NULL)
+    {
+        PyObject *message = PyObject_Str(value);
+
+        if (message != NULL)
+        {
+            jfieldID fid =
+                vm_env->GetFieldID(jcls, "message", "Ljava/lang/String;");
+            jstring str = env->fromPyString(message);
+
+            vm_env->SetObjectField(self, fid, str);
+            vm_env->DeleteLocalRef(str);
+            Py_DECREF(message);
+        }
+    }
+
+    PyObject *module = NULL, *cls = NULL, *stringIO = NULL, *result = NULL;
+    PyObject *_stderr = PySys_GetObject("stderr");
+    if (!_stderr)
+        goto err;
+
+    module = PyImport_ImportModule("cStringIO");
+    if (!module)
+        goto err;
+
+    cls = PyObject_GetAttrString(module, "StringIO");
+    Py_DECREF(module);
+    if (!cls)
+        goto err;
+
+    stringIO = PyObject_CallObject(cls, NULL);
+    Py_DECREF(cls);
+    if (!stringIO)
+        goto err;
+
+    Py_INCREF(_stderr);
+    PySys_SetObject("stderr", stringIO);
+
+    PyErr_Restore(type, value, tb);
+    PyErr_Print();
+
+    result = PyObject_CallMethod(stringIO, "getvalue", NULL);
+    Py_DECREF(stringIO);
+
+    if (result != NULL)
+    {
+        jfieldID fid =
+            vm_env->GetFieldID(jcls, "traceback", "Ljava/lang/String;");
+        jstring str = env->fromPyString(result);
+
+        vm_env->SetObjectField(self, fid, str);
+        vm_env->DeleteLocalRef(str);
+        Py_DECREF(result);
+    }
+
+    PySys_SetObject("stderr", _stderr);
+    Py_DECREF(_stderr);
+
+    return;
+
+  err:
+    PyErr_Restore(type, value, tb);
+}
+
+void JNICALL PythonException_clear(JNIEnv *vm_env, jobject self)
+{
+    PythonGIL gil(vm_env);
+    PyErr_Clear();
+}
+
 static void registerNatives(JNIEnv *vm_env)
 {
     jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
@@ -687,4 +724,5 @@ static void registerNatives(JNIEnv *vm_env)
 
     vm_env->RegisterNatives(cls, methods, 2);
 }
-#endif
+
+#endif /* _jcc_lib */

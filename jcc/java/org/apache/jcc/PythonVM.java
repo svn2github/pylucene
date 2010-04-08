@@ -52,4 +52,7 @@ public class PythonVM {
 
     public native Object instantiate(String moduleName, String className)
         throws PythonException;
+
+    public native int acquireThreadState();
+    public native int releaseThreadState();
 }
