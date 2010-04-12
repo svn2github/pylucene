@@ -219,6 +219,7 @@ def main(debug):
     print >>config, 'DEBUG_CFLAGS=%s' %(_debug_cflags)
     print >>config, 'LFLAGS=%s' %(_lflags)
     print >>config, 'SHARED=%s' %(enable_shared)
+    print >>config, 'VERSION="%s"' %(jcc_ver)
     print >>config
     config.close()
 
