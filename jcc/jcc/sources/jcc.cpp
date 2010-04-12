@@ -298,19 +298,18 @@ static void registerNatives(JNIEnv *vm_env);
 _DLL_EXPORT PyObject *initJCC(PyObject *module)
 {
     static int _once_only = 1;
+#ifdef _MSC_VER
+#define verstring(n) #n
+    PyObject *ver = PyString_FromString(verstring(JCC_VER));
+#else
+    PyObject *ver = PyString_FromString(JCC_VER);
+#endif
+    PyObject_SetAttrString(module, "JCC_VERSION", ver); Py_DECREF(ver);
 
     if (_once_only)
     {
         PyEval_InitThreads();
         INSTALL_TYPE(JCCEnv, module);
-
-#ifdef _MSC_VER
-#define verstring(n) #n
-        PyObject *ver = PyString_FromString(verstring(JCC_VER));
-#else
-        PyObject *ver = PyString_FromString(JCC_VER);
-#endif
-        PyObject_SetAttrString(module, "JCC_VERSION", ver); Py_DECREF(ver);
 
         if (env == NULL)
             env = new JCCEnv(NULL, NULL);
