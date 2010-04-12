@@ -257,7 +257,8 @@ def main(debug):
 
         kwds = { "extra_compile_args": cflags,
                  "include_dirs": includes,
-                 "define_macros": [('_jcc_lib', None)],
+                 "define_macros": [('_jcc_lib', None),
+                                   ('JCC_VER', '"%s"' %(jcc_ver))],
                  "sources": sources[0:2] }
 
         if platform in ('darwin', 'ipod'):
@@ -299,7 +300,8 @@ def main(debug):
                                 extra_compile_args=cflags,
                                 extra_link_args=lflags,
                                 include_dirs=includes,
-                                define_macros=[('_java_generics', None)],
+                                define_macros=[('_java_generics', None),
+                                               ('JCC_VER', '"%s"' %(jcc_ver))],
                                 sources=sources))
 
     args = {

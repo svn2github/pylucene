@@ -15,6 +15,7 @@ Version 2.5 ->
  - added support for auto-boxing CharSequence from python str and unicode
  - added support for auto-boxing Number from python int, long and float
  - added 'asm' to list of reserved words
+ - added JCC_VERSION string to modules using JCC
  - 
 
 Version 2.4 -> 2.5

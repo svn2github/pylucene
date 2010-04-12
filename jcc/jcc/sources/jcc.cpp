@@ -304,6 +304,14 @@ _DLL_EXPORT PyObject *initJCC(PyObject *module)
         PyEval_InitThreads();
         INSTALL_TYPE(JCCEnv, module);
 
+#ifdef _MSC_VER
+#define verstring(n) #n
+        PyObject *ver = PyString_FromString(verstring(JCC_VER));
+#else
+        PyObject *ver = PyString_FromString(JCC_VER);
+#endif
+        PyObject_SetAttrString(module, "JCC_VERSION", ver); Py_DECREF(ver);
+
         if (env == NULL)
             env = new JCCEnv(NULL, NULL);
 
@@ -620,7 +628,7 @@ extern "C" {
     }
 };
 
-void JNICALL PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
+static void JNICALL _PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
 {
     PythonGIL gil(vm_env);
 
@@ -708,7 +716,7 @@ void JNICALL PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
     PyErr_Restore(type, value, tb);
 }
 
-void JNICALL PythonException_clear(JNIEnv *vm_env, jobject self)
+static void JNICALL _PythonException_clear(JNIEnv *vm_env, jobject self)
 {
     PythonGIL gil(vm_env);
     PyErr_Clear();
@@ -718,8 +726,8 @@ static void registerNatives(JNIEnv *vm_env)
 {
     jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
     JNINativeMethod methods[] = {
-        { "getErrorInfo", "()V", (void *) PythonException_getErrorInfo },
-        { "clear", "()V", (void *) PythonException_clear },
+        { "getErrorInfo", "()V", (void *) _PythonException_getErrorInfo },
+        { "clear", "()V", (void *) _PythonException_clear },
     };
 
     vm_env->RegisterNatives(cls, methods, 2);
