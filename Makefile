@@ -215,6 +215,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --rename org.apache.lucene.search.highlight.SpanScorer=HighlighterSpanScorer \
            --version $(LUCENE_VER) \
            --module python/collections.py \
+           --module python/ICUNormalizer2Filter.py \
            --files $(NUM_FILES)
 
 generate: jars

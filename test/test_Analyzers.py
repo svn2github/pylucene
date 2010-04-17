@@ -13,7 +13,7 @@
 # ====================================================================
 
 from unittest import main
-from BaseTokenStreamTestCase import BaseTokenStreamTestCase;
+from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 from lucene import *
 
 
