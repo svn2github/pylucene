@@ -3,7 +3,7 @@ Version 3.0.0 ->
 ----------------
  - improved support for building on Windows with mingw32
  - added wininst target to Makefile
- - added port of ICUNormalizer2Filter that uses C++ ICU's Normalizer2 via PyICU
+ - added port of ICUNormalizer2Filter using C++ ICU's Normalizer2 via PyICU
  - 
 
 Version 2.9.0 -> 3.0.0

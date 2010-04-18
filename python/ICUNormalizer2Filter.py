@@ -49,7 +49,7 @@ class ICUNormalizer2Filter(PythonTokenFilter):
         self.termAtt = self.addAttribute(CharTermAttribute.class_);
 
         if normalizer is None:
-            normalizer = Normalizer2.getInstance(None, "nfkc_cf", UNormalizationMode2.UNORM2_COMPOSE)
+            normalizer = Normalizer2.getInstance(None, "nfkc_cf", UNormalizationMode2.COMPOSE)
         self.normalizer = normalizer
 
     def incrementToken(self):
@@ -57,7 +57,7 @@ class ICUNormalizer2Filter(PythonTokenFilter):
         if self.input.incrementToken():
             text = self.termAtt.toString()
 
-            if self.normalizer.quickCheck(text) != UNormalizationCheckResult.UNORM_YES:
+            if self.normalizer.quickCheck(text) != UNormalizationCheckResult.YES:
                 self.termAtt.setEmpty()
                 self.termAtt.append(self.normalizer.normalize(text))
                 

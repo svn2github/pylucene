@@ -64,7 +64,7 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
             # specify nfc with decompose to get nfd
             def tokenStream(_self, fieldName, reader):
                 return ICUNormalizer2Filter(WhitespaceTokenizer(Version.LUCENE_CURRENT, reader),
-                                            Normalizer2.getInstance(None, "nfc", UNormalizationMode2.UNORM2_DECOMPOSE))
+                                            Normalizer2.getInstance(None, "nfc", UNormalizationMode2.DECOMPOSE))
 
         a = analyzer()
         # decompose EAcute into E + combining Acute
