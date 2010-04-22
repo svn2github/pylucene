@@ -1512,7 +1512,8 @@ def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
 
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, home_dir, use_distutils,
-            shared, compiler, modules, wininst, find_jvm_dll, arch, generics):
+            shared, compiler, modules, wininst, find_jvm_dll, arch, generics,
+            resources):
 
     try:
         if use_distutils:
@@ -1556,6 +1557,25 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     for jar in jars:
         shutil.copy2(jar, modulePath)
         package_data.append(os.path.basename(jar))
+    if resources:
+        def copytree(src, dst):
+            _dst = os.path.join(modulePath, dst)
+            if not os.path.exists(_dst):
+                os.mkdir(_dst)
+            for name in os.listdir(src):
+                if name.startswith('.'):
+                    continue
+                _src = os.path.join(src, name)
+                if os.path.islink(_src):
+                    continue
+                _dst = os.path.join(dst, name)
+                if os.path.isdir(_src):
+                    copytree(_src, _dst)
+                else:
+                    shutil.copy2(_src, os.path.join(modulePath, _dst))
+                    package_data.append(_dst)
+        for resource in resources:
+            copytree(resource, os.path.split(resource)[-1])
 
     packages = [moduleName]
     if modules:

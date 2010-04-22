@@ -32,6 +32,8 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               clashes with C/C++ reserved words or header
                               file definitions
     --vmarg                 - add extra Java VM initialization parameter
+    --resources             - include resource directory in distribution as
+                              package data
 
   Python wrapper generation options:
     --python NAME           - generate wrappers for use from Python in a module
