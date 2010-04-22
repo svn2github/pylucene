@@ -143,6 +143,7 @@ MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
 EXTENSIONS_JAR=build/jar/extensions.jar
 
+ICUPKG:=$(shell which icupkg)
 
 .PHONY: generate compile install default all clean realclean \
 	sources test jars distrib
@@ -191,6 +192,27 @@ JARS=$(LUCENE_JAR) $(ANALYZERS_JAR) \
 
 jars: $(JARS)
 
+
+ifneq ($(ICUPKG),)
+
+RESOURCES=--resources $(LUCENE)/contrib/icu/src/resources
+ENDIANNESS:=$(shell $(PYTHON) -c "import struct; print struct.pack('h', 1) == '\000\001' and 'b' or 'l'")
+
+resources: $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.dat
+
+$(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.dat: $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.nrm
+	rm -f $@
+	cd $(dir $<); icupkg --type $(ENDIANNESS) --add $(notdir $<) new $(notdir $@)
+
+else
+
+RESOURCES=
+
+resources:
+	@echo ICU not installed
+
+endif
+
 GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
@@ -216,6 +238,8 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --version $(LUCENE_VER) \
            --module python/collections.py \
            --module python/ICUNormalizer2Filter.py \
+           --module python/ICUFoldingFilter.py \
+           $(RESOURCES) \
            --files $(NUM_FILES)
 
 generate: jars
@@ -233,7 +257,7 @@ bdist: jars
 wininst: jars
 	$(GENERATE) --wininst
 
-all: sources jars compile
+all: sources jars resources compile
 	@echo build of $(PYLUCENE_LIB) complete
 
 clean:

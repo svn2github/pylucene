@@ -42,11 +42,11 @@ class PositionIncrementTestCase(TestCase):
                         self_.posIncrAtt.setPositionIncrement(self_.INCREMENTS[self_.i])
                         self_.i += 1
                         return True
-                    def end(self):
+                    def end(self_):
                         pass
-                    def reset(self):
+                    def reset(self_):
                         pass
-                    def close(self):
+                    def close(self_):
                         pass
                 return _tokenStream()
 
