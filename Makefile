@@ -202,7 +202,7 @@ resources: $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/ut
 
 $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.dat: $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.nrm
 	rm -f $@
-	cd $(dir $<); icupkg --type $(ENDIANNESS) --add $(notdir $<) new $(notdir $@)
+	cd $(dir $<); $(ICUPKG) --type $(ENDIANNESS) --add $(notdir $<) new $(notdir $@)
 
 else
 
@@ -239,6 +239,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --module python/collections.py \
            --module python/ICUNormalizer2Filter.py \
            --module python/ICUFoldingFilter.py \
+           --module python/ICUTransformFilter.py \
            $(RESOURCES) \
            --files $(NUM_FILES)
 

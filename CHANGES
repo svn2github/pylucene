@@ -5,6 +5,7 @@ Version 3.0.0 ->
  - added wininst target to Makefile
  - added port of ICUNormalizer2Filter using C++ ICU's Normalizer2 via PyICU
  - added port of ICUFoldingFilter using C++ ICU's Normalizer2 via PyICU
+ - added port of ICUTransformFilter using C++ ICU's Transliterator via PyICU
  - PyLucene built with JCC 2.6
  - 
 
