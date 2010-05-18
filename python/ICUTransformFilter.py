@@ -40,7 +40,7 @@
 # ====================================================================
 
 from lucene import PythonTokenFilter, CharTermAttribute
-from icu import Transliterator, UTransPosition
+from icu import UTransPosition
 
 
 class ICUTransformFilter(PythonTokenFilter):
