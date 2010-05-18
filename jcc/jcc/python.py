@@ -141,7 +141,7 @@ def parseArgs(params, current, generics, genericParams=None):
             return ''
         if is_boxed(clsName):
             clsNames = clsName.split('.')
-            return ', &%s::%s$$Type' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+            return ', &%s::PY_TYPE(%s)' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
         return ', %s::initializeClass' %(typename(cls, current, False))
 
     def callarg(cls, i):
@@ -288,7 +288,7 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
             for clsArg in getActualTypeArguments(genericRT):
                 if Class.instance_(clsArg):
                     clsNames = Class.cast_(clsArg).getName().split('.')
-                    clsArg = '&%s::%s$$Type' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                    clsArg = '&%s::PY_TYPE(%s)' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                     clsArgs.append(clsArg)
                 elif TypeVariable.instance_(clsArg):
                     gd = TypeVariable.cast_(clsArg).getGenericDeclaration()
@@ -380,7 +380,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
     if isExtension and name == 'clone' and Modifier.isNative(modifiers):
         line(out)
         line(out, indent, '%s object(result.this$);', typename(cls, cls, False))
-        line(out, indent, 'if (PyObject_TypeCheck(arg, &FinalizerProxy$$Type) &&')
+        line(out, indent, 'if (PyObject_TypeCheck(arg, &PY_TYPE(FinalizerProxy)) &&')
         line(out, indent, '    PyObject_TypeCheck(((t_fp *) arg)->object, self->ob_type))')
         line(out, indent, '{')
         line(out, indent + 1, 'PyObject *_arg = ((t_fp *) arg)->object;')
@@ -541,7 +541,8 @@ def extension(env, out, indent, cls, names, name, count, method, generics):
 
 def python(env, out_h, out, cls, superCls, names, superNames,
            constructors, methods, protectedMethods, fields, instanceFields,
-           mapping, sequence, rename, declares, typeset, moduleName, generics):
+           mapping, sequence, rename, declares, typeset, moduleName, generics,
+           _dll_export):
 
     line(out_h)
     line(out_h, 0, '#include <Python.h>')
@@ -551,7 +552,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for name in names[:-1]:
         line(out_h, indent, 'namespace %s {', cppname(name))
         indent += 1
-    line(out_h, indent, 'extern PyTypeObject %s$$Type;', names[-1])
+    line(out_h, indent, '%sextern PyTypeObject PY_TYPE(%s);', 
+         _dll_export, names[-1])
 
     if generics:
         clsParams = getTypeParameters(cls)
@@ -559,7 +561,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         clsParams = None
 
     line(out_h)
-    line(out_h, indent, 'class t_%s {', names[-1])
+    line(out_h, indent, 'class %st_%s {', _dll_export, names[-1])
     line(out_h, indent, 'public:')
     line(out_h, indent + 1, 'PyObject_HEAD')
     line(out_h, indent + 1, '%s object;', cppname(names[-1]))
@@ -573,11 +575,12 @@ def python(env, out_h, out, cls, superCls, names, superNames,
 
     line(out_h, indent + 1, 'static PyObject *wrap_Object(const %s&);',
          cppname(names[-1]))
-    if clsParams:
-        line(out_h, indent + 1, 'static PyObject *wrap_Object(const %s&, %s);',
-             cppname(names[-1]),
-             ', '.join(['PyTypeObject *'] * len(clsParams)))
     line(out_h, indent + 1, 'static PyObject *wrap_jobject(const jobject&);')
+    if clsParams:
+        _clsParams = ', '.join(['PyTypeObject *'] * len(clsParams))
+        line(out_h, indent + 1, 'static PyObject *wrap_Object(const %s&, %s);',
+             cppname(names[-1]), _clsParams)
+        line(out_h, indent + 1, 'static PyObject *wrap_jobject(const jobject&, %s);', _clsParams)
     line(out_h, indent + 1, 'static void install(PyObject *module);')
     line(out_h, indent + 1, 'static void initialize(PyObject *module);')
     line(out_h, indent, '};')
@@ -993,7 +996,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out, indent, "{")
         line(out, indent + 1, "PyObject *obj = t_%s::wrap_Object(object);",
              names[-1])
-        line(out, indent + 1, "if (obj != Py_None)")
+        line(out, indent + 1, "if (obj != NULL && obj != Py_None)")
         line(out, indent + 1, "{")
         line(out, indent + 2, "t_%s *self = (t_%s *) obj;",
              names[-1], names[-1])
@@ -1001,6 +1004,27 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         for clsParam in clsParams:
             line(out, indent + 2, "self->parameters[%d] = %s;",
                  i, clsParam.getName())
+            i += 1
+        line(out, indent + 1, "}")
+        line(out, indent + 1, "return obj;");
+        line(out, indent, "}")
+
+        line(out)
+        line(out, indent, 
+             "PyObject *t_%s::wrap_jobject(const jobject& object, %s)",
+             cppname(names[-1]), ', '.join(clsArgs))
+        line(out, indent, "{")
+        line(out, indent + 1, "PyObject *obj = t_%s::wrap_jobject(object);",
+             names[-1])
+        line(out, indent + 1, "if (obj != NULL && obj != Py_None)")
+        line(out, indent + 1, "{")
+        line(out, indent + 2, "t_%s *self = (t_%s *) obj;",
+             names[-1], names[-1])
+        i = 0;
+        for clsParam in clsParams:
+            line(out, indent + 2, "self->parameters[%d] = %s;",
+                 i, clsParam.getName())
+            i += 1
         line(out, indent + 1, "}")
         line(out, indent + 1, "return obj;");
         line(out, indent, "}")
@@ -1008,20 +1032,20 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out)
     line(out, indent, 'void t_%s::install(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'installType(&%s$$Type, module, "%s", %d);',
+    line(out, indent + 1, 'installType(&PY_TYPE(%s), module, "%s", %d);',
          names[-1], rename or names[-1], isExtension and 1 or 0)
     for inner in cls.getDeclaredClasses():
         if inner in typeset:
             if Modifier.isStatic(inner.getModifiers()):
                 innerName = inner.getName().split('.')[-1]
-                line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "%s", make_descriptor(&%s$$Type));',
+                line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "%s", make_descriptor(&PY_TYPE(%s)));',
                      names[-1], innerName[len(names[-1])+1:], innerName)
     line(out, indent, '}')
 
     line(out)
     line(out, indent, 'void t_%s::initialize(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
+    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
          names[-1], cppname(names[-1]), generics and 1 or 0)
 
     if is_unboxed(cls.getName()):
@@ -1031,8 +1055,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         wrapfn_ = "t_%s::wrap_jobject" %(names[-1])
         boxfn_ = "boxObject"
 
-    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
-    line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
+    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
+    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
 
     if isExtension:
         line(out, indent + 1, 'jclass cls = %s::initializeClass();',
@@ -1057,7 +1081,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         fieldName = field.getName()
         value = '%s::%s' %(cppname(names[-1]), cppname(fieldName))
         value = fieldValue(cls, value, fieldType)
-        line(out, indent + 1, 'PyDict_SetItemString(%s$$Type.tp_dict, "%s", make_descriptor(%s));',
+        line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "%s", make_descriptor(%s));',
              names[-1], fieldName, value)
     line(out, indent, '}')
 
@@ -1175,7 +1199,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     line(out, indent + 1, 'return callSuper(type, "%s"%s, %d);',
                          name, args, cardinality)
                 else:
-                    line(out, indent + 1, 'return callSuper(&%s$$Type, (PyObject *) self, "%s"%s, %d);',
+                    line(out, indent + 1, 'return callSuper(&PY_TYPE(%s), (PyObject *) self, "%s"%s, %d);',
                          names[-1], name, args, cardinality)
             else:
                 line(out, indent + 1, 'PyErr_SetArgsError(%s, "%s"%s);',
@@ -1462,7 +1486,8 @@ def package(out, allInOne, cppdir, namespace, names):
         package(out, allInOne, cppdir, entries, names + (name,))
 
 
-def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
+def module(out, allInOne, classes, imports, cppdir, moduleName,
+           shared, generics):
 
     extname = '_%s' %(moduleName)
     line(out, 0, '#include <Python.h>')
@@ -1473,11 +1498,15 @@ def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
         out_init = file(os.path.join(cppdir, '__init__.cpp'), 'w')
     namespaces = {}
     for cls in classes:
-        namespace = namespaces
-        classNames = cls.getName().split('.')
-        for className in classNames[:-1]:
-            namespace = namespace.setdefault(className, {})
-        namespace[classNames[-1]] = True
+        for importset in imports.itervalues():
+            if cls in importset:
+                break
+        else:
+            namespace = namespaces
+            classNames = cls.getName().split('.')
+            for className in classNames[:-1]:
+                namespace = namespace.setdefault(className, {})
+            namespace[classNames[-1]] = True
     if allInOne:
         package(out_init, True, cppdir, namespaces, ())
         out_init.close()
@@ -1487,7 +1516,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
     line(out)
     line(out, 0, 'PyObject *initJCC(PyObject *module);')
     line(out, 0, 'void __install__(PyObject *module);')
-    line(out, 0, 'extern PyTypeObject JObject$$Type, ConstVariableDescriptor$$Type, FinalizerClass$$Type, FinalizerProxy$$Type;')
+    line(out, 0, 'extern PyTypeObject PY_TYPE(JObject), PY_TYPE(ConstVariableDescriptor), PY_TYPE(FinalizerClass), PY_TYPE(FinalizerProxy);')
     line(out, 0, 'extern void _install_jarray(PyObject *);')
     line(out)
     line(out, 0, 'extern "C" {')
@@ -1513,7 +1542,7 @@ def module(out, allInOne, classes, cppdir, moduleName, shared, generics):
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, home_dir, use_distutils,
             shared, compiler, modules, wininst, find_jvm_dll, arch, generics,
-            resources):
+            resources, imports):
 
     try:
         if use_distutils:
@@ -1611,8 +1640,8 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     line(out, 1, 'def getJavaException(self):')
     line(out, 2, 'return self.args[0]')
     line(out, 1, 'def __str__(self):')
-    line(out, 2, 'writer = %s.StringWriter()', extname)
-    line(out, 2, 'self.getJavaException().printStackTrace(%s.PrintWriter(writer))', extname)
+    line(out, 2, 'writer = StringWriter()')
+    line(out, 2, 'self.getJavaException().printStackTrace(PrintWriter(writer))')
     line(out, 2, 'return "\\n".join((super(JavaError, self).__str__(), "    Java stacktrace:", str(writer)))')
     line(out)
     line(out, 0, 'class InvalidArgsError(Exception):')
@@ -1632,11 +1661,15 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
          extname, extname, extname)
 
     line(out)
+    for import_ in imports:
+        line(out, 0, 'from %s._%s import *', import_.__name__, import_.__name__)
     line(out, 0, 'from %s import *', extname)
     out.close()
 
     includes = [os.path.join(output, extname),
                 os.path.join(jccPath, 'sources')]
+    for import_ in imports:
+        includes.append(os.path.join(import_.__dir__, 'include'))
 
     sources = ['JObject.cpp', 'JArray.cpp', 'functions.cpp', 'types.cpp']
     if not shared:
@@ -1645,6 +1678,25 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     for source in sources:
 	shutil.copy2(os.path.join(jccPath, 'sources', source),
                      os.path.join(output, extname))
+
+    if shared:
+        def copytree(src, dst):
+            _dst = os.path.join(modulePath, dst)
+            if not os.path.exists(_dst):
+                os.mkdir(_dst)
+            for name in os.listdir(src):
+                if name.startswith('.'):
+                    continue
+                _src = os.path.join(src, name)
+                if os.path.islink(_src):
+                    continue
+                _dst = os.path.join(dst, name)
+                if os.path.isdir(_src):
+                    copytree(_src, _dst)
+                elif name.endswith('.h'):
+                    shutil.copy2(_src, os.path.join(modulePath, _dst))
+                    package_data.append(_dst)
+        copytree(os.path.join(output, extname), 'include')
 
     sources = []
     for path, dirs, names in os.walk(os.path.join(output, extname)):
@@ -1670,7 +1722,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         script_args.append('--debug')
         compile_args += DEBUG_CFLAGS
     elif sys.platform == 'win32':
-        pass
+	pass
     elif sys.platform == 'sunos5':
         link_args.append('-Wl,-s')
     else:
@@ -1699,11 +1751,12 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         'extra_compile_args': compile_args,
         'extra_link_args': link_args,
         'include_dirs': includes,
-        'sources': sources
+        'sources': sources,
+        'define_macros': []
     }
 
     if generics:
-        args['define_macros'] = [('_java_generics', None)]
+        args['define_macros'] += [('_java_generics', None)]
 
     if shared:
         shlibdir = os.path.dirname(os.path.dirname(_jcc.__file__))
@@ -1719,9 +1772,30 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             args['extra_link_args'] += ['-Wl,-rpath', shlibdir]
             args['library_dirs'] = [shlibdir]
             args['libraries'] = ['jcc']
+            args['extra_link_args'] += [
+                getattr(import_, "_%s" %(import_.__name__)).__file__
+                for import_ in imports
+            ]
         elif sys.platform == 'win32':
-            jcclib = 'jcc%s.lib' %(debug and '_d' or '')
-            args['extra_link_args'] += [os.path.join(shlibdir, 'jcc', jcclib)]
+            _d = debug and '_d' or ''
+            libdir = os.path.join(modulePath, 'lib')
+            if not os.path.exists(libdir):
+                os.mkdir(libdir)
+            extlib = os.path.join('lib', "%s%s.lib" %(extname, _d))
+            package_data.append(extlib)
+            args['extra_link_args'] += [
+                os.path.join(shlibdir, 'jcc', 'jcc%s.lib' %(_d)),
+                "/IMPLIB:%s" %(os.path.join(modulePath, extlib))
+            ]
+            args['libraries'] = [
+                os.path.join(import_.__dir__, 'lib',
+                             '_%s%s' %(import_.__name__, _d))
+                for import_ in imports
+            ]
+            args['define_macros'] += [
+                ("_dll_%s" %(import_.__name__), '_declspec(dllimport)')
+                for import_ in imports
+            ] + [("_dll_%s" %(moduleName), '_declspec(dllexport)')]
         else:
             raise NotImplementedError, "shared mode on %s" %(sys.platform)
 

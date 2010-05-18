@@ -25,13 +25,13 @@ from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from lucene import *
-from lucene.ICUTransformFilter import ICUTransformFilter
 
 
 class TestICUTransformFilter(BaseTokenStreamTestCase):
   
     def _checkToken(self, transform, input, expected):
 
+        from lucene.ICUTransformFilter import ICUTransformFilter
         ts = ICUTransformFilter(KeywordTokenizer(StringReader(input)),
                                 transform)
         self._assertTokenStreamContents(ts, [ expected ])

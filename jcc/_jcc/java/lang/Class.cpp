@@ -507,7 +507,7 @@ namespace java {
 
         static PyObject *t_Class_isAssignableFrom(t_Class *self, PyObject *arg)
         {
-            if (!PyObject_TypeCheck(arg, &Class$$Type))
+            if (!PyObject_TypeCheck(arg, &PY_TYPE(Class)))
             {
                 PyErr_SetObject(PyExc_TypeError, arg);
                 return NULL;

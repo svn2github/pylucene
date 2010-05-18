@@ -122,20 +122,20 @@ PyObject *callSuper(PyTypeObject *type, PyObject *self,
 
 template<class T> PyObject *get_iterator(T *self)
 {
-    java::util::Iterator iterator((jobject) NULL);
+    jobject iterator;
 
-    OBJ_CALL(iterator = self->object.iterator());
-    return java::util::t_Iterator::wrap_Object(iterator);
+    OBJ_CALL(iterator = env->iterator(self->object.this$));
+    return java::util::t_Iterator::wrap_jobject(iterator);
 }
 
 #ifdef _java_generics
 template<class T> PyObject *get_generic_iterator(T *self)
 {
-    java::util::Iterator iterator((jobject) NULL);
     PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
+    jobject iterator;
 
-    OBJ_CALL(iterator = self->object.iterator());
-    return java::util::t_Iterator::wrap_Object(iterator, param);
+    OBJ_CALL(iterator = env->iterator(self->object.this$));
+    return java::util::t_Iterator::wrap_jobject(iterator, param);
 }
 #endif
 
@@ -285,8 +285,8 @@ void installType(PyTypeObject *type, PyObject *module, char *name,
 PyObject *typeParameters(PyTypeObject *types[], size_t size);
 #endif
 
-extern PyTypeObject FinalizerClass$$Type;
-extern PyTypeObject FinalizerProxy$$Type;
+extern PyTypeObject PY_TYPE(FinalizerClass);
+extern PyTypeObject PY_TYPE(FinalizerProxy);
 
 typedef struct {
     PyObject_HEAD

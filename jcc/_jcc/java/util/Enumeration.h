@@ -40,7 +40,7 @@ namespace java {
             Object nextElement() const;
         };
 
-        extern PyTypeObject Enumeration$$Type;
+        extern PyTypeObject PY_TYPE(Enumeration);
 
         class t_Enumeration {
         public:

@@ -33,8 +33,17 @@ class BaseIndexingTestCase(TestCase):
 
         indexDir = os.path.join(System.getProperty('java.io.tmpdir', 'tmp'),
                                 'index-dir')
+        self.rmdir(indexDir)
         self.dir = SimpleFSDirectory(File(indexDir))
         self.addDocuments(self.dir)
+
+    def rmdir(self, dir):
+
+        for dir, dirnames, filenames in os.walk(dir):
+            for filename in filenames:
+                os.remove(os.path.join(dir, filename))
+            for dirname in dirnames:
+                os.rmdir(os.path.join(dir, dirname))
 
     def addDocuments(self, dir):
 

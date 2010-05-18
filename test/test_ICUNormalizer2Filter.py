@@ -25,12 +25,13 @@ from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from lucene import *
-from lucene.ICUNormalizer2Filter import ICUNormalizer2Filter
 
 
 class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
 
     def testDefaults(self):
+
+        from lucene.ICUNormalizer2Filter import ICUNormalizer2Filter
 
         class analyzer(PythonAnalyzer):
             def tokenStream(_self, fieldName, reader):
@@ -59,6 +60,8 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
         self._assertAnalyzesTo(a, u"क्‍ष", [ u"क्ष" ])
   
     def testAlternate(self):
+
+        from lucene.ICUNormalizer2Filter import ICUNormalizer2Filter
 
         class analyzer(PythonAnalyzer):
             # specify nfc with decompose to get nfd

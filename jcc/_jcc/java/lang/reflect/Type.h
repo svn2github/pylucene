@@ -38,7 +38,7 @@ namespace java {
 namespace java {
     namespace lang {
         namespace reflect {
-            extern PyTypeObject Type$$Type;
+            extern PyTypeObject PY_TYPE(Type);
 
             class t_Type {
             public:

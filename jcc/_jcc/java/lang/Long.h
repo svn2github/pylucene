@@ -36,7 +36,7 @@ namespace java {
             jlong longValue() const;
         };
 
-        extern PyTypeObject Long$$Type;
+        extern PyTypeObject PY_TYPE(Long);
 
         class t_Long {
         public:

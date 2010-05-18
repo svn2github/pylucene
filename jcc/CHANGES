@@ -17,6 +17,9 @@ Version 2.5 ->
  - added 'asm' to list of reserved words
  - added JCC_VERSION string to modules using JCC
  - added support for --resources
+ - fixed bug with array Release calls using isCopy instead of 0 mode
+ - added support for --import
+ - added read-only env.classpath property
  - 
 
 Version 2.4 -> 2.5

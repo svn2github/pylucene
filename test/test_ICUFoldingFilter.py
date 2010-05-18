@@ -25,12 +25,13 @@ from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from lucene import *
-from lucene.ICUFoldingFilter import ICUFoldingFilter
 
 
 class TestICUFoldingFilter(BaseTokenStreamTestCase):
 
     def testDefaults(self):
+
+        from lucene.ICUFoldingFilter import ICUFoldingFilter
 
         class _analyzer(PythonAnalyzer):
             def tokenStream(_self, fieldName, reader):

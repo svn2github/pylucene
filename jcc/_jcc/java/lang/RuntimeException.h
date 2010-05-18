@@ -34,7 +34,7 @@ namespace java {
             }
         };
 
-        extern PyTypeObject RuntimeException$$Type;
+        extern PyTypeObject PY_TYPE(RuntimeException);
 
         class t_RuntimeException {
         public:

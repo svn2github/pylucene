@@ -46,7 +46,7 @@ namespace java {
 namespace java {
     namespace lang {
         namespace reflect {
-            extern PyTypeObject WildcardType$$Type;
+            extern PyTypeObject PY_TYPE(WildcardType);
 
             class t_WildcardType {
             public:

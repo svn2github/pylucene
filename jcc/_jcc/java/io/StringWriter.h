@@ -35,7 +35,7 @@ namespace java {
             StringWriter(const StringWriter& obj) : Writer(obj) {}
         };
 
-        extern PyTypeObject StringWriter$$Type;
+        extern PyTypeObject PY_TYPE(StringWriter);
 
         class t_StringWriter {
         public:

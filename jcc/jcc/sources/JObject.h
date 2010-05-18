@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include "JCCEnv.h"
 
-class JObject {
+class _DLL_EXPORT JObject {
 public:
     jobject this$;
     int id;  /* zero when this$ is a weak ref */
@@ -91,6 +91,7 @@ public:
 #ifdef PYTHON
 
 #include <Python.h>
+#include "macros.h"
 
 class t_JObject {
 public:
@@ -98,7 +99,7 @@ public:
     JObject object;
 };
 
-extern PyTypeObject JObject$$Type;
+extern PyTypeObject PY_TYPE(JObject);
 
 #endif /* PYTHON */
 

@@ -92,6 +92,18 @@ namespace java {
             }
             return obj;
         }
+
+        PyObject *t_Iterator::wrap_jobject(const jobject& object,
+                                           PyTypeObject *T)
+        {
+            PyObject *obj = t_Iterator::wrap_jobject(object);
+            if (obj != Py_None)
+            {
+                t_Iterator *self = (t_Iterator *) obj;
+                self->parameters[0] = T;
+            }
+            return obj;
+        }
 #endif
         static PyObject *t_Iterator_hasNext(t_Iterator *self)
         {

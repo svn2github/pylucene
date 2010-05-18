@@ -18,9 +18,9 @@
 namespace java {
     namespace io {
 
-        extern PyTypeObject Writer$$Type;
-        extern PyTypeObject StringWriter$$Type;
-        extern PyTypeObject PrintWriter$$Type;
+        extern PyTypeObject PY_TYPE(Writer);
+        extern PyTypeObject PY_TYPE(StringWriter);
+        extern PyTypeObject PY_TYPE(PrintWriter);
         
         namespace reflect {
             void __install__(PyObject *module);

@@ -19,17 +19,17 @@ namespace java {
     namespace lang {
         namespace reflect {
 
-            extern PyTypeObject Constructor$$Type;
-            extern PyTypeObject Method$$Type;
-            extern PyTypeObject Modifier$$Type;
-            extern PyTypeObject Field$$Type;
+            extern PyTypeObject PY_TYPE(Constructor);
+            extern PyTypeObject PY_TYPE(Method);
+            extern PyTypeObject PY_TYPE(Modifier);
+            extern PyTypeObject PY_TYPE(Field);
 #ifdef _java_generics
-            extern PyTypeObject Type$$Type;
-            extern PyTypeObject ParameterizedType$$Type;
-            extern PyTypeObject TypeVariable$$Type;
-            extern PyTypeObject GenericArrayType$$Type;
-            extern PyTypeObject WildcardType$$Type;
-            extern PyTypeObject GenericDeclaration$$Type;
+            extern PyTypeObject PY_TYPE(Type);
+            extern PyTypeObject PY_TYPE(ParameterizedType);
+            extern PyTypeObject PY_TYPE(TypeVariable);
+            extern PyTypeObject PY_TYPE(GenericArrayType);
+            extern PyTypeObject PY_TYPE(WildcardType);
+            extern PyTypeObject PY_TYPE(GenericDeclaration);
 #endif
 
             void __install__(PyObject *m)

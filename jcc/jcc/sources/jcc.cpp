@@ -45,12 +45,16 @@ static PyObject *t_jccenv_isCurrentThreadAttached(PyObject *self);
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg);
 static PyObject *t_jccenv__dumpRefs(PyObject *self,
                                     PyObject *args, PyObject *kwds);
+static PyObject *t_jccenv__addClassPath(PyObject *self, PyObject *args);
+
 static PyObject *t_jccenv__get_jni_version(PyObject *self, void *data);
 static PyObject *t_jccenv__get_java_version(PyObject *self, void *data);
+static PyObject *t_jccenv__get_classpath(PyObject *self, void *data);
 
 static PyGetSetDef t_jccenv_properties[] = {
     { "jni_version", (getter) t_jccenv__get_jni_version, NULL, NULL, NULL },
     { "java_version", (getter) t_jccenv__get_java_version, NULL, NULL, NULL },
+    { "classpath", (getter) t_jccenv__get_classpath, NULL, NULL, NULL },
     { NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -69,10 +73,12 @@ static PyMethodDef t_jccenv_methods[] = {
       METH_O, NULL },
     { "_dumpRefs", (PyCFunction) t_jccenv__dumpRefs,
       METH_VARARGS | METH_KEYWORDS, NULL },
+    { "_addClassPath", (PyCFunction) t_jccenv__addClassPath,
+      METH_VARARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
-PyTypeObject JCCEnv$$Type = {
+PyTypeObject PY_TYPE(JCCEnv) = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
     "jcc.JCCEnv",                        /* tp_name */
@@ -267,6 +273,17 @@ static PyObject *t_jccenv__dumpRefs(PyObject *self,
     return result;
 }
 
+static PyObject *t_jccenv__addClassPath(PyObject *self, PyObject *args)
+{
+    const char *classpath;
+
+    if (!PyArg_ParseTuple(args, "s", &classpath))
+        return NULL;
+
+    env->setClassPath(classpath);
+
+    Py_RETURN_NONE;
+}
 
 static PyObject *t_jccenv__get_jni_version(PyObject *self, void *data)
 {
@@ -278,11 +295,26 @@ static PyObject *t_jccenv__get_java_version(PyObject *self, void *data)
     return env->fromJString(env->getJavaVersion(), 1);
 }
 
+static PyObject *t_jccenv__get_classpath(PyObject *self, void *data)
+{
+    char *classpath = env->getClassPath();
+
+    if (classpath)
+    {
+        PyObject *result = PyString_FromString(classpath);
+
+        free(classpath);
+        return result;
+    }
+
+    Py_RETURN_NONE;
+}
+
 _DLL_EXPORT PyObject *getVMEnv(PyObject *self)
 {
     if (env->vm != NULL)
     {
-        t_jccenv *jccenv = (t_jccenv *) JCCEnv$$Type.tp_alloc(&JCCEnv$$Type, 0);
+        t_jccenv *jccenv = (t_jccenv *) PY_TYPE(JCCEnv).tp_alloc(&PY_TYPE(JCCEnv), 0);
         jccenv->env = env;
 
         return (PyObject *) jccenv;
@@ -454,7 +486,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         for (unsigned int i = 0; i < nOptions; i++)
             delete vm_options[i].optionString;
 
-        t_jccenv *jccenv = (t_jccenv *) JCCEnv$$Type.tp_alloc(&JCCEnv$$Type, 0);
+        t_jccenv *jccenv = (t_jccenv *) PY_TYPE(JCCEnv).tp_alloc(&PY_TYPE(JCCEnv), 0);
         jccenv->env = env;
 
 #ifdef _jcc_lib

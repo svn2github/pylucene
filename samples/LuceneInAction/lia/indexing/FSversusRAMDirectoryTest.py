@@ -34,8 +34,17 @@ class FSversusRAMDirectoryTest(TestCase):
 
         fsIndexDir = os.path.join(System.getProperty("java.io.tmpdir", "tmp"),
                                   "fs-index")
+        self.rmdir(fsIndexDir)
         self.ramDir = RAMDirectory()
         self.fsDir = SimpleFSDirectory(File(fsIndexDir))
+
+    def rmdir(self, dir):
+
+        for dir, dirnames, filenames in os.walk(dir):
+            for filename in filenames:
+                os.remove(os.path.join(dir, filename))
+            for dirname in dirnames:
+                os.rmdir(os.path.join(dir, dirname))
 
     def testTiming(self):
 

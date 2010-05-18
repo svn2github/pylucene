@@ -1,6 +1,4 @@
 /*
- *   Copyright (c) 2007-2008 Open Source Applications Foundation
- *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
@@ -24,16 +22,16 @@
 extern jobjectArray fromPySequence(jclass cls, PyObject *sequence);
 extern PyObject *PyErr_SetJavaError(jthrowable throwable);
 
-extern PyTypeObject *JArrayObject$$Type;
-extern PyTypeObject *JArrayString$$Type;
-extern PyTypeObject *JArrayBool$$Type;
-extern PyTypeObject *JArrayByte$$Type;
-extern PyTypeObject *JArrayChar$$Type;
-extern PyTypeObject *JArrayDouble$$Type;
-extern PyTypeObject *JArrayFloat$$Type;
-extern PyTypeObject *JArrayInt$$Type;
-extern PyTypeObject *JArrayLong$$Type;
-extern PyTypeObject *JArrayShort$$Type;
+extern PyTypeObject *PY_TYPE(JArrayObject);
+extern PyTypeObject *PY_TYPE(JArrayString);
+extern PyTypeObject *PY_TYPE(JArrayBool);
+extern PyTypeObject *PY_TYPE(JArrayByte);
+extern PyTypeObject *PY_TYPE(JArrayChar);
+extern PyTypeObject *PY_TYPE(JArrayDouble);
+extern PyTypeObject *PY_TYPE(JArrayFloat);
+extern PyTypeObject *PY_TYPE(JArrayInt);
+extern PyTypeObject *PY_TYPE(JArrayLong);
+extern PyTypeObject *PY_TYPE(JArrayShort);
 
 #endif
 
@@ -181,7 +179,7 @@ template<> class JArray<jobject> : public java::lang::Object {
 
             if (n >= 0 && n < length)
             {
-                if (!PyObject_TypeCheck(obj, &JObject$$Type))
+                if (!PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
                 {
                     PyErr_SetObject(PyExc_TypeError, obj);
                     return -1;
@@ -347,7 +345,7 @@ template<> class JArray<jboolean> : public java::lang::Object {
             elts = env->get_vm_env()->GetBooleanArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseBooleanArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseBooleanArrayElements(array, elts, 0);
         }
         operator jboolean *() {
             return elts;
@@ -472,7 +470,7 @@ template<> class JArray<jboolean> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jboolean value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -493,7 +491,7 @@ template<> class JArray<jbyte> : public java::lang::Object {
             elts = env->get_vm_env()->GetByteArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseByteArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseByteArrayElements(array, elts, 0);
         }
         operator jbyte *() {
             return elts;
@@ -646,7 +644,7 @@ template<> class JArray<jbyte> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jbyte value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -667,7 +665,7 @@ template<> class JArray<jchar> : public java::lang::Object {
             elts = env->get_vm_env()->GetCharArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseCharArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseCharArrayElements(array, elts, 0);
         }
         operator jchar *() {
             return elts;
@@ -833,7 +831,7 @@ template<> class JArray<jchar> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jchar value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -854,7 +852,7 @@ template<> class JArray<jdouble> : public java::lang::Object {
             elts = env->get_vm_env()->GetDoubleArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseDoubleArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseDoubleArrayElements(array, elts, 0);
         }
         operator jdouble *() {
             return elts;
@@ -980,7 +978,7 @@ template<> class JArray<jdouble> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jdouble value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -1001,7 +999,7 @@ template<> class JArray<jfloat> : public java::lang::Object {
             elts = env->get_vm_env()->GetFloatArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseFloatArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseFloatArrayElements(array, elts, 0);
         }
         operator jfloat *() {
             return elts;
@@ -1127,7 +1125,7 @@ template<> class JArray<jfloat> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jfloat value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -1148,7 +1146,7 @@ template<> class JArray<jint> : public java::lang::Object {
             elts = env->get_vm_env()->GetIntArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseIntArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseIntArrayElements(array, elts, 0);
         }
         operator jint *() {
             return elts;
@@ -1274,7 +1272,7 @@ template<> class JArray<jint> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jint value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -1295,7 +1293,7 @@ template<> class JArray<jlong> : public java::lang::Object {
             elts = env->get_vm_env()->GetLongArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseLongArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseLongArrayElements(array, elts, 0);
         }
         operator jlong *() {
             return elts;
@@ -1421,7 +1419,7 @@ template<> class JArray<jlong> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jlong value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }
@@ -1442,7 +1440,7 @@ template<> class JArray<jshort> : public java::lang::Object {
             elts = env->get_vm_env()->GetShortArrayElements(array, &isCopy);
         }
         virtual ~arrayElements() {
-            env->get_vm_env()->ReleaseShortArrayElements(array, elts, isCopy);
+            env->get_vm_env()->ReleaseShortArrayElements(array, elts, 0);
         }
         operator jshort *() {
             return elts;
@@ -1568,7 +1566,7 @@ template<> class JArray<jshort> : public java::lang::Object {
             vm_env->GetPrimitiveArrayCritical((jarray) this$, &isCopy);
         jshort value = elts[n];
 
-        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, isCopy);
+        vm_env->ReleasePrimitiveArrayCritical((jarray) this$, elts, 0);
 
         return value;
     }

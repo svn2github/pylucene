@@ -49,7 +49,7 @@ static PyGetSetDef t_JObject_properties[] = {
     { NULL, NULL, NULL, NULL, NULL }
 };
 
-PyTypeObject JObject$$Type = {
+PyTypeObject PY_TYPE(JObject) = {
     PyObject_HEAD_INIT(NULL)
     0,                                   /* ob_size */
     "jcc.JObject",                       /* tp_name */
@@ -116,7 +116,7 @@ static PyObject *t_JObject_richcmp(t_JObject *self, PyObject *arg, int op)
     switch (op) {
       case Py_EQ:
       case Py_NE:
-        if (PyObject_TypeCheck(arg, &JObject$$Type))
+        if (PyObject_TypeCheck(arg, &PY_TYPE(JObject)))
             b = self->object == ((t_JObject *) arg)->object;
         if (op == Py_EQ)
             Py_RETURN_BOOL(b);

@@ -18,20 +18,20 @@
 namespace java {
     namespace lang {
 
-        extern PyTypeObject Object$$Type;
-        extern PyTypeObject String$$Type;
-        extern PyTypeObject Class$$Type;
-        extern PyTypeObject Throwable$$Type;
-        extern PyTypeObject Exception$$Type;
-        extern PyTypeObject RuntimeException$$Type;
-        extern PyTypeObject Boolean$$Type;
-        extern PyTypeObject Byte$$Type;
-        extern PyTypeObject Character$$Type;
-        extern PyTypeObject Integer$$Type;
-        extern PyTypeObject Double$$Type;
-        extern PyTypeObject Float$$Type;
-        extern PyTypeObject Long$$Type;
-        extern PyTypeObject Short$$Type;
+        extern PyTypeObject PY_TYPE(Object);
+        extern PyTypeObject PY_TYPE(String);
+        extern PyTypeObject PY_TYPE(Class);
+        extern PyTypeObject PY_TYPE(Throwable);
+        extern PyTypeObject PY_TYPE(Exception);
+        extern PyTypeObject PY_TYPE(RuntimeException);
+        extern PyTypeObject PY_TYPE(Boolean);
+        extern PyTypeObject PY_TYPE(Byte);
+        extern PyTypeObject PY_TYPE(Character);
+        extern PyTypeObject PY_TYPE(Integer);
+        extern PyTypeObject PY_TYPE(Double);
+        extern PyTypeObject PY_TYPE(Float);
+        extern PyTypeObject PY_TYPE(Long);
+        extern PyTypeObject PY_TYPE(Short);
         
         namespace reflect {
             void __install__(PyObject *module);

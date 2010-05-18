@@ -41,7 +41,7 @@ namespace java {
             int length() const;
         };
 
-        extern PyTypeObject String$$Type;
+        extern PyTypeObject PY_TYPE(String);
 
         class t_String {
         public:

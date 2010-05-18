@@ -111,6 +111,9 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
         vm_env->GetMethodID(_obj, "getClass",
                             "()Ljava/lang/Class;");
 
+    _mids[mid_iterator] =
+        vm_env->GetMethodID(vm_env->FindClass("java/lang/Iterable"),
+                            "iterator", "()Ljava/util/Iterator;");
     _mids[mid_iterator_next] =
         vm_env->GetMethodID(vm_env->FindClass("java/util/Iterator"),
                             "next", "()Ljava/lang/Object;");
@@ -174,6 +177,11 @@ jstring JCCEnv::getJavaVersion() const
     return (jstring)
         callStaticObjectMethod(_sys, _mids[mid_sys_getProperty],
                                get_vm_env()->NewStringUTF("java.version"));
+}
+
+jobject JCCEnv::iterator(jobject obj) const
+{
+    return callObjectMethod(obj, _mids[mid_iterator]);
 }
 
 jobject JCCEnv::iteratorNext(jobject obj) const
@@ -682,7 +690,7 @@ void JCCEnv::setClassPath(const char *classPath)
     jmethodID mf = vm_env->GetMethodID(_fil, "<init>", "(Ljava/lang/String;)V");
     jmethodID mu = vm_env->GetMethodID(_fil, "toURL", "()Ljava/net/URL;");
     jmethodID ma = vm_env->GetMethodID(_ucl, "addURL", "(Ljava/net/URL;)V");
-#ifdef WINDOWS
+#if defined(_MSC_VER) || defined(__WIN32)
     char *pathsep = ";";
 #else
     char *pathsep = ":";
@@ -699,6 +707,52 @@ void JCCEnv::setClassPath(const char *classPath)
         vm_env->CallVoidMethod(classLoader, ma, url);
     }
     free(path);
+}
+
+char *JCCEnv::getClassPath()
+{
+    JNIEnv *vm_env = get_vm_env();
+    jclass _ucl = (jclass) vm_env->FindClass("java/net/URLClassLoader");
+    jclass _url = (jclass) vm_env->FindClass("java/net/URL");
+    jmethodID mid = vm_env->GetStaticMethodID(_ucl, "getSystemClassLoader",
+                                              "()Ljava/lang/ClassLoader;");
+    jobject classLoader = vm_env->CallStaticObjectMethod(_ucl, mid);
+    jmethodID gu = vm_env->GetMethodID(_ucl, "getURLs", "()[Ljava/net/URL;");
+    jmethodID gp = vm_env->GetMethodID(_url, "getPath", "()Ljava/lang/String;");
+#if defined(_MSC_VER) || defined(__WIN32)
+    char *pathsep = ";";
+#else
+    char *pathsep = ":";
+#endif
+    jobjectArray array = (jobjectArray)
+        vm_env->CallObjectMethod(classLoader, gu);
+    int count = array ? vm_env->GetArrayLength(array) : 0;
+    int first = 1, total = 0;
+    char *classpath = NULL;
+    
+    for (int i = 0; i < count; i++) {
+        jobject url = vm_env->GetObjectArrayElement(array, i);
+        jstring path = (jstring) vm_env->CallObjectMethod(url, gp);
+        const char *chars = vm_env->GetStringUTFChars(path, NULL);
+        int size = vm_env->GetStringUTFLength(path);
+
+        total += size + 1;
+        if (classpath == NULL)
+            classpath = (char *) calloc(total, 1);
+        else
+            classpath = (char *) realloc(classpath, total);
+        if (classpath == NULL)
+            return NULL;
+
+        if (first)
+            first = 0;
+        else
+            strcat(classpath, pathsep);
+
+        strcat(classpath, chars);
+    }
+
+    return classpath;
 }
 
 jstring JCCEnv::fromUTF(const char *bytes) const

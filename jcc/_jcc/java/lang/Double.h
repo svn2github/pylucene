@@ -36,7 +36,7 @@ namespace java {
             jdouble doubleValue() const;
         };
 
-        extern PyTypeObject Double$$Type;
+        extern PyTypeObject PY_TYPE(Double);
 
         class t_Double {
         public:

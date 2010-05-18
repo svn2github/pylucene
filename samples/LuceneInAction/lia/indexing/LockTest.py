@@ -26,7 +26,16 @@ class LockTest(TestCase):
 
         indexDir = os.path.join(System.getProperty("java.io.tmpdir", "tmp"),
                                 "index")
+        self.rmdir(indexDir)
         self.dir = SimpleFSDirectory(File(indexDir))
+
+    def rmdir(self, dir):
+
+        for dir, dirnames, filenames in os.walk(dir):
+            for filename in filenames:
+                os.remove(os.path.join(dir, filename))
+            for dirname in dirnames:
+                os.rmdir(os.path.join(dir, dirname))
 
     def testWriteLock(self):
 

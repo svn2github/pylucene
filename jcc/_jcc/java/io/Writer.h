@@ -34,7 +34,7 @@ namespace java {
             }
         };
 
-        extern PyTypeObject Writer$$Type;
+        extern PyTypeObject PY_TYPE(Writer);
 
         class t_Writer {
         public:

@@ -318,6 +318,7 @@ def jcc(args):
     generics = hasattr(_jcc, "Type")
     arch = []
     resources = []
+    imports = {}
 
     i = 1
     while i < len(args):
@@ -425,6 +426,9 @@ def jcc(args):
             elif arg == '--resources':
                 i += 1
                 resources.append(args[i])
+            elif arg == '--import':
+                i += 1
+                imports[args[i]] = ()
             else:
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
@@ -440,6 +444,12 @@ def jcc(args):
     typeset = set()
     excludes = set(excludes)
 
+    if imports:
+        if shared:
+            imports = dict((__import__(import_), set()) for import_ in imports)
+        else:
+            raise ValueError, "--shared must be used when using --import"
+
     if recompile or not build and (install or dist):
         if moduleName is None:
             raise ValueError, 'module name not specified (use --python)'
@@ -448,8 +458,23 @@ def jcc(args):
                     install, dist, debug, jars, version,
                     prefix, root, install_dir, home_dir, use_distutils,
                     shared, compiler, modules, wininst, find_jvm_dll,
-                    arch, generics, resources)
+                    arch, generics, resources, imports)
     else:
+        if imports:
+            def walk((include, importset), dirname, names):
+                for name in names:
+                    if name.endswith('.h'):
+                        className = os.path.join(dirname[len(include) + 1:],
+                                                 name[:-2])
+                        if os.path.sep != '/':
+                            className = className.replace(os.path.sep, '/')
+                        importset.add(findClass(className))
+            for import_, importset in imports.iteritems():
+                env._addClassPath(import_.CLASSPATH)
+                include = os.path.join(import_.__dir__, 'include')
+                os.path.walk(include, walk, (include, importset))
+                typeset.update(importset)
+
         for className in classNames:
             if className in excludes:
                 continue
@@ -484,8 +509,11 @@ def jcc(args):
             typeset.add(findClass('java/io/Writer'))
             packages.add('java.lang')
 
+        _dll_export = ''
         if moduleName:
             cppdir = os.path.join(output, '_%s' %(moduleName))
+            if shared and sys.platform == 'win32':
+                _dll_export = "_dll_%s " %(moduleName)
         else:
             cppdir = output
 
@@ -501,6 +529,9 @@ def jcc(args):
                 out_cpp = file(os.path.join(cppdir, fileName), 'w')
 
         done = set()
+        for importset in imports.itervalues():
+            done.update(importset)
+
         todo = typeset - done
 	if allInOne and wrapperFiles > 1:
             classesPerFile = max(1, len(todo) / wrapperFiles)
@@ -522,7 +553,7 @@ def jcc(args):
                 (superCls, constructors, methods, protectedMethods,
                  fields, instanceFields, declares) = \
                     header(env, out_h, cls, typeset, packages, excludes,
-                           generics)
+                           generics, _dll_export)
 
                 if not allInOne:
                     out_cpp = file(fileName + '.cpp', 'w')
@@ -538,7 +569,8 @@ def jcc(args):
                            fields, instanceFields,
                            mappings.get(className), sequences.get(className),
                            renames.get(className),
-                           declares, typeset, moduleName, generics)
+                           declares, typeset, moduleName, generics,
+                           _dll_export)
 
                 line(out_h)
                 line(out_h, 0, '#endif')
@@ -562,17 +594,18 @@ def jcc(args):
 
         if moduleName:
             out = file(os.path.join(cppdir, moduleName) + '.cpp', 'w')
-            module(out, allInOne, done, cppdir, moduleName, shared, generics)
+            module(out, allInOne, done, imports, cppdir, moduleName,
+                   shared, generics)
             out.close()
             if build or install or dist:
                 compile(env, os.path.dirname(args[0]), output, moduleName,
                         install, dist, debug, jars, version,
                         prefix, root, install_dir, home_dir, use_distutils,
                         shared, compiler, modules, wininst, find_jvm_dll,
-                        arch, generics, resources)
+                        arch, generics, resources, imports)
 
 
-def header(env, out, cls, typeset, packages, excludes, generics):
+def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
 
     names = cls.getName().split('.')
     superCls = cls.getSuperclass()
@@ -736,10 +769,11 @@ def header(env, out, cls, typeset, packages, excludes, generics):
 
     line(out)
     if superClsName == 'JObject':
-        line(out, indent, 'class %s : public JObject {', cppname(names[-1]))
+        line(out, indent, 'class %s%s : public JObject {',
+             _dll_export, cppname(names[-1]))
     else:
-        line(out, indent, 'class %s : public %s {',
-             cppname(names[-1]), '::'.join(cppnames(superNames)))
+        line(out, indent, 'class %s%s : public %s {',
+             _dll_export, cppname(names[-1]), '::'.join(cppnames(superNames)))
         
     line(out, indent, 'public:')
     indent += 1
