@@ -20,6 +20,7 @@ Version 2.5 ->
  - fixed bug with array Release calls using isCopy instead of 0 mode
  - added support for --import
  - added read-only env.classpath property
+ - config.py now written only during build or when missing (Christian Heimes)
  - 
 
 Version 2.4 -> 2.5

@@ -211,17 +211,20 @@ def main(debug):
     else:
         _javac = JAVAC[platform]
 
-    config = file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'jcc', 'config.py'), 'w')
-    print >>config
-    print >>config, 'INCLUDES=%s' %(_includes)
-    print >>config, 'CFLAGS=%s' %(_cflags)
-    print >>config, 'DEBUG_CFLAGS=%s' %(_debug_cflags)
-    print >>config, 'LFLAGS=%s' %(_lflags)
-    print >>config, 'SHARED=%s' %(enable_shared)
-    print >>config, 'VERSION="%s"' %(jcc_ver)
-    print >>config
-    config.close()
+    from helpers.build import jcc_build_py
+
+    jcc_build_py.config_file = \
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'jcc', 'config.py')
+    jcc_build_py.config_text = \
+        '\n'.join(['',
+                   'INCLUDES=%s' %(_includes),
+                   'CFLAGS=%s' %(_cflags),
+                   'DEBUG_CFLAGS=%s' %(_debug_cflags),
+                   'LFLAGS=%s' %(_lflags),
+                   'SHARED=%s' %(enable_shared),
+                   'VERSION="%s"' %(jcc_ver),
+                   ''])
 
     extensions = []
 
@@ -325,7 +328,8 @@ def main(debug):
         'packages': ['jcc'],
         'package_dir': {'jcc': 'jcc'},
         'package_data': {'jcc': package_data},
-        'ext_modules': extensions
+        'ext_modules': extensions,
+        "cmdclass": {"build_py": jcc_build_py},
     }
     if with_setuptools:
         args['zip_safe'] = False
