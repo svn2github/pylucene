@@ -72,7 +72,7 @@ extern JCCEnv *env;
 
 typedef jclass (*getclassfn)(void);
 
-class _DLL_EXPORT countedRef {
+class countedRef {
 public:
     jobject global;
     int count;
