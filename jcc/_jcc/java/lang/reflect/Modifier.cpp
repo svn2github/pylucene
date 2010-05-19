@@ -156,14 +156,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isPublic = Modifier::isPublic(mod);
+                int mod = PyInt_AsLong(arg);
+                int isPublic;
 
-                    Py_RETURN_BOOL(isPublic);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isPublic = Modifier::isPublic(mod));
+                Py_RETURN_BOOL(isPublic);
             }
 
             static PyObject *t_Modifier_isStatic(PyTypeObject *type, PyObject *arg)
@@ -174,14 +171,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isStatic = Modifier::isStatic(mod);
+                int mod = PyInt_AsLong(arg);
+                int isStatic;
 
-                    Py_RETURN_BOOL(isStatic);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isStatic = Modifier::isStatic(mod));
+                Py_RETURN_BOOL(isStatic);
             }
 
             static PyObject *t_Modifier_isNative(PyTypeObject *type, PyObject *arg)
@@ -192,14 +186,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isNative = Modifier::isNative(mod);
+                int mod = PyInt_AsLong(arg);
+                int isNative;
 
-                    Py_RETURN_BOOL(isNative);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isNative = Modifier::isNative(mod));
+                Py_RETURN_BOOL(isNative);
             }
 
             static PyObject *t_Modifier_isFinal(PyTypeObject *type, PyObject *arg)
@@ -210,14 +201,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isFinal = Modifier::isFinal(mod);
+                int mod = PyInt_AsLong(arg);
+                int isFinal;
 
-                    Py_RETURN_BOOL(isFinal);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isFinal = Modifier::isFinal(mod));
+                Py_RETURN_BOOL(isFinal);
             }
 
             static PyObject *t_Modifier_isAbstract(PyTypeObject *type, PyObject *arg)
@@ -228,14 +216,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isAbstract = Modifier::isAbstract(mod);
+                int mod = PyInt_AsLong(arg);
+                int isAbstract;
 
-                    Py_RETURN_BOOL(isAbstract);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isAbstract = Modifier::isAbstract(mod));
+                Py_RETURN_BOOL(isAbstract);
             }
 
             static PyObject *t_Modifier_isPrivate(PyTypeObject *type, PyObject *arg)
@@ -246,14 +231,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isPrivate = Modifier::isPrivate(mod);
+                int mod = PyInt_AsLong(arg);
+                int isPrivate;
 
-                    Py_RETURN_BOOL(isPrivate);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isPrivate = Modifier::isPrivate(mod));
+                Py_RETURN_BOOL(isPrivate);
             }
 
             static PyObject *t_Modifier_isProtected(PyTypeObject *type, PyObject *arg)
@@ -264,14 +246,11 @@ namespace java {
                     return NULL;
                 }
 
-                try {
-                    int mod = PyInt_AsLong(arg);
-                    int isProtected = Modifier::isProtected(mod);
+                int mod = PyInt_AsLong(arg);
+                int isProtected;
 
-                    Py_RETURN_BOOL(isProtected);
-                } catch (JCCEnv::exception e) {
-                    return PyErr_SetJavaError(e.throwable);
-                }
+                OBJ_CALL(isProtected = Modifier::isProtected(mod));
+                Py_RETURN_BOOL(isProtected);
             }
         }
     }

@@ -81,11 +81,15 @@ PyObject *findClass(PyObject *self, PyObject *args)
 
         if (cls)
             return t_Class::wrap_Object(Class(cls));
-    } catch (JCCEnv::pythonError) {
-        return NULL;
-    } catch (JCCEnv::exception e) {
-        PyErr_SetJavaError(e.throwable);
-        return NULL;
+    } catch (int e) {
+        switch (e) {
+          case _EXC_PYTHON:
+            return NULL;
+          case _EXC_JAVA:
+            return PyErr_SetJavaError();
+          default:
+            throw;
+        }
     }
 
     Py_RETURN_NONE;
@@ -213,11 +217,16 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   try {
                       getclassfn initializeClass = va_arg(list, getclassfn);
                       cls = (*initializeClass)();
-                  } catch (JCCEnv::pythonError) {
-                      return -1;
-                  } catch (JCCEnv::exception e) {
-                      PyErr_SetJavaError(e.throwable);
-                      return -1;
+                  } catch (int e) {
+                      switch (e) {
+                        case _EXC_PYTHON:
+                          return -1;
+                        case _EXC_JAVA:
+                          PyErr_SetJavaError();
+                          return -1;
+                        default:
+                          throw;
+                      }
                   }
                   break;
               }
@@ -1016,9 +1025,14 @@ PyObject *PyErr_SetArgsError(PyTypeObject *type, char *name, PyObject *args)
     return NULL;
 }
 
-PyObject *PyErr_SetJavaError(jthrowable throwable)
+PyObject *PyErr_SetJavaError()
 {
-    PyObject *err = t_Throwable::wrap_Object(Throwable(throwable));
+    JNIEnv *vm_env = env->get_vm_env();
+    jthrowable throwable = vm_env->ExceptionOccurred();
+    PyObject *err;
+
+    vm_env->ExceptionClear();
+    err = t_Throwable::wrap_Object(Throwable(throwable));
 
     PyErr_SetObject(PyExc_JavaError, err);
     Py_DECREF(err);
@@ -1229,11 +1243,16 @@ jobjectArray fromPySequence(jclass cls, PyObject *sequence)
 
     try {
         array = env->newObjectArray(cls, length);
-    } catch (JCCEnv::pythonError) {
-        return NULL;
-    } catch (JCCEnv::exception e) {
-        PyErr_SetJavaError(e.throwable);
-        return NULL;
+    } catch (int e) {
+        switch (e) {
+          case _EXC_PYTHON:
+            return NULL;
+          case _EXC_JAVA:
+            PyErr_SetJavaError();
+            return NULL;
+          default:
+            throw;
+        }
     }
 
     JNIEnv *vm_env = env->get_vm_env();
@@ -1269,9 +1288,14 @@ jobjectArray fromPySequence(jclass cls, PyObject *sequence)
             env->setObjectArrayElement(array, i, jobj);
             if (fromString)
                 vm_env->DeleteLocalRef(jobj);
-        } catch (JCCEnv::exception e) {
-            PyErr_SetJavaError(e.throwable);
-            return NULL;
+        } catch (int e) {
+            switch (e) {
+              case _EXC_JAVA:
+                PyErr_SetJavaError();
+                return NULL;
+              default:
+                throw;
+            }
         }
     }
 

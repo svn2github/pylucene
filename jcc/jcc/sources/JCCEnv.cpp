@@ -215,11 +215,11 @@ jclass JCCEnv::findClass(const char *className) const
             PythonGIL gil;
 
             PyErr_SetString(PyExc_RuntimeError, "attachCurrentThread() must be called first");
-            throw pythonError(NULL);
+            throw _EXC_PYTHON;
         }
 #else
         else
-            throw exception(NULL);
+            throw _EXC_JAVA;
 #endif
     }
 #ifdef PYTHON
@@ -228,11 +228,11 @@ jclass JCCEnv::findClass(const char *className) const
         PythonGIL gil;
 
         PyErr_SetString(PyExc_RuntimeError, "initVM() must be called first");
-        throw pythonError(NULL);
+        throw _EXC_PYTHON;
     }
 #else
     else
-        throw exception(NULL);
+        throw _EXC_JAVA;
 #endif
 
     reportException();
@@ -345,11 +345,11 @@ jobject JCCEnv::newObject(getclassfn initializeClass, jmethodID **mids,
         PythonGIL gil;
 
         PyErr_SetString(PyExc_RuntimeError, "attachCurrentThread() must be called first");
-        throw pythonError(NULL);
+        throw _EXC_PYTHON;
     }
 #else
     else
-        throw exception(NULL);
+        throw _EXC_JAVA;
 #endif
 
     reportException();
@@ -405,8 +405,6 @@ void JCCEnv::reportException() const
         if (!env->handlers)
             vm_env->ExceptionDescribe();
 
-        vm_env->ExceptionClear();
-
 #ifdef PYTHON
         PythonGIL gil;
 
@@ -418,11 +416,11 @@ void JCCEnv::reportException() const
             jobject cls = (jobject) vm_env->GetObjectClass(throwable);
 
             if (vm_env->IsSameObject(cls, _thr))
-                throw pythonError(throwable);
+                throw _EXC_PYTHON;
         }
 #endif
 
-        throw exception(throwable);
+        throw _EXC_JAVA;
     }
 }
 

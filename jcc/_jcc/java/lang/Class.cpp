@@ -406,8 +406,13 @@ namespace java {
                 String name = String(env->fromUTF(className));
 
                 return t_Class::wrap_Object(Class::forName(name));
-            } catch (JCCEnv::exception e) {
-                return PyErr_SetJavaError(e.throwable);
+            } catch (int e) {
+                switch (e) {
+                  case _EXC_JAVA:
+                    return PyErr_SetJavaError();
+                  default:
+                    throw;
+                }
             }
         }
 
@@ -518,8 +523,13 @@ namespace java {
                 int isAssignableFrom = self->object.isAssignableFrom(cls);
 
                 Py_RETURN_BOOL(isAssignableFrom);
-            } catch (JCCEnv::exception e) {
-                return PyErr_SetJavaError(e.throwable);
+            } catch (int e) {
+                switch (e) {
+                  case _EXC_JAVA:
+                    return PyErr_SetJavaError();
+                  default:
+                    throw;
+                }
             }
         }
 

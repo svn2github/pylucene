@@ -1466,9 +1466,13 @@ def package(out, allInOne, cppdir, namespace, names):
     if not names:
         line(out, indent + 1, 'return env;')
         indent -= 1
-        line(out, indent + 1, '} catch (JCCEnv::exception e) {')
-        line(out, indent + 2, 'PyErr_SetJavaError(e.throwable);')
-        line(out, indent + 2, 'return NULL;')
+        line(out, indent + 1, '} catch (int e) {')
+        line(out, indent + 2, 'switch(e) {')
+        line(out, indent + 2, '  case _EXC_JAVA:')
+        line(out, indent + 3, 'return PyErr_SetJavaError();')
+        line(out, indent + 2, '  default:')
+        line(out, indent + 3, 'throw;')
+        line(out, indent + 2, '}')
         line(out, indent + 1, '}')
 
     line(out, indent, '}')
@@ -1793,9 +1797,9 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
                 for import_ in imports
             ]
             args['define_macros'] += [
-                ("_dll_%s" %(import_.__name__), '_declspec(dllimport)')
+                ("_dll_%s" %(import_.__name__), '__declspec(dllimport)')
                 for import_ in imports
-            ] + [("_dll_%s" %(moduleName), '_declspec(dllexport)')]
+            ] + [("_dll_%s" %(moduleName), '__declspec(dllexport)')]
         else:
             raise NotImplementedError, "shared mode on %s" %(sys.platform)
 

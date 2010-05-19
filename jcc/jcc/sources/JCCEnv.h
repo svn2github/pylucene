@@ -67,9 +67,12 @@ extern JCCEnv *env;
 
 #endif
 
+#define _EXC_PYTHON ((int) 0)
+#define _EXC_JAVA   ((int) 1)
+
 typedef jclass (*getclassfn)(void);
 
-class countedRef {
+class _DLL_EXPORT countedRef {
 public:
     jobject global;
     int count;
@@ -105,24 +108,6 @@ public:
     JavaVM *vm;
     std::multimap<int, countedRef> refs;
     int handlers;
-
-    class exception {
-    public:
-        jthrowable throwable;
-        exception(jthrowable throwable) {
-            this->throwable = throwable;
-        }
-    };
-
-#ifdef PYTHON
-    class pythonError {
-    public:
-        jthrowable throwable;
-        pythonError(jthrowable throwable) {
-            this->throwable = throwable;
-        }
-    };
-#endif
 
     explicit JCCEnv(JavaVM *vm, JNIEnv *env);
     virtual ~JCCEnv() {};

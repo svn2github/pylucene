@@ -20,10 +20,15 @@
         try {                                                           \
             PythonThreadState state(1);                                 \
             action;                                                     \
-        } catch (JCCEnv::pythonError) {                                 \
-            return NULL;                                                \
-        } catch (JCCEnv::exception e) {                                 \
-            return PyErr_SetJavaError(e.throwable);                     \
+        } catch (int e) {                                               \
+            switch (e) {                                                \
+              case _EXC_PYTHON:                                         \
+                return NULL;                                            \
+              case _EXC_JAVA:                                           \
+                return PyErr_SetJavaError();                            \
+              default:                                                  \
+                throw;                                                  \
+            }                                                           \
         }                                                               \
     }
 
@@ -32,11 +37,16 @@
         try {                                                           \
             PythonThreadState state(1);                                 \
             action;                                                     \
-        } catch (JCCEnv::pythonError) {                                 \
-            return -1;                                                  \
-        } catch (JCCEnv::exception e) {                                 \
-            PyErr_SetJavaError(e.throwable);                            \
-            return -1;                                                  \
+        } catch (int e) {                                               \
+            switch (e) {                                                \
+              case _EXC_PYTHON:                                         \
+                return -1;                                              \
+              case _EXC_JAVA:                                           \
+                PyErr_SetJavaError();                                   \
+                return -1;                                              \
+              default:                                                  \
+                throw;                                                  \
+            }                                                           \
         }                                                               \
     }
 

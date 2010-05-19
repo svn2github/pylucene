@@ -36,7 +36,7 @@ typedef int (*boxfn)(PyTypeObject *, PyObject *, java::lang::Object *);
 PyObject *PyErr_SetArgsError(char *name, PyObject *args);
 PyObject *PyErr_SetArgsError(PyObject *self, char *name, PyObject *args);
 PyObject *PyErr_SetArgsError(PyTypeObject *type, char *name, PyObject *args);
-PyObject *PyErr_SetJavaError(jthrowable throwable);
+PyObject *PyErr_SetJavaError();
 
 extern PyObject *PyExc_JavaError;
 extern PyObject *PyExc_InvalidArgsError;

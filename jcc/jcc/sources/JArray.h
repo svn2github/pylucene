@@ -20,7 +20,7 @@
 #include "macros.h"
 
 extern jobjectArray fromPySequence(jclass cls, PyObject *sequence);
-extern PyObject *PyErr_SetJavaError(jthrowable throwable);
+extern PyObject *PyErr_SetJavaError();
 
 extern PyTypeObject *PY_TYPE(JArrayObject);
 extern PyTypeObject *PY_TYPE(JArrayString);
@@ -189,9 +189,14 @@ template<> class JArray<jobject> : public java::lang::Object {
 
                 try {
                     env->setObjectArrayElement((jobjectArray) this$, n, jobj);
-                } catch (JCCEnv::exception e) {
-                    PyErr_SetJavaError(e.throwable);
-                    return -1;
+                } catch (int e) {
+                    switch (e) {
+                      case _EXC_JAVA:
+                        PyErr_SetJavaError();
+                        return -1;
+                      default:
+                        throw;
+                    }
                 }
 
                 return 0;
