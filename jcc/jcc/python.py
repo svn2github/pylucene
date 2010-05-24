@@ -20,7 +20,7 @@ from cpp import cppname, cppnames, typename
 from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier, Class, Method
 from _jcc import findClass
-from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, SHARED
+from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, IMPLIB_LFLAGS, SHARED
 
 try:
     from cpp import ParameterizedType, TypeVariable
@@ -1789,7 +1789,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             package_data.append(extlib)
             args['extra_link_args'] += [
                 os.path.join(shlibdir, 'jcc', 'jcc%s.lib' %(_d)),
-                "/IMPLIB:%s" %(os.path.join(modulePath, extlib))
+                ' '.join(IMPLIB_LFLAGS) %(os.path.join(modulePath, extlib))
             ]
             args['libraries'] = [
                 os.path.join(import_.__dir__, 'lib',

@@ -135,6 +135,11 @@ LFLAGS = {
                  '-Wl,-rpath=%(freebsd7)s/jre/lib/i386:%(freebsd7)s/jre/lib/i386/client' %(JDK)],
 }
 
+IMPLIB_LFLAGS = {
+    'win32': ["/IMPLIB:%s"],
+    'mingw32': ["-Wl,--out-implib,%s"]
+}
+
 if platform == 'linux2':
     LFLAGS['linux2'] = LFLAGS['linux2/%s' %(machine)]
 
@@ -206,6 +211,11 @@ def main(debug):
     else:
         _lflags = LFLAGS[platform]
 
+    if 'JCC_IMPLIB_LFLAGS' in os.environ:
+        _implib_lflags = os.environ['JCC_IMPLIB_LFLAGS'].split(_jcc_argsep)
+    else:
+        _implib_lflags = IMPLIB_LFLAGS.get(platform, [])
+
     if 'JCC_JAVAC' in os.environ:
         _javac = os.environ['JCC_JAVAC'].split(_jcc_argsep)
     else:
@@ -222,6 +232,7 @@ def main(debug):
                    'CFLAGS=%s' %(_cflags),
                    'DEBUG_CFLAGS=%s' %(_debug_cflags),
                    'LFLAGS=%s' %(_lflags),
+                   'IMPLIB_LFLAGS=%s' %(_implib_lflags),
                    'SHARED=%s' %(enable_shared),
                    'VERSION="%s"' %(jcc_ver),
                    ''])
