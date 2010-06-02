@@ -21,6 +21,7 @@ Version 2.5 ->
  - added support for --import
  - added read-only env.classpath property
  - config.py now written only during build or when missing (Christian Heimes)
+ - fixed bug with not enforcing Iterable for iterator method detection
  - 
 
 Version 2.4 -> 2.5

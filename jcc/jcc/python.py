@@ -585,6 +585,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out_h, indent + 1, 'static void initialize(PyObject *module);')
     line(out_h, indent, '};')
 
+    iterable = findClass('java/lang/Iterable')
     iterator = findClass('java/util/Iterator')
     enumeration = findClass('java/util/Enumeration')
 
@@ -724,6 +725,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         modifiers = method.getModifiers()
         if name == 'iterator' and iteratorMethod is None:
             if (not method.getParameterTypes() and
+                iterable.isAssignableFrom(cls) and
                 iterator.isAssignableFrom(method.getReturnType())):
                 iteratorMethod = method
         elif name == 'next' and nextMethod is None:
