@@ -19,6 +19,9 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               include it in the distribution 
     --include JARFILE       - include JARFILE in the distribution and add
                               it to the module's CLASSPATH
+    --import MODULE         - link against the wrappers to classes shared
+                              with MODULE instead of generating duplicate
+                              and incompatible wrappers
     --exclude CLASS         - explicitly don't wrap CLASS
     --package PACKAGE       - add PACKAGE to the list of packages from
                               which dependencies are automatically wrapped
