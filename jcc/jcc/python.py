@@ -585,8 +585,12 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out_h, indent + 1, 'static void initialize(PyObject *module);')
     line(out_h, indent, '};')
 
-    iterable = findClass('java/lang/Iterable')
-    iterator = findClass('java/util/Iterator')
+    if env.java_version >= '1.5':
+        iterable = findClass('java/lang/Iterable')
+        iterator = findClass('java/util/Iterator')
+    else:
+        iterable = iterator = None
+
     enumeration = findClass('java/util/Enumeration')
 
     while indent:
@@ -724,7 +728,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         method = methods[0]
         modifiers = method.getModifiers()
         if name == 'iterator' and iteratorMethod is None:
-            if (not method.getParameterTypes() and
+            if (iterable is not None and
+                not method.getParameterTypes() and
                 iterable.isAssignableFrom(cls) and
                 iterator.isAssignableFrom(method.getReturnType())):
                 iteratorMethod = method
@@ -761,7 +766,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         method = methods[0]
         modifiers = method.getModifiers()
         if name == 'iterator' and iteratorMethod is None:
-            if (not method.getParameterTypes() and
+            if (iterable is not None and
+                not method.getParameterTypes() and
+                iterable.isAssignableFrom(cls) and
                 iterator.isAssignableFrom(method.getReturnType())):
                 iteratorMethod = method
                 iteratorExt = True
@@ -897,7 +904,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         else:
             tp_iter = '((PyObject *(*)(t_%s *)) get_%siterator<t_%s>)' %(names[-1], clsParams and 'generic_' or '', names[-1])
         tp_iternext = '0'
-    elif nextMethod and iterator.isAssignableFrom(cls):
+    elif nextMethod and iterable is not None and iterator.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextMethod.getReturnType(), cls, False)
         ns, sep, n = rpartition(returnName, '::')
