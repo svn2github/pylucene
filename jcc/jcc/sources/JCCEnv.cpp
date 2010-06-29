@@ -425,7 +425,18 @@ void JCCEnv::reportException() const
             jobject cls = (jobject) vm_env->GetObjectClass(throwable);
 
             if (vm_env->IsSameObject(cls, _thr))
+            {
+#ifndef _jcc_lib
+                /* PythonException class is not available without shared mode.
+                 * Python exception information thus gets lost and exception
+                 * is reported via plain Java RuntimeException.
+                 */
+                PyErr_Clear();
+                throw _EXC_JAVA;
+#else
                 throw _EXC_PYTHON;
+#endif
+            }
         }
 #endif
 

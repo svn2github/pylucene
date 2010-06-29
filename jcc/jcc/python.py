@@ -20,7 +20,8 @@ from cpp import cppname, cppnames, typename
 from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier, Class, Method
 from _jcc import findClass
-from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, IMPLIB_LFLAGS, SHARED
+from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, IMPLIB_LFLAGS, \
+    SHARED, VERSION as JCC_VER
 
 try:
     from cpp import ParameterizedType, TypeVariable
@@ -1722,14 +1723,16 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     includes[0:0] = INCLUDES
     compile_args = CFLAGS
     link_args = LFLAGS
-    defines=['PYTHON']
+
+    defines=[('PYTHON', None),
+             ('JCC_VER', '"%s"' %(JCC_VER))]
+    if shared:
+        defines.append(('_jcc_shared', None))
+    if generics:
+        defines.append(('_java_generics', None))
 
     if compiler:
         script_args.append('--compiler=%s' %(compiler))
-
-    if shared:
-        defines.append('_jcc_shared')
-    script_args.append('--define=%s' %(','.join(defines)))
 
     if debug:
         script_args.append('--debug')
@@ -1765,11 +1768,8 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         'extra_link_args': link_args,
         'include_dirs': includes,
         'sources': sources,
-        'define_macros': []
+        'define_macros': defines
     }
-
-    if generics:
-        args['define_macros'] += [('_java_generics', None)]
 
     if shared:
         shlibdir = os.path.dirname(os.path.dirname(_jcc.__file__))
