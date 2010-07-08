@@ -14,12 +14,14 @@
 # site-packages directory.
 #
 
-VERSION=3.1-0
+VERSION=4.0-0
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=3.1
+LUCENE_VER=4.0
 LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/trunk/lucene
+MODULES_SVN=http://svn.apache.org/repos/asf/lucene/dev/trunk/modules
 PYLUCENE:=$(shell pwd)
 LUCENE=lucene-java-$(LUCENE_VER)
+MODULES=lucene-modules-$(LUCENE_VER)
 
 # 
 # You need to uncomment and edit the variables below in the section
@@ -30,6 +32,8 @@ LUCENE=lucene-java-$(LUCENE_VER)
 # PREFIX: where programs are normally installed on your system (Unix).
 # PREFIX_PYTHON: where your version of python is installed.
 # JCC: how jcc is invoked, depending on the python version:
+#  - python 2.7:
+#      $(PYTHON) -m jcc
 #  - python 2.6:
 #      $(PYTHON) -m jcc.__main__
 #  - python 2.5:
@@ -48,11 +52,11 @@ LUCENE=lucene-java-$(LUCENE_VER)
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
 #NUM_FILES=3
 
-# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.6, Java 1.6)
+# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
 #PREFIX_PYTHON=/opt/local
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+#JCC=$(PYTHON) -m jcc --arch x86_64
 #NUM_FILES=3
 
 # Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
@@ -137,7 +141,7 @@ endif
 DEFINES=-DPYLUCENE_VER="\"$(VERSION)\"" -DLUCENE_VER="\"$(LUCENE_VER)\""
 
 LUCENE_JAR=$(LUCENE)/build/lucene-core-$(LUCENE_VER).jar
-ANALYZERS_JAR=$(LUCENE)/build/contrib/analyzers/common/lucene-analyzers-$(LUCENE_VER).jar
+ANALYZERS_JAR=$(MODULES)/analysis/build/common/lucene-analyzers-common-$(LUCENE_VER).jar
 HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_VER).jar
 MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
@@ -152,6 +156,7 @@ default: all
 
 $(LUCENE):
 	svn export -r $(LUCENE_SVN_VER) $(LUCENE_SVN) $(LUCENE)
+	svn export -r $(LUCENE_SVN_VER) $(MODULES_SVN) $(MODULES)
 
 sources: $(LUCENE)
 
@@ -171,7 +176,7 @@ $(LUCENE_JAR): $(LUCENE)
 	cd $(LUCENE); $(ANT) -Dversion=$(LUCENE_VER)
 
 $(ANALYZERS_JAR): $(LUCENE_JAR)
-	cd $(LUCENE)/contrib/analyzers/common; $(ANT) -Dversion=$(LUCENE_VER)
+	cd $(MODULES); $(ANT) -Dversion=$(LUCENE_VER) compile
 
 $(MEMORY_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/memory; $(ANT) -Dversion=$(LUCENE_VER)
@@ -189,18 +194,20 @@ JARS=$(LUCENE_JAR) $(ANALYZERS_JAR) \
      $(MEMORY_JAR) $(HIGHLIGHTER_JAR) $(QUERIES_JAR) \
      $(EXTENSIONS_JAR)
 
+JCCFLAGS?=
 
 jars: $(JARS)
 
 
 ifneq ($(ICUPKG),)
 
-RESOURCES=--resources $(LUCENE)/contrib/icu/src/resources
+ICURES= $(MODULES)/analysis/icu/src/resources
+RESOURCES=--resources $(ICURES)
 ENDIANNESS:=$(shell $(PYTHON) -c "import struct; print struct.pack('h', 1) == '\000\001' and 'b' or 'l'")
 
-resources: $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.dat
+resources: $(ICURES)/org/apache/lucene/analysis/icu/utr30.dat
 
-$(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.dat: $(LUCENE)/contrib/icu/src/resources/org/apache/lucene/analysis/icu/utr30.nrm
+$(ICURES)/org/apache/lucene/analysis/icu/utr30.dat: $(ICURES)/org/apache/lucene/analysis/icu/utr30.nrm
 	rm -f $@
 	cd $(dir $<); $(ICUPKG) --type $(ENDIANNESS) --add $(notdir $<) new $(notdir $@)
 
@@ -214,6 +221,7 @@ resources:
 endif
 
 GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
+           $(JCCFLAGS) \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
            --package java.util \

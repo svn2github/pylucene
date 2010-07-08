@@ -249,12 +249,11 @@ class Test_PyLuceneBase(object):
         reader = None
         try:
             reader = IndexReader.open(store, True)
-            term_enum = reader.terms(Term("docid", ''))
+            term_enum = MultiFields.getTerms(reader, "docid").iterator()
             docids = []
 
-            while term_enum.term().field() == 'docid':
-                docids.append(term_enum.term().text())
-                term_enum.next()
+            for term in term_enum:
+                docids.append(term.utf8ToString())
             self.assertEqual(len(docids), 2)
         finally:
             pass

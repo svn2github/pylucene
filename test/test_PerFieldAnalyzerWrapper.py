@@ -28,16 +28,16 @@ class PerFieldAnalyzerTestCase(TestCase):
         analyzer.addAnalyzer("special", SimpleAnalyzer())
 
         tokenStream = analyzer.tokenStream("field", StringReader(text))
-        termAtt = tokenStream.getAttribute(TermAttribute.class_)
+        termAtt = tokenStream.getAttribute(CharTermAttribute.class_)
 
         self.assert_(tokenStream.incrementToken())
-        self.assertEqual("Qwerty", termAtt.term(),
+        self.assertEqual("Qwerty", termAtt.toString(),
                          "WhitespaceAnalyzer does not lowercase")
 
         tokenStream = analyzer.tokenStream("special", StringReader(text))
-        termAtt = tokenStream.getAttribute(TermAttribute.class_)
+        termAtt = tokenStream.getAttribute(CharTermAttribute.class_)
         self.assert_(tokenStream.incrementToken())
-        self.assertEqual("qwerty", termAtt.term(),
+        self.assertEqual("qwerty", termAtt.toString(),
                          "SimpleAnalyzer lowercases")
 
 

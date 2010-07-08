@@ -13,7 +13,7 @@
 # ====================================================================
 
 from lucene import \
-    IndexReader, Term, BitSet, PythonFilter, JArray, OpenBitSet
+    IndexReader, Term, BitSet, PythonFilter, JArray, OpenBitSet, BytesRef
 
 #
 # A Filter extension, with a TermDocs wrapper working around the lack of
@@ -31,15 +31,14 @@ class SpecialsFilter(PythonFilter):
         bits = OpenBitSet(long(reader.maxDoc()))
         isbns = self.accessor.isbns()
 
-        docs = JArray(int)(1)
-        freqs = JArray(int)(1)
-
         for isbn in isbns:
             if isbn is not None:
-                termDocs = reader.termDocs(Term("isbn", isbn))
-                count = termDocs.read(docs, freqs)
+                docsEnum = reader.termDocsEnum(reader.getDeletedDocs(),
+                                               "isbn", BytesRef(isbn))
+                result = docsEnum.getBulkResult()
+                count = docsEnum.read()
                 if count == 1:
-                    bits.set(long(docs[0]))
+                    bits.set(long(result.docs.ints[0]))
 
         return bits
 

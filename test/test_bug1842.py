@@ -44,7 +44,7 @@ class Test_Bug1842(unittest.TestCase):
         q = TermQuery(Term("id", '1'))
         topDocs = searcher.search(q, 50)
         freqvec = reader.getTermFreqVector(topDocs.scoreDocs[0].doc, "all")
-        terms = list(freqvec.getTerms())
+        terms = [term.utf8ToString() for term in freqvec.getTerms()]
         terms.sort()
         self.assert_(terms == ['blah', 'gesundheit'])
 

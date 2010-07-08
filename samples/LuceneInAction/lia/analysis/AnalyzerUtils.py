@@ -14,7 +14,8 @@
 
 from lucene import \
      SimpleAnalyzer, StandardAnalyzer, StringReader, Version, \
-     TermAttribute, PositionIncrementAttribute, TypeAttribute, OffsetAttribute
+     CharTermAttribute, PositionIncrementAttribute, TypeAttribute, \
+     OffsetAttribute
 
 
 class AnalyzerUtils(object):
@@ -38,12 +39,13 @@ class AnalyzerUtils(object):
         return attr.getPositionIncrement()
 
     def setTerm(cls, source, term):
-        attr = source.addAttribute(TermAttribute.class_)
-        attr.setTermBuffer(term)
+        attr = source.addAttribute(CharTermAttribute.class_)
+        attr.setEmpty()
+        attr.append(term)
 
     def getTerm(cls, source):
-        attr = source.addAttribute(TermAttribute.class_)
-        return attr.term()
+        attr = source.addAttribute(CharTermAttribute.class_)
+        return attr.toString()
 
     def setType(cls, source, type):
         attr = source.addAttribute(TypeAttribute.class_)
@@ -56,15 +58,15 @@ class AnalyzerUtils(object):
     def displayTokens(cls, analyzer, text):
 
         tokenStream = analyzer.tokenStream("contents", StringReader(text))
-        term = tokenStream.addAttribute(TermAttribute.class_)
+        term = tokenStream.addAttribute(CharTermAttribute.class_)
 
         while tokenStream.incrementToken():
-            print "[%s]" %(term.term()),
+            print "[%s]" %(term.toString()),
 
     def displayTokensWithPositions(cls, analyzer, text):
 
         stream = analyzer.tokenStream("contents", StringReader(text))
-        term = stream.addAttribute(TermAttribute.class_)
+        term = stream.addAttribute(CharTermAttribute.class_)
         posIncr = stream.addAttribute(PositionIncrementAttribute.class_)
 
         position = 0
@@ -74,14 +76,14 @@ class AnalyzerUtils(object):
                 position = position + increment
                 print "\n%d:" %(position),
 
-            print "[%s]" %(term.term()),
+            print "[%s]" %(term.toString()),
         print
 
     def displayTokensWithFullDetails(cls, analyzer, text):
 
         stream = analyzer.tokenStream("contents", StringReader(text))
 
-        term = stream.addAttribute(TermAttribute.class_)
+        term = stream.addAttribute(CharTermAttribute.class_)
         posIncr = stream.addAttribute(PositionIncrementAttribute.class_)
         offset = stream.addAttribute(OffsetAttribute.class_)
         type = stream.addAttribute(TypeAttribute.class_)
@@ -93,7 +95,7 @@ class AnalyzerUtils(object):
                 position = position + increment
                 print "\n%d:" %(position),
 
-            print "[%s:%d->%d:%s]" %(term.term(),
+            print "[%s:%d->%d:%s]" %(term.toString(),
                                      offset.startOffset(),
                                      offset.endOffset(),
                                      type.type()),
@@ -102,12 +104,12 @@ class AnalyzerUtils(object):
     def assertAnalyzesTo(cls, analyzer, input, outputs):
 
         stream = analyzer.tokenStream("field", StringReader(input))
-        termAttr = stream.addAttribute(TermAttribute.class_)
+        termAttr = stream.addAttribute(CharTermAttribute.class_)
         for output in outputs:
             if not stream.incrementToken():
                 raise AssertionError, 'stream.incremementToken()'
-            if output != termAttr.term():
-                raise AssertionError, 'output == termAttr.term())'
+            if output != termAttr.toString():
+                raise AssertionError, 'output == termAttr.toString())'
 
         if stream.incrementToken():
             raise AssertionError, 'not stream.incremementToken()'

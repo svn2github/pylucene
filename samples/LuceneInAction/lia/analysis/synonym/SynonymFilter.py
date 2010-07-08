@@ -12,7 +12,7 @@
 #   limitations under the License.
 # ====================================================================
 
-from lucene import Token, PythonTokenFilter, TermAttribute
+from lucene import Token, PythonTokenFilter, CharTermAttribute
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
 #
@@ -26,7 +26,7 @@ class SynonymFilter(PythonTokenFilter):
         super(SynonymFilter, self).__init__(inStream)
 
         self.synonymStack = []
-        self.termAttr = self.addAttribute(TermAttribute.class_)
+        self.termAttr = self.addAttribute(CharTermAttribute.class_)
         self.save = inStream.cloneAttributes()
         self.engine = engine
         self.inStream = inStream
@@ -47,7 +47,7 @@ class SynonymFilter(PythonTokenFilter):
 
     def addAliasesToStack(self):
 
-        synonyms = self.engine.getSynonyms(self.termAttr.term())
+        synonyms = self.engine.getSynonyms(self.termAttr.toString())
         if synonyms is None:
             return
 

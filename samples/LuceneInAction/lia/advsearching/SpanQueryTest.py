@@ -18,7 +18,7 @@ from cStringIO import StringIO
 from lucene import \
      WhitespaceAnalyzer, Document, Field, IndexReader, IndexWriter, Term, \
      IndexSearcher, PhraseQuery, SpanFirstQuery, SpanNearQuery, SpanNotQuery, \
-     SpanOrQuery, SpanTermQuery, RAMDirectory, TermAttribute, StringReader
+     SpanOrQuery, SpanTermQuery, RAMDirectory, CharTermAttribute, StringReader
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
@@ -185,7 +185,7 @@ class SpanQueryTest(TestCase):
             # positions, starting from 0
             stream = self.analyzer.tokenStream("contents",
                                                StringReader(doc.get("f")))
-            term = stream.addAttribute(TermAttribute.class_)
+            term = stream.addAttribute(CharTermAttribute.class_)
       
             buffer = StringIO()
             buffer.write("   ")
@@ -195,7 +195,7 @@ class SpanQueryTest(TestCase):
                 if i == spans.start():
                     buffer.write("<")
 
-                buffer.write(term.term())
+                buffer.write(term.toString())
                 if i + 1 == spans.end():
                     buffer.write(">")
 

@@ -79,8 +79,8 @@ PRIMITIVES = { 'boolean': 'Z',
                'short': 'S',
                'void': 'V' }
 
-RESERVED = set(['delete', 'and', 'or', 'not', 'xor', 'union',
-                'register', 'const', 'bool', 'operator', 'typeof', 'asm',
+RESERVED = set(['delete', 'and', 'or', 'not', 'xor', 'union', 'register',
+                'const', 'bool', 'operator', 'typeof', 'asm',
                 'NULL', 'DOMAIN'])
 
 def cppname(name):

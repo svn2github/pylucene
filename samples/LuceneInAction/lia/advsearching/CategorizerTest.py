@@ -63,6 +63,7 @@ class CategorizerTest(LiaTestCase):
 
         i = 0
         for term in terms:
+            term = term.utf8ToString()
             if term in vectorMap:
                 vectorMap[term] += freqs[i]
             else:

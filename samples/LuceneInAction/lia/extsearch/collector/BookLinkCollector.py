@@ -12,7 +12,8 @@
 #   limitations under the License.
 # ====================================================================
 
-from lucene import Document, IndexSearcher, PythonCollector, FieldCache
+from lucene import Document, IndexSearcher, PythonCollector, FieldCache, \
+    BytesRef
 
 #
 # A Collector extension
@@ -33,13 +34,14 @@ class BookLinkCollector(PythonCollector):
     def setNextReader(self, reader, docBase):
 
         self.docBase = docBase
-        self.urls = FieldCache.DEFAULT.getStrings(reader, "url")
-        self.titles = FieldCache.DEFAULT.getStrings(reader, "title2")
+        self.urls = FieldCache.DEFAULT.getTerms(reader, "url")
+        self.titles = FieldCache.DEFAULT.getTerms(reader, "title2")
 
     def collect(self, docID, score):
-
-        url = self.urls[docID]
-        title = self.titles[docID]
+        
+        term = BytesRef()
+        url = self.urls.getTerm(docID, term).utf8ToString()
+        title = self.titles.getTerm(docID, term).utf8ToString()
         self.documents[url] = title
 
         print "%s: %s" %(title, score)

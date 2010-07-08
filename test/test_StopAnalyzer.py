@@ -33,10 +33,10 @@ class StopAnalyzerTestCase(TestCase):
         stream = self.stop.tokenStream("test", reader)
         self.assert_(stream is not None)
 
-        termAtt = stream.getAttribute(TermAttribute.class_)
+        termAtt = stream.getAttribute(CharTermAttribute.class_)
     
         while stream.incrementToken():
-            self.assert_(termAtt.term() not in self.invalidTokens)
+            self.assert_(termAtt.toString() not in self.invalidTokens)
 
     def testStopList(self):
 
@@ -50,11 +50,11 @@ class StopAnalyzerTestCase(TestCase):
         stream = newStop.tokenStream("test", reader)
         self.assert_(stream is not None)
 
-        termAtt = stream.getAttribute(TermAttribute.class_)
+        termAtt = stream.getAttribute(CharTermAttribute.class_)
         posIncrAtt = stream.addAttribute(PositionIncrementAttribute.class_)
     
         while stream.incrementToken():
-            text = termAtt.term()
+            text = termAtt.toString()
             self.assert_(text not in stopWordsSet)
             # by default stop tokenizer does not apply increments.
             self.assertEqual(1, posIncrAtt.getPositionIncrement())
@@ -73,11 +73,11 @@ class StopAnalyzerTestCase(TestCase):
         self.assert_(stream is not None)
 
         i = 0
-        termAtt = stream.getAttribute(TermAttribute.class_)
+        termAtt = stream.getAttribute(CharTermAttribute.class_)
         posIncrAtt = stream.addAttribute(PositionIncrementAttribute.class_)
 
         while stream.incrementToken():
-            text = termAtt.term()
+            text = termAtt.toString()
             self.assert_(text not in stopWordsSet)
             self.assertEqual(expectedIncr[i],
                              posIncrAtt.getPositionIncrement())

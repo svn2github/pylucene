@@ -17,7 +17,7 @@ from unittest import TestCase
 from lucene import \
      StandardAnalyzer, RAMDirectory, IndexWriter, Term, Document, Field, \
      IndexSearcher, TermQuery, PhraseQuery, QueryParser, StringReader, \
-     TermAttribute, PositionIncrementAttribute, Version
+     CharTermAttribute, PositionIncrementAttribute, Version
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 from lia.analysis.synonym.SynonymAnalyzer import SynonymAnalyzer
@@ -51,13 +51,13 @@ class SynonymAnalyzerTest(TestCase):
 
         stream = self.synonymAnalyzer.tokenStream("contents",
                                                   StringReader("jumps"))
-        term = stream.addAttribute(TermAttribute.class_)
+        term = stream.addAttribute(CharTermAttribute.class_)
         posIncr = stream.addAttribute(PositionIncrementAttribute.class_)
 
         i = 0
         expected = ["jumps", "hops", "leaps"]
         while stream.incrementToken():
-            self.assertEqual(expected[i], term.term())
+            self.assertEqual(expected[i], term.toString())
             if i == 0:
                 expectedPos = 1
             else:

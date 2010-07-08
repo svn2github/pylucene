@@ -32,12 +32,13 @@ class PositionIncrementTestCase(TestCase):
                         self_.INCREMENTS = [1, 2, 1, 0, 1]
                         self_.i = 0
                         self_.posIncrAtt = self_.addAttribute(PositionIncrementAttribute.class_)
-                        self_.termAtt = self_.addAttribute(TermAttribute.class_)
+                        self_.termAtt = self_.addAttribute(CharTermAttribute.class_)
                         self_.offsetAtt = self_.addAttribute(OffsetAttribute.class_)
                     def incrementToken(self_):
                         if self_.i == len(self_.TOKENS):
                             return False
-                        self_.termAtt.setTermBuffer(self_.TOKENS[self_.i])
+                        self_.termAtt.setEmpty()
+                        self_.termAtt.append(self_.TOKENS[self_.i])
                         self_.offsetAtt.setOffset(self_.i, self_.i)
                         self_.posIncrAtt.setPositionIncrement(self_.INCREMENTS[self_.i])
                         self_.i += 1
@@ -64,13 +65,17 @@ class PositionIncrementTestCase(TestCase):
 
         searcher = IndexSearcher(store, True)
 
-        pos = searcher.getIndexReader().termPositions(Term("field", "1"))
-        pos.next()
+        pos = MultiFields.getTermPositionsEnum(searcher.getIndexReader(),
+                                               MultiFields.getDeletedDocs(searcher.getIndexReader()),
+                                               "field", BytesRef("1"))
+        pos.nextDoc()
         # first token should be at position 0
         self.assertEqual(0, pos.nextPosition())
     
-        pos = searcher.getIndexReader().termPositions(Term("field", "2"))
-        pos.next()
+        pos = MultiFields.getTermPositionsEnum(searcher.getIndexReader(),
+                                               MultiFields.getDeletedDocs(searcher.getIndexReader()),
+                                               "field", BytesRef("2"))
+        pos.nextDoc()
         # second token should be at position 2
         self.assertEqual(2, pos.nextPosition())
     
@@ -204,9 +209,12 @@ class PositionIncrementTestCase(TestCase):
 
         r = writer.getReader()
 
-        tp = r.termPositions(Term("content", "a"))
+        tp = MultiFields.getTermPositionsEnum(r,
+                                              MultiFields.getDeletedDocs(r),
+                                              "content", BytesRef("a"))
+
         count = 0
-        self.assert_(tp.next())
+        self.assert_(tp.nextDoc() != tp.NO_MORE_DOCS)
         # "a" occurs 4 times
         self.assertEqual(4, tp.freq())
 
@@ -217,7 +225,7 @@ class PositionIncrementTestCase(TestCase):
         self.assertEqual(6, tp.nextPosition())
 
         # only one doc has "a"
-        self.assert_(not tp.next())
+        self.assert_(tp.nextDoc() == tp.NO_MORE_DOCS)
 
         searcher = IndexSearcher(r)
     
@@ -305,7 +313,7 @@ class PayloadFilter(PythonTokenFilter):
         self.i = 0
         self.posIncrAttr = input.addAttribute(PositionIncrementAttribute.class_)
         self.payloadAttr = input.addAttribute(PayloadAttribute.class_)
-        self.termAttr = input.addAttribute(TermAttribute.class_)
+        self.termAttr = input.addAttribute(CharTermAttribute.class_)
 
     def incrementToken(self):
 
