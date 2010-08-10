@@ -110,7 +110,6 @@ PyTypeObject PY_TYPE(JCCEnv) = {
     t_jccenv_methods,                    /* tp_methods */
     t_jccenv_members,                    /* tp_members */
     t_jccenv_properties,                 /* tp_getset */
-    0,                                   /* tp_getset */
     0,                                   /* tp_base */
     0,                                   /* tp_dict */
     0,                                   /* tp_descr_get */
