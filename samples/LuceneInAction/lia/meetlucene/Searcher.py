@@ -18,7 +18,8 @@ from time import time
 from datetime import timedelta
 
 from lucene import \
-     Document, IndexSearcher, FSDirectory, QueryParser, StandardAnalyzer, Hit
+     Document, IndexSearcher, FSDirectory, QueryParser, StandardAnalyzer, \
+     SimpleFSDirectory, File, Version
 
 
 class Searcher(object):
@@ -39,19 +40,20 @@ class Searcher(object):
 
     def search(cls, indexDir, q):
 
-        fsDir = FSDirectory.getDirectory(indexDir, False)
-        searcher = IndexSearcher(fsDir)
+        fsDir = SimpleFSDirectory(File(indexDir))
+        searcher = IndexSearcher(fsDir, True)
 
-        query = QueryParser("contents", StandardAnalyzer()).parse(q)
+        query = QueryParser(Version.LUCENE_CURRENT, "contents",
+                            StandardAnalyzer(Version.LUCENE_CURRENT)).parse(q)
         start = time()
-        hits = searcher.search(query)
+        hits = searcher.search(query, 50).scoreDocs
         duration = timedelta(seconds=time() - start)
 
-        print "Found %d document(s) (in %s) that matched query '%s':" %(hits.length(), duration, q)
+        print "Found %d document(s) (in %s) that matched query '%s':" %(len(hits), duration, q)
 
         for hit in hits:
-            doc = Hit.cast_(hit).getDocument()
-            print doc["path"]
+            doc = searcher.doc(hit.doc)
+            print 'path:', doc.get("path")
 
     main = classmethod(main)
     search = classmethod(search)

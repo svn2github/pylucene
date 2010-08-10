@@ -18,7 +18,7 @@ from time import time
 from datetime import timedelta
 from lucene import \
     IndexWriter, StandardAnalyzer, Document, Field, \
-    InputStreamReader, FileInputStream
+    InputStreamReader, FileInputStream, Version, SimpleFSDirectory, File
 
 
 class Indexer(object):
@@ -43,14 +43,17 @@ class Indexer(object):
         if not (os.path.exists(dataDir) and os.path.isdir(dataDir)):
             raise IOError, "%s does not exist or is not a directory" %(dataDir)
 
-        writer = IndexWriter(indexDir, StandardAnalyzer(), True)
+        dir = SimpleFSDirectory(File(indexDir))
+        writer = IndexWriter(dir, StandardAnalyzer(Version.LUCENE_CURRENT),
+                             True, IndexWriter.MaxFieldLength.LIMITED)
         writer.setUseCompoundFile(False)
 
         cls.indexDirectory(writer, dataDir)
 
-        numIndexed = writer.docCount()
+        numIndexed = writer.numDocs()
         writer.optimize()
         writer.close()
+        dir.close()
 
         return numIndexed
 
@@ -75,7 +78,7 @@ class Indexer(object):
             doc = Document()
             doc.add(Field("contents", reader))
             doc.add(Field("path", os.path.abspath(path),
-                          Field.Store.YES, Field.Index.UN_TOKENIZED))
+                          Field.Store.YES, Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
             reader.close()
 
