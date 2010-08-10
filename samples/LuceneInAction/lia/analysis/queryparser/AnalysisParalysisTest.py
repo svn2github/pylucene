@@ -26,8 +26,9 @@ class AnalysisParalysisTest(LiaTestCase):
         analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         queryString = "category:/philosophy/eastern"
 
-        query = QueryParser(Version.LUCENE_CURRENT,
-                            "contents", analyzer).parse(queryString)
+        parser = QueryParser(Version.LUCENE_CURRENT, "contents", analyzer)
+        parser.setAutoGeneratePhraseQueries(True)
+        query = parser.parse(queryString)
 
         self.assertEqual("category:\"philosophy eastern\"",
                          query.toString("contents"), "path got split, yikes!")

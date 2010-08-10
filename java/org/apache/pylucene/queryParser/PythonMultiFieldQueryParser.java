@@ -51,8 +51,7 @@ public class PythonMultiFieldQueryParser extends MultiFieldQueryParser {
 
     public native void pythonDecRef();
     public native Query getBooleanQuery(List clauses, boolean disableCoord);
-    public native Query getFieldQuery(String field, String queryText);
-    public native Query getFieldQuery(String field, String queryText, int slop);
+
     public native Query getFuzzyQuery(String field, String termText,
                                       float minSimilarity);
     public native Query getPrefixQuery(String field, String termText);
@@ -60,4 +59,33 @@ public class PythonMultiFieldQueryParser extends MultiFieldQueryParser {
                                       String part1, String part2,
                                       boolean inclusive);
     public native Query getWildcardQuery(String field, String termText);
+
+    public native Query getFieldQuery_quoted(String field, String queryText,
+                                             boolean quoted);
+    public native Query getFieldQuery_slop(String field, String queryText,
+                                           int slop);
+
+    public Query getFieldQuery_quoted_super(String field, String queryText,
+                                            boolean quoted)
+        throws ParseException
+    {
+        return super.getFieldQuery(field, queryText, quoted);
+    }
+
+    public Query getFieldQuery_slop_super(String field, String queryText,
+                                          int slop)
+        throws ParseException
+    {
+        return super.getFieldQuery(field, queryText, slop);
+    }
+
+    public Query getFieldQuery(String field, String queryText, boolean quoted)
+    {
+        return getFieldQuery_quoted(field, queryText, quoted);
+    }
+
+    public Query getFieldQuery(String field, String queryText, int slop)
+    {
+        return getFieldQuery_slop(field, queryText, slop);
+    }
 }

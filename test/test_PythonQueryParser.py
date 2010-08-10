@@ -33,7 +33,8 @@ class PythonQueryParserTestCase(TestCase):
     def testOverrideBooleanQuery(self):
 
         class TestQueryParser(BooleanTestMixin, PythonQueryParser):
-            pass
+            def getFieldQuery_quoted(_self, field, queryText, quoted):
+                return super(TestQueryParser, _self).getFieldQuery_quoted_super(field, queryText, quoted)
         
         qp = TestQueryParser(Version.LUCENE_CURRENT, 'all',
                              StandardAnalyzer(Version.LUCENE_CURRENT))
@@ -46,7 +47,8 @@ class PythonMultiFieldQueryParserTestCase(TestCase):
     def testOverrideBooleanQuery(self):
 
         class TestQueryParser(BooleanTestMixin, PythonMultiFieldQueryParser):
-            pass
+            def getFieldQuery_quoted(_self, field, queryText, quoted):
+                return super(TestQueryParser, _self).getFieldQuery_quoted_super(field, queryText, quoted)
 
         qp = TestQueryParser(Version.LUCENE_CURRENT, ['one', 'two'],
                              StandardAnalyzer(Version.LUCENE_CURRENT))

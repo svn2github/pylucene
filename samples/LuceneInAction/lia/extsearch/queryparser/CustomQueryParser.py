@@ -58,19 +58,20 @@ class CustomQueryParser(PythonQueryParser):
         return super(CustomQueryParser,
                      self).getRangeQuery(field, part1, part2, inclusive)
 
+
+    def getFieldQuery_quoted(self, field, queryText, quoted):
+
+        return super(CustomQueryParser,
+                     self).getFieldQuery_quoted_super(field, queryText, quoted)
+
     #
     # Replace PhraseQuery with SpanNearQuery to force in-order
     # phrase matching rather than reverse.
     #
-    def getFieldQuery(self, field, queryText, slop=None):
+    def getFieldQuery_slop(self, field, queryText, slop):
 
-        if slop is None:
-            return super(CustomQueryParser,
-                         self).getFieldQuery(field, queryText)
-
-        # let QueryParser's implementation do the analysis
         orig = super(CustomQueryParser,
-                     self).getFieldQuery(field, queryText, slop)
+                     self).getFieldQuery_slop_super(field, queryText, slop)
 
         if not PhraseQuery.instance_(orig):
             return orig
@@ -117,19 +118,20 @@ class MultiFieldCustomQueryParser(PythonMultiFieldQueryParser):
         return super(CustomQueryParser,
                      self).getRangeQuery(field, part1, part2, inclusive)
 
+    def getFieldQuery_quoted(self, field, queryText, quoted):
+
+        return super(CustomQueryParser,
+                     self).getFieldQuery_quoted_super(field, queryText, quoted)
+
     #
     # Replace PhraseQuery with SpanNearQuery to force in-order
     # phrase matching rather than reverse.
     #
-    def getFieldQuery(self, field, queryText, slop=None):
-
-        if slop is None:
-            return super(CustomQueryParser,
-                         self).getFieldQuery(field, queryText)
+    def getFieldQuery_slop(self, field, queryText, slop):
 
         # let QueryParser's implementation do the analysis
         orig = super(CustomQueryParser,
-                     self).getFieldQuery(field, queryText, slop)
+                     self).getFieldQuery_slop_super(field, queryText, slop)
 
         if not PhraseQuery.instance_(orig):
             return orig
