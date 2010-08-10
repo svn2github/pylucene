@@ -271,7 +271,8 @@ all: sources jars resources compile
 
 clean:
 	if test -f $(LUCENE)/build.xml; then cd $(LUCENE); $(ANT) clean; fi
-	rm -rf build
+	if test -f $(MODULES)/build.xml; then cd $(MODULES); $(ANT) clean; fi
+	rm -rf $(LUCENE)/build build
 
 realclean:
 	rm -rf $(LUCENE) build samples/LuceneInAction/index
