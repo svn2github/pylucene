@@ -18,7 +18,8 @@ from cStringIO import StringIO
 from lucene import \
      WhitespaceAnalyzer, Document, Field, IndexReader, IndexWriter, Term, \
      IndexSearcher, PhraseQuery, SpanFirstQuery, SpanNearQuery, SpanNotQuery, \
-     SpanOrQuery, SpanTermQuery, RAMDirectory, CharTermAttribute, StringReader
+     SpanOrQuery, SpanTermQuery, RAMDirectory, CharTermAttribute, \
+     StringReader, SlowMultiReaderWrapper
 
 from lia.analysis.AnalyzerUtils import AnalyzerUtils
 
@@ -166,7 +167,7 @@ class SpanQueryTest(TestCase):
 
     def dumpSpans(self, query):
 
-        spans = query.getSpans(self.reader)
+        spans = query.getSpans(SlowMultiReaderWrapper.wrap(self.reader))
         print "%s:" % query
         numSpans = 0
 

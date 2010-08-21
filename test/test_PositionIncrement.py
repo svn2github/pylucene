@@ -227,7 +227,7 @@ class PositionIncrementTestCase(TestCase):
         # only one doc has "a"
         self.assert_(tp.nextDoc() == tp.NO_MORE_DOCS)
 
-        searcher = IndexSearcher(r)
+        searcher = IndexSearcher(SlowMultiReaderWrapper.wrap(r))
     
         stq1 = SpanTermQuery(Term("content", "a"))
         stq2 = SpanTermQuery(Term("content", "k"))

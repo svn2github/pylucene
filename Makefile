@@ -134,6 +134,8 @@ MODULES=lucene-modules-$(LUCENE_VER)
 # No edits required below
 #
 
+SVNOP?=export
+
 ifeq ($(DEBUG),1)
   DEBUG_OPT=--debug
 endif
@@ -155,8 +157,10 @@ ICUPKG:=$(shell which icupkg)
 default: all
 
 $(LUCENE):
-	svn export -r $(LUCENE_SVN_VER) $(LUCENE_SVN) $(LUCENE)
-	svn export -r $(LUCENE_SVN_VER) $(MODULES_SVN) $(MODULES)
+	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(LUCENE_SVN) $(LUCENE)
+	if test ! -h lucene; then ln -s $(LUCENE) lucene; fi
+	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(MODULES_SVN) $(MODULES)
+	if test ! -h modules; then ln -s $(MODULES) modules; fi
 
 sources: $(LUCENE)
 
@@ -275,7 +279,9 @@ clean:
 	rm -rf $(LUCENE)/build build
 
 realclean:
-	rm -rf $(LUCENE) build samples/LuceneInAction/index
+	if test ! -d $(LUCENE)/.svn; then rm -rf $(LUCENE) lucene; else rm -rf $(LUCENE)/build; fi
+	if test ! -d $(MODULES)/.svn; then rm -rf $(MODULES) modules; fi
+	rm -rf build samples/LuceneInAction/index
 
 OS=$(shell uname)
 BUILD_TEST:=$(PYLUCENE)/build/test
