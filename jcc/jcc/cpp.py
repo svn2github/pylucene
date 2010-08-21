@@ -63,7 +63,22 @@ class InvalidArgsError(Exception):
 
 
 _jcc._set_exception_types(JavaError, InvalidArgsError)
+from _jcc import findClass as _findClass
 from _jcc import *
+
+
+def findClass(className):
+
+    try:
+        cls = _findClass(className)
+    except:
+        print >>sys.stderr, "While loading", className
+        raise
+
+    if cls is None:
+        raise ValueError, className
+
+    return cls
 
 
 INDENT = '    '
@@ -182,7 +197,7 @@ def known(cls, typeset, declares, packages, excludes, generics):
         cls = cls.getComponentType()
 
     className = cls.getName()
-    if className in excludes:
+    if className.split('$', 1)[0] in excludes:
         return False
 
     if cls.isPrimitive():
@@ -475,13 +490,10 @@ def jcc(args):
                 include = os.path.join(import_.__dir__, 'include')
                 os.path.walk(include, walk, (include, importset))
                 typeset.update(importset)
-
         for className in classNames:
-            if className in excludes:
+            if className.split('$', 1)[0] in excludes:
                 continue
             cls = findClass(className.replace('.', '/'))
-            if cls is None:
-                raise ValueError, className
             if Modifier.isPublic(cls.getModifiers()):
                 typeset.add(cls)
                 cls = cls.getSuperclass()

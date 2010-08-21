@@ -1,4 +1,10 @@
 
+Version 2.6 ->
+------------------
+ - added IGNORE to reserved word list
+ - improved --exclude logic to also exclude inner classes of excluded classes
+ - 
+
 Version 2.5 -> 2.6
 ------------------
  - added freebsd7 settings to setup.py (Sujan Shakya)

@@ -16,10 +16,9 @@ import os, sys, platform, shutil, _jcc
 from itertools import izip
 
 from cpp import PRIMITIVES, INDENT, HALF_INDENT
-from cpp import cppname, cppnames, typename
+from cpp import cppname, cppnames, typename, findClass
 from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier, Class, Method
-from _jcc import findClass
 from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, IMPLIB_LFLAGS, \
     SHARED, VERSION as JCC_VER
 
