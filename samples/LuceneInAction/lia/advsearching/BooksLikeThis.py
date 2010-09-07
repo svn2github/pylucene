@@ -16,7 +16,7 @@ import os
 
 from lucene import \
      Document, IndexReader, Term, BooleanQuery, IndexSearcher, TermQuery, \
-     SimpleFSDirectory, File, System, BooleanClause
+     SimpleFSDirectory, File, System, BooleanClause, MultiFields
 
 
 class BooksLikeThis(object):
@@ -28,9 +28,10 @@ class BooksLikeThis(object):
 
         reader = IndexReader.open(directory, True)
         blt = BooksLikeThis(reader)
+        deletedDocs = MultiFields.getDeletedDocs(reader)
 
         for id in xrange(reader.maxDoc()):
-            if reader.isDeleted(id):
+            if deletedDocs is not None and deletedDocs.get(id):
                 continue
             doc = reader.document(id)
             print ''

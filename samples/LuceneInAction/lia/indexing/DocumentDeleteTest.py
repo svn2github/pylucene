@@ -12,7 +12,7 @@
 #   limitations under the License.
 # ====================================================================
 
-from lucene import IndexWriter, IndexReader
+from lucene import IndexWriter, IndexReader, MultiFields
 from lia.indexing.BaseIndexingTestCase import BaseIndexingTestCase
 
 
@@ -23,9 +23,11 @@ class DocumentDeleteTest(BaseIndexingTestCase):
         reader = IndexReader.open(self.dir, False)
         self.assertEqual(2, reader.maxDoc())
         self.assertEqual(2, reader.numDocs())
-        reader.deleteDocument(1)
 
-        self.assert_(reader.isDeleted(1))
+        reader.deleteDocument(1)
+        deletedDocs = MultiFields.getDeletedDocs(reader)
+
+        self.assert_(deletedDocs is not None and deletedDocs.get(1))
         self.assert_(reader.hasDeletions())
         self.assertEqual(2, reader.maxDoc())
         self.assertEqual(1, reader.numDocs())
@@ -53,8 +55,9 @@ class DocumentDeleteTest(BaseIndexingTestCase):
         writer.close()
 
         reader = IndexReader.open(self.dir, True)
+        deletedDocs = MultiFields.getDeletedDocs(reader)
 
-        self.assert_(not reader.isDeleted(1))
+        self.assert_(deletedDocs is None or not deletedDocs.get(1))
         self.assert_(not reader.hasDeletions())
         self.assertEqual(1, reader.maxDoc())
         self.assertEqual(1, reader.numDocs())
