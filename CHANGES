@@ -7,6 +7,8 @@ Version 3.0.0 ->
  - added port of ICUFoldingFilter using C++ ICU's Normalizer2 via PyICU
  - added port of ICUTransformFilter using C++ ICU's Transliterator via PyICU
  - PyLucene built with JCC 2.6
+ - fixed "Lucene in Action" samples leftover on old API
+ - improved support for adding optional contrib modules
  - 
 
 Version 2.9.0 -> 3.0.0

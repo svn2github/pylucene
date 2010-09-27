@@ -7,8 +7,9 @@
 # 
 # Steps to build
 #   1. Edit the sections below as documented
-#   2. make
-#   3. make install
+#   2. Edit the JARS variable to add optional contrib modules not defaulted
+#   3. make
+#   4. make install
 #
 # The install target installs the lucene python extension in python's
 # site-packages directory.
@@ -58,6 +59,13 @@ MODULES=lucene-modules-$(LUCENE_VER)
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc --arch x86_64
 #NUM_FILES=3
+
+# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
+PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
+ANT=ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc --arch x86_64
+NUM_FILES=3
 
 # Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
 #PREFIX_PYTHON=/usr
@@ -130,6 +138,18 @@ MODULES=lucene-modules-$(LUCENE_VER)
 #NUM_FILES=3
 
 
+JARS=$(LUCENE_JAR)
+
+# comment/uncomment the desired/undesired optional contrib modules below
+JARS+=$(ANALYZERS_JAR)          # many language analyzers
+JARS+=$(MEMORY_JAR)             # single-document memory index
+JARS+=$(HIGHLIGHTER_JAR)        # needs memory contrib
+JARS+=$(EXTENSIONS_JAR)         # needs highlighter contrib
+JARS+=$(QUERIES_JAR)            # regex and other contrib queries
+#JARS+=$(SMARTCN_JAR)           # smart chinese analyzer
+#JARS+=$(SPATIAL_JAR)           # spatial lucene
+
+
 #
 # No edits required below
 #
@@ -148,6 +168,8 @@ HIGHLIGHTER_JAR=$(LUCENE)/build/contrib/highlighter/lucene-highlighter-$(LUCENE_
 MEMORY_JAR=$(LUCENE)/build/contrib/memory/lucene-memory-$(LUCENE_VER).jar
 QUERIES_JAR=$(LUCENE)/build/contrib/queries/lucene-queries-$(LUCENE_VER).jar
 EXTENSIONS_JAR=build/jar/extensions.jar
+SMARTCN_JAR=$(MODULES)/analysis/build/smartcn/lucene-analyzers-smartcn-$(LUCENE_VER).jar
+SPATIAL_JAR=$(LUCENE)/build/contrib/spatial/lucene-spatial-$(LUCENE_VER).jar
 
 ICUPKG:=$(shell which icupkg)
 
@@ -194,9 +216,11 @@ $(QUERIES_JAR): $(LUCENE_JAR)
 $(EXTENSIONS_JAR): $(LUCENE_JAR)
 	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
 
-JARS=$(LUCENE_JAR) $(ANALYZERS_JAR) \
-     $(MEMORY_JAR) $(HIGHLIGHTER_JAR) $(QUERIES_JAR) \
-     $(EXTENSIONS_JAR)
+$(SMARTCN_JAR): $(LUCENE_JAR)
+	cd $(MODULES)/analysis/smartcn; $(ANT) -Dversion=$(LUCENE_VER)
+
+$(SPATIAL_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/contrib/spatial; $(ANT) -Dversion=$(LUCENE_VER)
 
 JCCFLAGS?=
 
@@ -230,6 +254,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
                                java.lang.Runtime \
            --package java.util \
                      java.util.Arrays \
+                     java.util.HashSet \
                      java.text.SimpleDateFormat \
                      java.text.DecimalFormat \
                      java.text.Collator \
