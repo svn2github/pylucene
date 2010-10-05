@@ -164,7 +164,7 @@ static PyObject *t_fc_call(PyObject *self, PyObject *args, PyObject *kwds)
     {
         t_fp *fp = (t_fp *) PY_TYPE(FinalizerProxy).tp_alloc(&PY_TYPE(FinalizerProxy), 0);
 
-        fp->object = obj;
+        fp->object = obj;      /* released by t_fp_clear() */
         obj = (PyObject *) fp;
     }
 

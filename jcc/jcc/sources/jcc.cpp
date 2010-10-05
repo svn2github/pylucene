@@ -329,7 +329,7 @@ static void registerNatives(JNIEnv *vm_env);
 _DLL_EXPORT PyObject *initJCC(PyObject *module)
 {
     static int _once_only = 1;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__WIN32)
 #define verstring(n) #n
     PyObject *ver = PyString_FromString(verstring(JCC_VER));
 #else
