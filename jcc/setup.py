@@ -285,10 +285,11 @@ def main(debug):
             kwds["extra_link_args"] = \
                 lflags + ['-lpython%s.%s' %(sys.version_info[0:2])]
             kwds["force_shared"] = True    # requires jcc/patches/patch.43
-        elif platform == 'win32':
+        elif platform in IMPLIB_LFLAGS:
             jcclib = 'jcc%s.lib' %(debug and '_d' or '')
+            implib_flags = ' '.join(IMPLIB_LFLAGS[platform])
             kwds["extra_link_args"] = \
-                lflags + ["/IMPLIB:%s" %(os.path.join('jcc', jcclib))]
+                lflags + [implib_flags %(os.path.join('jcc', jcclib))]
             package_data.append(jcclib)
         else:
             kwds["extra_link_args"] = lflags
