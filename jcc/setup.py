@@ -44,7 +44,7 @@ else:
     JAVAHOME = None
 
 JDK = {
-    'darwin': '/System/Library/Frameworks/JavaVM.framework/Versions/Current',
+    'darwin': '/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current',
     'ipod': '/usr/include/gcc',
     'linux2': '/usr/lib/jvm/java-6-openjdk',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
