@@ -15,6 +15,11 @@
 import os, sys
 
 if sys.platform == 'win32':
+
+    if '--find-jvm-dll' in sys.argv:
+        from windows import add_jvm_dll_directory_to_path
+        add_jvm_dll_directory_to_path()
+
     from jcc.config import SHARED
     if SHARED:
         path = os.environ['Path'].split(os.pathsep)

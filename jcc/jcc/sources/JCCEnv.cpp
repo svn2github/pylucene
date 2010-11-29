@@ -18,7 +18,6 @@
 
 #include "JCCEnv.h"
 
-
 #if defined(_MSC_VER) || defined(__WIN32)
 _DLL_EXPORT DWORD VM_ENV = 0;
 #else
@@ -710,10 +709,11 @@ void JCCEnv::setClassPath(const char *classPath)
     jmethodID ma = vm_env->GetMethodID(_ucl, "addURL", "(Ljava/net/URL;)V");
 #if defined(_MSC_VER) || defined(__WIN32)
     char *pathsep = ";";
+    char *path = _strdup(classPath);
 #else
     char *pathsep = ":";
-#endif
     char *path = strdup(classPath);
+#endif
 
     for (char *cp = strtok(path, pathsep);
          cp != NULL;

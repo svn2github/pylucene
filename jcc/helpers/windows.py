@@ -36,8 +36,10 @@ if sys.platform == "win32":
 
             def close(self):
                 " close the key finally "
-                self.key.Close()
-                self.reg.Close()
+                if hasattr(self, 'key'):
+                    self.key.Close()
+                if hasattr(self, 'reg'):
+                    self.reg.Close()
 
             def __del__(self):
                 self.close()

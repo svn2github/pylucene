@@ -96,7 +96,7 @@ CFLAGS = {
     'linux2': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'sunos5': ['-features=iddollar',
                '-erroff=badargtypel2w,wbadinitl,wvarhidemem'],
-    'win32': [],
+    'win32': ["/EHsc", "/D_CRT_SECURE_NO_WARNINGS"],  # MSVC 9 (2008)
     'mingw32': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'freebsd7': ['-fno-strict-aliasing', '-Wno-write-strings'],
 }

@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <jni.h>
+
 #ifdef linux
 #include <dlfcn.h>
 #endif
@@ -442,7 +443,11 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
 
         if (vmargs)
         {
+#ifdef _MSC_VER
+            char *buf = _strdup(vmargs);
+#else
             char *buf = strdup(vmargs);
+#endif
             char *sep = ",";
             char *option;
 
