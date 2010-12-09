@@ -110,20 +110,25 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
         vm_env->GetMethodID(_obj, "getClass",
                             "()Ljava/lang/Class;");
 
-    if (vm_env->GetVersion() >= 0x00010005)
+
+    jclass iterable = vm_env->FindClass("java/lang/Iterable");
+
+    if (iterable == NULL) /* JDK < 1.5 */
+    {
+        vm_env->ExceptionClear();
+        _mids[mid_iterator] = NULL;
+        _mids[mid_iterator_next] = NULL;
+    }
+    else
     {
         _mids[mid_iterator] =
-            vm_env->GetMethodID(vm_env->FindClass("java/lang/Iterable"),
+            vm_env->GetMethodID(iterable,
                                 "iterator", "()Ljava/util/Iterator;");
         _mids[mid_iterator_next] =
             vm_env->GetMethodID(vm_env->FindClass("java/util/Iterator"),
                                 "next", "()Ljava/lang/Object;");
     }
-    else
-    {
-        _mids[mid_iterator] = NULL;
-        _mids[mid_iterator_next] = NULL;
-    }
+
 
     _mids[mid_enumeration_nextElement] =
         vm_env->GetMethodID(vm_env->FindClass("java/util/Enumeration"),
