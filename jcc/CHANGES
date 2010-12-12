@@ -6,6 +6,7 @@ Version 2.6 -> 2.7
  - changed darwin Java headers default location to path under /Developer
  - moved --find-jvm-dll logic to __init__.py to accomodate Python 2.7
  - fixed bug with faulty Java version logic causing crashes with Java 1.5
+ - added logic for finding JavaVM.framework headers on Mac OS X (Bill Janssen)
 
 Version 2.5 -> 2.6
 ------------------

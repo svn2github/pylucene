@@ -40,11 +40,16 @@ if platform in ("win32", "mingw32"):
         from helpers.windows import JAVAHOME
     except ImportError:
         JAVAHOME = None
+elif platform in ("darwin",):
+    try:
+        from helpers.darwin import JAVAHOME
+    except ImportError:
+        JAVAHOME = None
 else:
     JAVAHOME = None
 
 JDK = {
-    'darwin': '/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/Current',
+    'darwin': JAVAHOME,
     'ipod': '/usr/include/gcc',
     'linux2': '/usr/lib/jvm/java-6-openjdk',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
