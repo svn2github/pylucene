@@ -3,7 +3,6 @@ Version 2.6 -> 2.7
 ------------------
  - added 'IGNORE' to reserved word list
  - improved --exclude logic to also exclude inner classes of excluded classes
- - changed darwin Java headers default location to path under /Developer
  - moved --find-jvm-dll logic to __init__.py to accomodate Python 2.7
  - fixed bug with faulty Java version logic causing crashes with Java 1.5
  - added logic for finding JavaVM.framework headers on Mac OS X (Bill Janssen)
