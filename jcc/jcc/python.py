@@ -1620,12 +1620,13 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             copytree(resource, os.path.split(resource)[-1])
 
     packages = [moduleName]
+    package = [moduleName]
     if modules:
         for module in modules:
             if os.path.isdir(module):
                 def copytree(src, dst, is_package):
                     if is_package:
-                        packages.append('.'.join((moduleName, src.replace(os.path.sep, '.'))))
+                        packages.append('.'.join(package))
                     if not os.path.exists(dst):
                         os.mkdir(dst)
                     for name in os.listdir(src):
@@ -1636,13 +1637,17 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
                             continue
                         _dst = os.path.join(dst, name)
                         if os.path.isdir(_src):
+                            package.append(os.path.basename(_src))
                             copytree(_src, _dst, os.path.exists(os.path.join(_src, '__init__.py')))
+                            package.pop()
                         elif not is_package or name.endswith('.py'):
                             shutil.copy2(_src, _dst)
                 dst = modulePath
                 if os.path.exists(os.path.join(module, '__init__.py')):
                     dst = os.path.join(modulePath, os.path.basename(module))
+                    package.append(os.path.basename(module))
                     copytree(module, dst, True)
+                    package.pop()
                 else:
                     copytree(module, dst, False)
             else:

@@ -1,4 +1,9 @@
 
+Version 2.7 ->
+------------------
+ - fixed bug with --module using relative paths (Roman Chyla)
+ - 
+
 Version 2.6 -> 2.7
 ------------------
  - added 'IGNORE' to reserved word list
