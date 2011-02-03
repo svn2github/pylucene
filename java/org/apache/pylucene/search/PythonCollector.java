@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReader.AtomicReaderContext;
 
 
 public class PythonCollector extends Collector {
@@ -62,7 +63,7 @@ public class PythonCollector extends Collector {
     public native void pythonDecRef();
     public native void collect(int doc, float score)
         throws IOException;
-    public native void setNextReader(IndexReader reader, int docBase)
+    public native void setNextReader(AtomicReaderContext context)
         throws IOException;
     public native boolean acceptsDocsOutOfOrder();
 }

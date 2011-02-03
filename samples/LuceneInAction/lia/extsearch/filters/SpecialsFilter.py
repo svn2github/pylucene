@@ -26,8 +26,9 @@ class SpecialsFilter(PythonFilter):
         super(SpecialsFilter, self).__init__()
         self.accessor = accessor
 
-    def getDocIdSet(self, reader):
+    def getDocIdSet(self, context):
 
+        reader = context.reader
         bits = OpenBitSet(long(reader.maxDoc()))
         isbns = self.accessor.isbns()
 

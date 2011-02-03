@@ -15,18 +15,20 @@
 
 package org.apache.pylucene.analysis;
 
-import org.apache.lucene.analysis.CharTokenizer;
 import java.io.IOException;
 import java.io.Reader;
+
+import org.apache.lucene.analysis.CharTokenizer;
+import org.apache.lucene.util.Version;
 
 
 public class PythonCharTokenizer extends CharTokenizer {
 
     private long pythonObject;
 
-    public PythonCharTokenizer(Reader reader)
+    public PythonCharTokenizer(Version version, Reader reader)
     {
-        super(reader);
+        super(version, reader);
     }
 
     public void pythonExtension(long pythonObject)
@@ -45,6 +47,6 @@ public class PythonCharTokenizer extends CharTokenizer {
     }
 
     public native void pythonDecRef();
-    public native boolean isTokenChar(char c);
-    public native char normalize(char c);
+    public native boolean isTokenChar(int c);
+    public native int normalize(int c);
 }

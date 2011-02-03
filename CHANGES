@@ -9,6 +9,7 @@ Version 3.0.0 ->
  - PyLucene built with JCC 2.6
  - fixed "Lucene in Action" samples leftover on old API
  - improved support for adding optional contrib modules
+ - added --package java.util.regex to wrap constructors on PatternAnalyzer
  - 
 
 Version 2.9.0 -> 3.0.0

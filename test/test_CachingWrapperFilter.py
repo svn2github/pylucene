@@ -29,12 +29,13 @@ class CachingWrapperFilterTestCase(TestCase):
         writer.close()
 
         reader = IndexReader.open(dir, True)
+        context = reader.getTopReaderContext();
 
         class mockFilter(PythonFilter):
             def __init__(self):
                 super(mockFilter, self).__init__()
                 self._wasCalled = False
-            def getDocIdSet(self, reader):
+            def getDocIdSet(self, context):
                 self._wasCalled = True;
                 return DocIdBitSet(BitSet())
             def clear(self):
@@ -46,12 +47,12 @@ class CachingWrapperFilterTestCase(TestCase):
         cacher = CachingWrapperFilter(filter)
 
         # first time, nested filter is called
-        cacher.getDocIdSet(reader)
+        cacher.getDocIdSet(context)
         self.assert_(filter.wasCalled(), "first time")
 
         # second time, nested filter should not be called
         filter.clear()
-        cacher.getDocIdSet(reader)
+        cacher.getDocIdSet(context)
         self.assert_(not filter.wasCalled(), "second time")
 
         reader.close()

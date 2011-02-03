@@ -16,8 +16,9 @@
 package org.apache.pylucene.search;
 
 import org.apache.lucene.search.Similarity;
-import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Explanation.IDFExplanation;
+import org.apache.lucene.index.FieldInvertState;
 import org.apache.lucene.index.Term;
 import java.util.Collection;
 
@@ -46,7 +47,7 @@ public class PythonSimilarity extends Similarity {
     }
 
     public IDFExplanation idfExplain(final Collection<Term> terms,
-                                     final Searcher searcher)
+                                     final IndexSearcher searcher)
     {
         return new IDFExplanation() {
             public float getIdf()
@@ -63,11 +64,11 @@ public class PythonSimilarity extends Similarity {
 
     public native void pythonDecRef();
 
-    public native float idfTerms(Collection terms, Searcher searcher);
+    public native float idfTerms(Collection terms, IndexSearcher searcher);
 
     public native float coord(int overlap, int maxOverlap);
     public native float idf(int docFreq, int numDocs);
-    public native float lengthNorm(String fieldName, int numTokens);
+    public native float computeNorm(String fieldName, FieldInvertState state);
     public native float queryNorm(float sumOfSquaredWeights);
     public native float sloppyFreq(int distance);
     public native float tf(float freq);

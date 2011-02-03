@@ -24,7 +24,7 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
 
     def testSimple(self):
 
-        a = SimpleAnalyzer()
+        a = SimpleAnalyzer(Version.LUCENE_CURRENT)
         self._assertAnalyzesTo(a, "foo bar FOO BAR", 
                                [ "foo", "bar", "foo", "bar" ])
         self._assertAnalyzesTo(a, "foo      bar .  FOO <> BAR", 
@@ -45,7 +45,7 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
 
     def testNull(self):
 
-        a = WhitespaceAnalyzer()
+        a = WhitespaceAnalyzer(Version.LUCENE_CURRENT)
         self._assertAnalyzesTo(a, "foo bar FOO BAR", 
                                [ "foo", "bar", "FOO", "BAR" ])
         self._assertAnalyzesTo(a, "foo      bar .  FOO <> BAR", 
@@ -85,11 +85,11 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
     def testPayloadCopy(self):
 
         s = "how now brown cow"
-        ts = WhitespaceTokenizer(StringReader(s))
+        ts = WhitespaceTokenizer(Version.LUCENE_CURRENT, StringReader(s))
         ts = PayloadSetter(ts)
         self._verifyPayload(ts)
 
-        ts = WhitespaceTokenizer(StringReader(s))
+        ts = WhitespaceTokenizer(Version.LUCENE_CURRENT, StringReader(s))
         ts = PayloadSetter(ts)
         self._verifyPayload(ts)
 

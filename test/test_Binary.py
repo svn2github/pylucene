@@ -22,7 +22,7 @@ class BinaryTestCase(TestCase):
     def binary(self, b):
 
         c = JArray('byte')(b)
-        field = Field("bin", c, Field.Store.YES)
+        field = Field("bin", c)
         v = field.binaryValue
         assert c == v and b == [a for a in v]
 

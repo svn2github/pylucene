@@ -66,7 +66,7 @@ class FilteredQueryTestCase(TestCase):
         self.query = TermQuery(Term("field", "three"))
 
         class filter(PythonFilter):
-            def getDocIdSet(self, reader):
+            def getDocIdSet(self, context):
                 bitset = BitSet(5)
                 bitset.set(1)
                 bitset.set(3)

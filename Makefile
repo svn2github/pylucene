@@ -57,15 +57,8 @@ MODULES=lucene-modules-$(LUCENE_VER)
 #PREFIX_PYTHON=/opt/local
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc --arch x86_64
+#JCC=$(PYTHON) -m jcc --shared --arch x86_64
 #NUM_FILES=3
-
-# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
-PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
-ANT=ant
-PYTHON=$(PREFIX_PYTHON)/bin/python
-JCC=$(PYTHON) -m jcc --arch x86_64
-NUM_FILES=3
 
 # Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
 #PREFIX_PYTHON=/usr
@@ -258,6 +251,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
                      java.text.SimpleDateFormat \
                      java.text.DecimalFormat \
                      java.text.Collator \
+           --package java.util.regex \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
                              java.io.FileInputStream \

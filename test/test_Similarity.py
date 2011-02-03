@@ -77,7 +77,7 @@ class SimilarityTestCase(TestCase):
         class collector1(PythonCollector):
             def collect(_self, doc, score):
                 self.assertEqual(1.0, score)
-            def setNextReader(_self, reader, docBase):
+            def setNextReader(_self, context):
                 pass
             def acceptsDocsOutOfOrder(_self):
                 return True

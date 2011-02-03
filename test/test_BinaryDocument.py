@@ -24,8 +24,7 @@ class TestBinaryDocument(TestCase):
     def testBinaryFieldInIndex(self):
 
         bytes = JArray('byte')(self.binaryValStored)
-        binaryFldStored = Field("binaryStored", bytes, 
-                                Field.Store.YES)
+        binaryFldStored = Field("binaryStored", bytes)
         stringFldStored = Field("stringStored", self.binaryValStored,
                                 Field.Store.YES, Field.Index.NO,
                                 Field.TermVector.NO)
@@ -78,8 +77,8 @@ class TestBinaryDocument(TestCase):
     def testCompressionTools(self):
 
         bytes = JArray('byte')(self.binaryValCompressed)
-        binaryFldCompressed = Field("binaryCompressed", CompressionTools.compress(bytes), Field.Store.YES)
-        stringFldCompressed = Field("stringCompressed", CompressionTools.compressString(self.binaryValCompressed), Field.Store.YES)
+        binaryFldCompressed = Field("binaryCompressed", CompressionTools.compress(bytes))
+        stringFldCompressed = Field("stringCompressed", CompressionTools.compressString(self.binaryValCompressed))
     
         doc = Document()
         doc.add(binaryFldCompressed)

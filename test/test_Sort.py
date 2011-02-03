@@ -687,7 +687,8 @@ class SortTestCase(TestCase):
 
         # a filter that only allows through the first hit
         class filter(PythonFilter):
-            def getDocIdSet(_self, reader):
+            def getDocIdSet(_self, context):
+                reader = context.reader
                 bs = BitSet(reader.maxDoc())
                 bs.set(0, reader.maxDoc())
                 bs.set(docs1.scoreDocs[0].doc)
@@ -999,14 +1000,16 @@ class MyFieldComparator(PythonFieldComparator):
     def setBottom(self, bottom):
         self.bottomValue = self.slotValues[bottom]
 
-    def setNextReader(self, reader, docBase):
+    def setNextReader(self, context):
         
         class intParser(PythonIntParser):
             def parseInt(_self, val):
                 return (val.bytes[0] - ord('A')) * 123456
                 
-        self.docValues = FieldCache.DEFAULT.getInts(reader, "parser",
+        self.docValues = FieldCache.DEFAULT.getInts(context.reader, "parser",
                                                     intParser())
+
+        return self
 
     def value(self, slot):
         return Integer(self.slotValues[slot])
@@ -1015,8 +1018,10 @@ class MyFieldComparator(PythonFieldComparator):
 class MyFieldComparatorSource(PythonFieldComparatorSource):
 
     def newComparator(self, fieldname, numHits, sortPos, reversed):
-        return MyFieldComparator(numHits)
-
+        # keep an extra ref since this object seems to be passed around
+        # back and forth without a reference being kept on the java side
+        self.saved = MyFieldComparator(numHits)
+        return self.saved
 
 
 if __name__ == "__main__":

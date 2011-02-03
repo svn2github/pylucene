@@ -37,10 +37,12 @@ class DistanceComparatorSource(PythonFieldComparatorSource):
                 _self.values = [0.0] * numHits
                 _self.fieldName = fieldName
 
-            def setNextReader(_self, reader, docBase):
+            def setNextReader(_self, context):
       
-                _self.xDoc = FieldCache.DEFAULT.getInts(reader, "x")
-                _self.yDoc = FieldCache.DEFAULT.getInts(reader, "y")
+                _self.xDoc = FieldCache.DEFAULT.getInts(context.reader, "x")
+                _self.yDoc = FieldCache.DEFAULT.getInts(context.reader, "y")
+
+                return _self
 
             def _getDistance(_self, doc):
 

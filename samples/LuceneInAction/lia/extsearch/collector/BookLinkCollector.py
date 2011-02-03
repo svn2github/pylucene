@@ -31,11 +31,11 @@ class BookLinkCollector(PythonCollector):
 
         return True
 
-    def setNextReader(self, reader, docBase):
+    def setNextReader(self, context):
 
-        self.docBase = docBase
-        self.urls = FieldCache.DEFAULT.getTerms(reader, "url")
-        self.titles = FieldCache.DEFAULT.getTerms(reader, "title2")
+        self.docBase = context.docBase
+        self.urls = FieldCache.DEFAULT.getTerms(context.reader, "url")
+        self.titles = FieldCache.DEFAULT.getTerms(context.reader, "title2")
 
     def collect(self, docID, score):
         

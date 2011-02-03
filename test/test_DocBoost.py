@@ -59,8 +59,8 @@ class DocBoostTestCase(TestCase):
                 _self.base = 0
             def collect(_self, doc, score):
                 _self.scores[doc + _self.base] = score
-            def setNextReader(_self, reader, docBase):
-                _self.base = docBase
+            def setNextReader(_self, context):
+                _self.base = context.docBase
             def acceptsDocsOutOfOrder(_self):
                 return True
 
