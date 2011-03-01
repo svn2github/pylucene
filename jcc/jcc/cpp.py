@@ -111,14 +111,16 @@ def cppnames(names):
     return [cppname(name) for name in names]
 
 
+def absname(names):
+
+    return "::%s" %('::'.join(names))
+
+
 def typename(cls, current, const):
 
     if cls.isArray():
         componentType = cls.getComponentType()
-        if componentType.isArray():
-            name = 'JArray< %s >' %(typename(componentType, current, False))
-        else:
-            name = 'JArray<%s>' %(typename(componentType, current, False))
+        name = 'JArray< %s >' %(typename(componentType, current, False))
 
     elif cls.isPrimitive():
         name = cls.getName()
@@ -130,10 +132,10 @@ def typename(cls, current, const):
         name = cppname(cls.getName().split('.')[-1])
 
     else:
-        name = '::'.join([cppname(name) for name in cls.getName().split('.')])
+        name = absname([cppname(name) for name in cls.getName().split('.')])
 
     if const:
-        return "const %s&" %(name)
+        return "const %s &" %(name)
 
     return name
 
@@ -217,6 +219,31 @@ def known(cls, typeset, declares, packages, excludes, generics):
         return True
 
     return False
+
+
+def addRequiredTypes(cls, typeset, generics):
+
+    if generics:
+        if Class.instance_(cls):
+            cls = Class.cast_(cls)
+            if cls not in typeset:
+                typeset.add(cls)
+                cls = cls.getGenericSuperclass()
+                if cls is not None:
+                    addRequiredTypes(cls, typeset, True)
+        elif ParameterizedType.instance_(cls):
+            pt = ParameterizedType.cast_(cls)
+            addRequiredTypes(pt.getRawType(), typeset, True)
+            for ta in pt.getActualTypeArguments():
+                addRequiredTypes(ta, typeset, True)
+        elif not TypeVariable.instance_(cls):
+            raise NotImplementedError, repr(cls)
+    else:
+        if cls not in typeset:
+            typeset.add(cls)
+            cls = cls.getSuperclass()
+            if cls is not None:
+                addRequiredTypes(cls, typeset, False)
 
 
 def find_method(cls, name, params):
@@ -490,16 +517,7 @@ def jcc(args):
                 include = os.path.join(import_.__dir__, 'include')
                 os.path.walk(include, walk, (include, importset))
                 typeset.update(importset)
-        for className in classNames:
-            if className.split('$', 1)[0] in excludes:
-                continue
-            cls = findClass(className.replace('.', '/'))
-            if Modifier.isPublic(cls.getModifiers()):
-                typeset.add(cls)
-                cls = cls.getSuperclass()
-                while cls and cls not in typeset:
-                    typeset.add(cls)
-                    cls = cls.getSuperclass()
+        typeset.add(findClass('java/lang/Object'))
         typeset.add(findClass('java/lang/Class'))
         typeset.add(findClass('java/lang/String'))
         typeset.add(findClass('java/lang/Throwable'))
@@ -521,6 +539,13 @@ def jcc(args):
             typeset.add(findClass('java/io/PrintWriter'))
             typeset.add(findClass('java/io/Writer'))
             packages.add('java.lang')
+
+        for className in classNames:
+            if className.split('$', 1)[0] in excludes:
+                continue
+            cls = findClass(className.replace('.', '/'))
+            if Modifier.isPublic(cls.getModifiers()):
+                addRequiredTypes(cls, typeset, generics)
 
         _dll_export = ''
         if moduleName:
@@ -625,11 +650,29 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
     declares = set([cls.getClass()])
 
     interfaces = []
-    for interface in cls.getInterfaces():
-        if superCls and interface.isAssignableFrom(superCls):
-            continue
-        if known(interface, typeset, declares, packages, excludes, False):
-            interfaces.append(interface)
+    if generics:
+        for interface in cls.getGenericInterfaces():
+            if Class.instance_(interface):
+                pt = None
+                interface = Class.cast_(interface)
+            elif ParameterizedType.instance_(interface):
+                pt = ParameterizedType.cast_(interface)
+                interface = Class.cast_(pt.getRawType())
+            else:
+                raise NotImplementedError, repr(interface)
+            if superCls and interface.isAssignableFrom(superCls):
+                continue
+            if known(interface, typeset, declares, packages, excludes, False):
+                interfaces.append(interface)
+                if pt is not None:
+                    for ta in pt.getActualTypeArguments():
+                        addRequiredTypes(ta, typeset, True)
+    else:
+        for interface in cls.getInterfaces():
+            if superCls and interface.isAssignableFrom(superCls):
+                continue
+            if known(interface, typeset, declares, packages, excludes, False):
+                interfaces.append(interface)
 
     if cls.isInterface():
         if interfaces:
@@ -786,7 +829,7 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
              _dll_export, cppname(names[-1]))
     else:
         line(out, indent, 'class %s%s : public %s {',
-             _dll_export, cppname(names[-1]), '::'.join(cppnames(superNames)))
+             _dll_export, cppname(names[-1]), absname(cppnames(superNames)))
         
     line(out, indent, 'public:')
     indent += 1
@@ -814,7 +857,7 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
         line(out, indent, '};')
 
     line(out)
-    line(out, indent, 'static java::lang::Class *class$;');
+    line(out, indent, 'static ::java::lang::Class *class$;');
     line(out, indent, 'static jmethodID *mids$;');
     if instanceFields:
         line(out, indent, 'static jfieldID *fids$;');
@@ -822,13 +865,13 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
     line(out)
 
     line(out, indent, 'explicit %s(jobject obj) : %s(obj) {',
-         cppname(names[-1]), '::'.join(cppnames(superNames)))
+         cppname(names[-1]), absname(cppnames(superNames)))
     line(out, indent + 1, 'if (obj != NULL)');
     line(out, indent + 2, 'initializeClass();')
     line(out, indent, '}')
     line(out, indent, '%s(const %s& obj) : %s(obj) {}',
          cppname(names[-1]), cppname(names[-1]),
-         '::'.join(cppnames(superNames)))
+         absname(cppnames(superNames)))
 
     if fields:
         line(out)
@@ -916,7 +959,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
         indent += 1
 
     line(out)
-    line(out, indent, 'java::lang::Class *%s::class$ = NULL;',
+    line(out, indent, '::java::lang::Class *%s::class$ = NULL;',
          cppname(names[-1]))
     line(out, indent, 'jmethodID *%s::mids$ = NULL;', cppname(names[-1]))
     if instanceFields:
@@ -980,7 +1023,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
                  fieldName, fieldName, signature(field))
 
     line(out)
-    line(out, indent + 2, 'class$ = (java::lang::Class *) new JObject(cls);')
+    line(out, indent + 2, 'class$ = (::java::lang::Class *) new JObject(cls);')
 
     if fields:
         line(out, indent + 2, 'cls = (jclass) class$->this$;')
@@ -1010,7 +1053,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
 
         line(out, indent, "%s::%s(%s) : %s(env->newObject(initializeClass, &mids$, mid_init$_%s%s)) {}",
              cppname(names[-1]), cppname(names[-1]), decls,
-             '::'.join(cppnames(superNames)),
+             absname(cppnames(superNames)),
              env.strhash(sig), args)
 
     for method in methods:
@@ -1036,7 +1079,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             isStatic = False
             if superMethod is not None:
                 qualifier = 'Nonvirtual'
-                this = 'this$, (jclass) %s::class$->this$' %('::'.join(cppnames(superNames)))
+                this = 'this$, (jclass) %s::class$->this$' %(absname(cppnames(superNames)))
                 declaringClass = superMethod.getDeclaringClass()
                 midns = '%s::' %(typename(declaringClass, cls, False))
             else:

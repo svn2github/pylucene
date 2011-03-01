@@ -2,6 +2,8 @@
 Version 2.7 ->
 ------------------
  - fixed bug with --module using relative paths (Roman Chyla)
+ - made fully qualified C++ class names absolute
+ - fixed bug with parameterized types not requiring classes found in parameters
  - 
 
 Version 2.6 -> 2.7

@@ -16,7 +16,7 @@ import os, sys, platform, shutil, _jcc
 from itertools import izip
 
 from cpp import PRIMITIVES, INDENT, HALF_INDENT
-from cpp import cppname, cppnames, typename, findClass
+from cpp import cppname, cppnames, absname, typename, findClass
 from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier, Class, Method
 from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, IMPLIB_LFLAGS, \
@@ -141,7 +141,7 @@ def parseArgs(params, current, generics, genericParams=None):
             return ''
         if is_boxed(clsName):
             clsNames = clsName.split('.')
-            return ', &%s::PY_TYPE(%s)' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+            return ', &%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
         return ', %s::initializeClass' %(typename(cls, current, False))
 
     def callarg(cls, i):
@@ -288,7 +288,7 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
             for clsArg in getActualTypeArguments(genericRT):
                 if Class.instance_(clsArg):
                     clsNames = Class.cast_(clsArg).getName().split('.')
-                    clsArg = '&%s::PY_TYPE(%s)' %('::'.join(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                    clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                     clsArgs.append(clsArg)
                 elif TypeVariable.instance_(clsArg):
                     gd = TypeVariable.cast_(clsArg).getGenericDeclaration()
@@ -371,7 +371,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
     name = cppname(name)
     if Modifier.isStatic(modifiers):
         line(out, indent, 'OBJ_CALL(%s%s::%s(%s));',
-             result, '::'.join(cppnames(names)), name,
+             result, absname(cppnames(names)), name,
              ', '.join(['a%d' %(i) for i in xrange(count)]))
     else:
         line(out, indent, 'OBJ_CALL(%sself->object.%s(%s));',
@@ -911,7 +911,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextExt:
             tp_iternext = 'get_extension_next'
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Iterator *)) get_%siterator_next<java::util::t_Iterator,%s%st_%s>)' %(clsParams and 'generic_' or '', ns, sep, n)
+            tp_iternext = '((PyObject *(*)(::java::util::t_Iterator *)) get_%siterator_next< ::java::util::t_Iterator,%s%st_%s >)' %(clsParams and 'generic_' or '', ns, sep, n)
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextElementMethod.getReturnType(), cls, False)
@@ -919,7 +919,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
         else:
-            tp_iternext = '((PyObject *(*)(java::util::t_Enumeration *)) get_%senumeration_next<java::util::t_Enumeration,%s%st_%s>)' %(clsParams and 'generic_' or '', ns, sep, n)
+            tp_iternext = '((PyObject *(*)(::java::util::t_Enumeration *)) get_%senumeration_next< ::java::util::t_Enumeration,%s%st_%s >)' %(clsParams and 'generic_' or '', ns, sep, n)
     elif nextMethod:
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextMethod.getReturnType(), cls, False)
@@ -987,7 +987,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         tp_as_sequence = '0'
 
     if len(superNames) > 1:
-        base = '::'.join(('::'.join(cppnames(superNames[:-1])), superNames[-1]))
+        base = '::'.join((absname(cppnames(superNames[:-1])), superNames[-1]))
     else:
         base = superNames[-1]
     line(out)
