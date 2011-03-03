@@ -226,7 +226,7 @@ def addRequiredTypes(cls, typeset, generics):
     if generics:
         if Class.instance_(cls):
             cls = Class.cast_(cls)
-            if cls not in typeset:
+            if not (cls.isPrimitive() or cls in typeset):
                 typeset.add(cls)
                 cls = cls.getGenericSuperclass()
                 if cls is not None:
@@ -236,6 +236,9 @@ def addRequiredTypes(cls, typeset, generics):
             addRequiredTypes(pt.getRawType(), typeset, True)
             for ta in pt.getActualTypeArguments():
                 addRequiredTypes(ta, typeset, True)
+        elif GenericArrayType.instance_(cls):
+            gat = GenericArrayType.cast_(cls)
+            addRequiredTypes(gat.getGenericComponentType(), typeset, True)
         elif not TypeVariable.instance_(cls):
             raise NotImplementedError, repr(cls)
     else:
