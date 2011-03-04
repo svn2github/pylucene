@@ -902,7 +902,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if iteratorExt:
             tp_iter = 'get_extension_iterator'
         else:
-            tp_iter = '((PyObject *(*)(t_%s *)) get_%siterator<t_%s>)' %(names[-1], clsParams and 'generic_' or '', names[-1])
+            tp_iter = '((PyObject *(*)(t_%s *)) get_%siterator< t_%s >)' %(names[-1], clsParams and 'generic_' or '', names[-1])
         tp_iternext = '0'
     elif nextMethod and iterable is not None and iterator.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
@@ -927,7 +927,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextExt:
             tp_iternext = 'get_extension_next'
         else:
-            tp_iternext = '((PyObject *(*)(t_%s *)) get_%snext<t_%s,%s%st_%s,%s>)' %(names[-1], clsParams and 'generic_' or '', names[-1], ns, sep, n, returnName)
+            tp_iternext = '((PyObject *(*)(t_%s *)) get_%snext< t_%s,%s%st_%s,%s >)' %(names[-1], clsParams and 'generic_' or '', names[-1], ns, sep, n, returnName)
     else:
         tp_iter = '0'
         tp_iternext = '0'
