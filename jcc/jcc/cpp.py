@@ -239,7 +239,7 @@ def addRequiredTypes(cls, typeset, generics):
         elif GenericArrayType.instance_(cls):
             gat = GenericArrayType.cast_(cls)
             addRequiredTypes(gat.getGenericComponentType(), typeset, True)
-        elif not TypeVariable.instance_(cls):
+        elif not (TypeVariable.instance_(cls) or WildcardType.instance_(cls)):
             raise NotImplementedError, repr(cls)
     else:
         if cls not in typeset:
