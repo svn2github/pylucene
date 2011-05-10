@@ -68,7 +68,7 @@ public class PythonSimilarity extends Similarity {
 
     public native float coord(int overlap, int maxOverlap);
     public native float idf(int docFreq, int numDocs);
-    public native float computeNorm(String fieldName, FieldInvertState state);
+    public native float computeNorm(FieldInvertState state);
     public native float queryNorm(float sumOfSquaredWeights);
     public native float sloppyFreq(int distance);
     public native float tf(float freq);

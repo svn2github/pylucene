@@ -2,7 +2,7 @@
 <project name="extensions" default="jar">
 
   <path id="classpath">
-    <fileset dir="${lucene.dir}/build" includes="**/*.jar" />
+    <fileset dir="${lucene.dir}" includes="**/*.jar" />
   </path>
 
   <property name="build.dir" value="build" />

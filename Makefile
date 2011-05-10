@@ -18,11 +18,11 @@
 VERSION=4.0-0
 LUCENE_SVN_VER=HEAD
 LUCENE_VER=4.0
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/trunk/lucene
-MODULES_SVN=http://svn.apache.org/repos/asf/lucene/dev/trunk/modules
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/trunk
 PYLUCENE:=$(shell pwd)
-LUCENE=lucene-java-$(LUCENE_VER)
-MODULES=lucene-modules-$(LUCENE_VER)
+LUCENE_SRC=lucene-java-$(LUCENE_VER)
+LUCENE=$(LUCENE_SRC)/lucene
+MODULES=$(LUCENE_SRC)/modules
 
 # 
 # You need to uncomment and edit the variables below in the section
@@ -171,13 +171,12 @@ ICUPKG:=$(shell which icupkg)
 
 default: all
 
-$(LUCENE):
-	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(LUCENE_SVN) $(LUCENE)
-	if test ! -h lucene; then ln -s $(LUCENE) lucene; fi
-	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(MODULES_SVN) $(MODULES)
-	if test ! -h modules; then ln -s $(MODULES) modules; fi
+$(LUCENE_SRC):
+	svn $(SVNOP) --depth files -r $(LUCENE_SVN_VER) $(LUCENE_SVN) $(LUCENE_SRC)
+	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(LUCENE_SVN)/lucene $(LUCENE_SRC)/lucene
+	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(LUCENE_SVN)/modules $(LUCENE_SRC)/modules
 
-sources: $(LUCENE)
+sources: $(LUCENE_SRC)
 
 to-orig: sources
 	mkdir -p $(LUCENE)-orig
@@ -207,7 +206,7 @@ $(QUERIES_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/contrib/queries; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(EXTENSIONS_JAR): $(LUCENE_JAR)
-	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE)
+	$(ANT) -f extensions.xml -Dlucene.dir=$(LUCENE_SRC)
 
 $(SMARTCN_JAR): $(LUCENE_JAR)
 	cd $(MODULES)/analysis/smartcn; $(ANT) -Dversion=$(LUCENE_VER)
@@ -245,9 +244,9 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            $(JCCFLAGS) \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
-           --package java.util \
-                     java.util.Arrays \
-                     java.util.HashSet \
+           --package java.util java.util.Arrays \
+                               java.util.HashMap \
+                               java.util.HashSet \
                      java.text.SimpleDateFormat \
                      java.text.DecimalFormat \
                      java.text.Collator \
@@ -337,7 +336,7 @@ SITE=../site/build/site/en
 distrib:
 	mkdir -p distrib
 	svn export . distrib/pylucene-$(VERSION)
-	tar -cf - --exclude build $(LUCENE) | tar -C distrib/pylucene-$(VERSION) -xvf -
+	tar -cf - --exclude build $(LUCENE_SRC) | tar -C distrib/pylucene-$(VERSION) -xvf -
 	mkdir distrib/pylucene-$(VERSION)/doc
 	tar -C $(SITE) -cf - . | tar -C distrib/pylucene-$(VERSION)/doc -xvf -
 	cd distrib; tar -cvzf $(ARCHIVE) pylucene-$(VERSION)

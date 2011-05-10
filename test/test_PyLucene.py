@@ -256,8 +256,7 @@ class Test_PyLuceneBase(object):
                 docids.append(term.utf8ToString())
             self.assertEqual(len(docids), 2)
         finally:
-            pass
-            #self.closeStore(store, reader)
+            self.closeStore(store, reader)
 
     def test_getFieldNames(self):
 
