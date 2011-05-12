@@ -199,7 +199,7 @@ def known(cls, typeset, declares, packages, excludes, generics):
         cls = cls.getComponentType()
 
     className = cls.getName()
-    if className.split('$', 1)[0] in excludes:
+    if className.split('$', 1)[0] in excludes or className in excludes:
         return False
 
     if cls.isPrimitive():
@@ -544,7 +544,7 @@ def jcc(args):
             packages.add('java.lang')
 
         for className in classNames:
-            if className.split('$', 1)[0] in excludes:
+            if className.split('$', 1)[0] in excludes or className in excludes:
                 continue
             cls = findClass(className.replace('.', '/'))
             if Modifier.isPublic(cls.getModifiers()):
