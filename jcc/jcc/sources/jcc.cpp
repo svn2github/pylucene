@@ -154,21 +154,11 @@ static PyObject *t_jccenv_attachCurrentThread(PyObject *self, PyObject *args)
 {
     char *name = NULL;
     int asDaemon = 0, result;
-    JNIEnv *jenv = NULL;
 
     if (!PyArg_ParseTuple(args, "|si", &name, &asDaemon))
         return NULL;
 
-    JavaVMAttachArgs attach = {
-        JNI_VERSION_1_4, name, NULL
-    };
-
-    if (asDaemon)
-        result = env->vm->AttachCurrentThreadAsDaemon((void **) &jenv, &attach);
-    else
-        result = env->vm->AttachCurrentThread((void **) &jenv, &attach);
-
-    env->set_vm_env(jenv);
+    result = env->attachCurrentThread(name, asDaemon);
         
     return PyInt_FromLong(result);
 }

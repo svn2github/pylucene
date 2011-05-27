@@ -2,6 +2,7 @@
 Version 2.8 ->
 ------------------
  - fixed bug with excluding inner classes only (Christian Heimes)
+ - fixed bug with Python gc in non-attached JVM thread (Christian Heimes)
  - 
 
 Version 2.7 -> 2.8

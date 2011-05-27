@@ -160,6 +160,24 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
                             "shortValue", "()S");
 }
 
+int JCCEnv::attachCurrentThread(char *name, int asDaemon)
+{
+    JNIEnv *jenv = NULL;
+    JavaVMAttachArgs attach = {
+        JNI_VERSION_1_4, name, NULL
+    };
+    int result;
+
+    if (asDaemon)
+        result = vm->AttachCurrentThreadAsDaemon((void **) &jenv, &attach);
+    else
+        result = vm->AttachCurrentThread((void **) &jenv, &attach);
+
+    set_vm_env(jenv);
+
+    return result;
+}
+
 #if defined(_MSC_VER) || defined(__WIN32)
 
 void JCCEnv::set_vm_env(JNIEnv *vm_env)
@@ -318,6 +336,18 @@ jobject JCCEnv::deleteGlobalRef(jobject obj, int id)
                 {
                     if (iter->second.count == 1)
                     {
+                        JNIEnv *vm_env = get_vm_env();
+
+                        if (!vm_env)
+                        {
+                            /* Python's cyclic garbage collector may remove
+                             * an object inside a thread that is not attached
+                             * to the JVM. This makes sure the JVM doesn't
+                             * segfault.
+                             */
+                            attachCurrentThread(NULL, 0);
+                            vm_env = get_vm_env();
+                        }
                         get_vm_env()->DeleteGlobalRef(iter->second.global);
                         refs.erase(iter);
                     }

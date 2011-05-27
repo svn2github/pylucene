@@ -127,6 +127,7 @@ public:
 #endif
     virtual void set_vm(JavaVM *vm, JNIEnv *vm_env);
     virtual void set_vm_env(JNIEnv *vm_env);
+    virtual int attachCurrentThread(char *name, int asDaemon);
 
     virtual jint getJNIVersion() const;
     virtual jstring getJavaVersion() const;
