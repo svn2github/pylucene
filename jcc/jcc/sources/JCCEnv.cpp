@@ -348,7 +348,8 @@ jobject JCCEnv::deleteGlobalRef(jobject obj, int id)
                             attachCurrentThread(NULL, 0);
                             vm_env = get_vm_env();
                         }
-                        get_vm_env()->DeleteGlobalRef(iter->second.global);
+
+                        vm_env->DeleteGlobalRef(iter->second.global);
                         refs.erase(iter);
                     }
                     else
