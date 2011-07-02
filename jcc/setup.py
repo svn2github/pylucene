@@ -157,7 +157,16 @@ JAVAC = {
     'mingw32': ['%(mingw32)s/bin/javac.exe' %(JDK)],
     'freebsd7': ['javac'],
 }
-        
+
+JAVADOC = {
+    'darwin': ['javadoc'],
+    'ipod': [],
+    'linux2': ['javadoc'],
+    'sunos5': ['javadoc'],
+    'win32': ['%(win32)s/bin/javadoc.exe' %(JDK)],
+    'mingw32': ['%(mingw32)s/bin/javadoc.exe' %(JDK)],
+    'freebsd7': ['javadoc'],
+}
 
 try:
     if 'USE_DISTUTILS' in os.environ:
@@ -165,7 +174,7 @@ try:
     from setuptools import setup, Extension
     from pkg_resources import require
     with_setuptools = require('setuptools')[0].parsed_version
-    
+
     enable_shared = False
     with_setuptools_c7 = ('00000000', '00000006', '*c', '00000007', '*final')
 
@@ -225,6 +234,11 @@ def main(debug):
         _javac = os.environ['JCC_JAVAC'].split(_jcc_argsep)
     else:
         _javac = JAVAC[platform]
+
+    if 'JCC_JAVADOC' in os.environ:
+        _javadoc = os.environ['JCC_JAVADOC'].split(_jcc_argsep)
+    else:
+        _javadoc = JAVADOC[platform]
 
     from helpers.build import jcc_build_py
 
@@ -316,6 +330,16 @@ def main(debug):
             raise OSError, process.stderr.read()
         package_data.append('classes/org/apache/jcc/PythonVM.class')
         package_data.append('classes/org/apache/jcc/PythonException.class')
+
+        args = _javadoc[:]
+        args.extend(('-d', 'javadoc', '-sourcepath', 'java', 'org.apache.jcc'))
+        try:
+            process = Popen(args, stderr=PIPE)
+        except Exception, e:
+            raise type(e), "%s: %s" %(e, args)
+        process.wait()
+        if process.returncode != 0:
+            raise OSError, process.stderr.read()
 
     extensions.append(Extension('jcc._jcc',
                                 extra_compile_args=cflags,
