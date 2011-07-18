@@ -1,6 +1,7 @@
 
 Version 2.9 -> 2.10
 -------------------
+ - added javadoc for org.apache.jcc.PythonVM class (Bill Janssen)
  - fixed bug with Constructor.getGenericParameterTypes() losing first parameter
 
 Version 2.8 -> 2.9
