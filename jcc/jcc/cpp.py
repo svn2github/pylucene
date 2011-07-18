@@ -692,7 +692,15 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
     for constructor in cls.getDeclaredConstructors():
         if Modifier.isPublic(constructor.getModifiers()):
             if generics:
-                params = constructor.getGenericParameterTypes()
+                genericParams = constructor.getGenericParameterTypes()
+                params = constructor.getParameterTypes()
+                # It appears that the implicit instance-of-the-declaring-class
+                # parameter of a non-static inner class is missing from 
+                # getGenericParameterTypes()
+                if len(params) == len(genericParams) + 1:
+                    params[1:] = genericParams
+                else:
+                    params = genericParams
                 if len(params) == 1:
                     if params[0] == cls:
                         continue
