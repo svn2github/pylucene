@@ -1694,7 +1694,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         sources.append('jcc.cpp')
         sources.append('JCCEnv.cpp')
     for source in sources:
-	shutil.copy2(os.path.join(jccPath, 'sources', source),
+        shutil.copy2(os.path.join(jccPath, 'sources', source),
                      os.path.join(output, extname))
 
     if shared:
@@ -1742,7 +1742,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         script_args.append('--debug')
         compile_args += DEBUG_CFLAGS
     elif sys.platform == 'win32':
-	pass
+        pass
     elif sys.platform == 'sunos5':
         link_args.append('-Wl,-s')
     else:
