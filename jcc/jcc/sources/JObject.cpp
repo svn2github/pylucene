@@ -143,10 +143,18 @@ static PyObject *t_JObject_str(t_JObject *self)
     if (self->object.this$)
     {
         char *utf = env->toString(self->object.this$);
-        PyObject *unicode = PyUnicode_DecodeUTF8(utf, strlen(utf), "strict");
 
-        delete utf;
-        return unicode;
+        if (utf == NULL)
+            utf = env->getClassName(self->object.this$);
+
+        if (utf != NULL)
+        {
+            PyObject *unicode =
+                PyUnicode_DecodeUTF8(utf, strlen(utf), "strict");
+
+            delete utf;
+            return unicode;
+        }
     }
 
     return PyString_FromString("<null>");

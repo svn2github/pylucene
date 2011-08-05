@@ -839,9 +839,26 @@ char *JCCEnv::toUTF(jstring str) const
 
 char *JCCEnv::toString(jobject obj) const
 {
-    return obj
-        ? toUTF((jstring) callObjectMethod(obj, _mids[mid_obj_toString]))
-        : NULL;
+    try {
+        return obj
+            ? toUTF((jstring) callObjectMethod(obj, _mids[mid_obj_toString]))
+            : NULL;
+    } catch (int e) {
+        switch (e) {
+          case _EXC_PYTHON:
+            return NULL;
+          case _EXC_JAVA: {
+              JNIEnv *vm_env = get_vm_env();
+
+              vm_env->ExceptionDescribe();
+              vm_env->ExceptionClear();
+
+              return NULL;
+          }
+          default:
+            throw;
+        }
+    }
 }
 
 char *JCCEnv::getClassName(jobject obj) const
