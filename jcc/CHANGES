@@ -1,4 +1,11 @@
 
+Version 2.10 ->
+---------------
+ - improved recovery from toString() failure, displaying class name instead
+ - non public classes listed on command line now wrapped (Lukasz Jancewicz)
+ - fixed bug with generating wrappers for unimplemented interface methods
+ - 
+
 Version 2.9 -> 2.10
 -------------------
  - added javadoc for org.apache.jcc.PythonVM class (Bill Janssen)

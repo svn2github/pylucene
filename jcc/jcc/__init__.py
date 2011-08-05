@@ -34,3 +34,4 @@ else:
     from _jcc import initVM
 
 CLASSPATH=os.path.join(os.path.abspath(os.path.dirname(__file__)), "classes")
+_jcc.CLASSPATH = CLASSPATH

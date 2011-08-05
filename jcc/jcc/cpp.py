@@ -113,7 +113,10 @@ def cppnames(names):
 
 def absname(names):
 
-    return "::%s" %('::'.join(names))
+    if names:
+        return "::%s" %('::'.join(names))
+
+    return ''
 
 
 def typename(cls, current, const):
@@ -332,9 +335,10 @@ def expandjar(path):
 def jcc(args):
 
     classNames = set()
+    listedClassNames = set()
     packages = set()
     jars = []
-    classpath = []
+    classpath = [_jcc.CLASSPATH]
     libpath = []
     vmargs = ['-Djava.awt.headless=true']
     moduleName = None
@@ -479,6 +483,7 @@ def jcc(args):
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
             classNames.add(arg)
+            listedClassNames.add(arg)
         i += 1
 
     if libpath:
@@ -547,7 +552,8 @@ def jcc(args):
             if className.split('$', 1)[0] in excludes or className in excludes:
                 continue
             cls = findClass(className.replace('.', '/'))
-            if Modifier.isPublic(cls.getModifiers()):
+            if (Modifier.isPublic(cls.getModifiers()) or
+                className in listedClassNames):
                 addRequiredTypes(cls, typeset, generics)
 
         _dll_export = ''
@@ -574,7 +580,7 @@ def jcc(args):
             done.update(importset)
 
         todo = typeset - done
-	if allInOne and wrapperFiles > 1:
+        if allInOne and wrapperFiles > 1:
             classesPerFile = max(1, len(todo) / wrapperFiles)
         classCount = 0
         while todo:
@@ -622,9 +628,9 @@ def jcc(args):
                 elif wrapperFiles > 1:
                     if classCount >= classesPerFile:
                         out_cpp.close()
-	                fileCount += 1
-	                fileName = '__wrap%02d__.cpp' %(fileCount)
-	                out_cpp = file(os.path.join(cppdir, fileName), 'w')
+                        fileCount += 1
+                        fileName = '__wrap%02d__.cpp' %(fileCount)
+                        out_cpp = file(os.path.join(cppdir, fileName), 'w')
                         classCount = 0
                         
             done.update(todo)
@@ -747,27 +753,6 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
                 methods[sig] = method
         elif Modifier.isProtected(modifiers):
             protectedMethods.append(method)
-    for interface in interfaces:
-        for method in interface.getMethods():
-            sig = "%s:%s" %(method.getName(), signature(method, True))
-            if sig not in methods:
-                if generics:
-                    param = method.getGenericReturnType()
-                else:
-                    param = method.getReturnType()
-                if not known(param, typeset, declares, packages, excludes,
-                             generics):
-                    continue
-                if generics:
-                    params = method.getGenericParameterTypes()
-                else:
-                    params = method.getParameterTypes()
-                for param in params:
-                    if not known(param, typeset, declares, packages, excludes,
-                                 generics):
-                        break
-                else:
-                    methods[sig] = method
 
     def _compare(m0, m1):
         value = cmp(m0.getName(), m1.getName())
