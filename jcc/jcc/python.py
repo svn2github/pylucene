@@ -686,14 +686,16 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                 nameLen = len(name)
                 paramsLen = len(params)
                 if nameLen > 3 and paramsLen == 0 and name.startswith('get'):
-                    propMethods.setdefault(name[3].lower() + name[4:],
-                                           []).append(method)
+                    if method.getReturnType().getName() != 'void':
+                        propMethods.setdefault(name[3].lower() + name[4:],
+                                               []).append(method)
                 elif nameLen > 3 and paramsLen == 1 and name.startswith('set'):
                     propMethods.setdefault(name[3].lower() + name[4:],
                                            []).append(method)
                 elif nameLen > 2 and paramsLen == 0 and name.startswith('is'):
-                    propMethods.setdefault(name[2].lower() + name[3:],
-                                           []).append(method)
+                    if method.getReturnType().getName() != 'void':
+                        propMethods.setdefault(name[2].lower() + name[3:],
+                                               []).append(method)
 
     properties = set([name for name in propMethods.iterkeys()
                       if name not in allMethods])
