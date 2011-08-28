@@ -640,7 +640,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jobject>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayObject)))
-                      *array = ((t_jarray<jobject> *) arg)->array;
+                      *array = ((t_JArray<jobject> *) arg)->array;
                   else 
                       *array = JArray<jobject>(cls, arg);
 
@@ -684,7 +684,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jboolean>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayBool)))
-                      *array = ((t_jarray<jboolean> *) arg)->array;
+                      *array = ((t_JArray<jboolean> *) arg)->array;
                   else
                       *array = JArray<jboolean>(arg);
 
@@ -708,7 +708,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jbyte>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayByte)))
-                      *array = ((t_jarray<jbyte> *) arg)->array;
+                      *array = ((t_JArray<jbyte> *) arg)->array;
                   else 
                       *array = JArray<jbyte>(arg);
 
@@ -737,7 +737,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jchar>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayChar)))
-                      *array = ((t_jarray<jchar> *) arg)->array;
+                      *array = ((t_JArray<jchar> *) arg)->array;
                   else 
                       *array = JArray<jchar>(arg);
 
@@ -761,7 +761,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jint>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayInt)))
-                      *array = ((t_jarray<jint> *) arg)->array;
+                      *array = ((t_JArray<jint> *) arg)->array;
                   else 
                       *array = JArray<jint>(arg);
 
@@ -785,7 +785,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jshort>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayShort)))
-                      *array = ((t_jarray<jshort> *) arg)->array;
+                      *array = ((t_JArray<jshort> *) arg)->array;
                   else 
                       *array = JArray<jshort>(arg);
 
@@ -809,7 +809,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jdouble>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayDouble)))
-                      *array = ((t_jarray<jdouble> *) arg)->array;
+                      *array = ((t_JArray<jdouble> *) arg)->array;
                   else 
                       *array = JArray<jdouble>(arg);
 
@@ -833,7 +833,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jfloat>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayFloat)))
-                      *array = ((t_jarray<jfloat> *) arg)->array;
+                      *array = ((t_JArray<jfloat> *) arg)->array;
                   else 
                       *array = JArray<jfloat>(arg);
 
@@ -857,7 +857,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jlong>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayLong)))
-                      *array = ((t_jarray<jlong> *) arg)->array;
+                      *array = ((t_JArray<jlong> *) arg)->array;
                   else 
                       *array = JArray<jlong>(arg);
 
@@ -881,7 +881,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (arg == Py_None)
                       *array = JArray<jstring>((jobject) NULL);
                   else if (PyObject_TypeCheck(arg, PY_TYPE(JArrayString)))
-                      *array = ((t_jarray<jstring> *) arg)->array;
+                      *array = ((t_JArray<jstring> *) arg)->array;
                   else 
                       *array = JArray<jstring>(arg);
 

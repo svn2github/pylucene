@@ -327,7 +327,7 @@ template<> class JArray<jstring> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jstring operator[](int n) {
@@ -465,7 +465,7 @@ template<> class JArray<jboolean> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jboolean operator[](int n) {
@@ -639,7 +639,7 @@ template<> class JArray<jbyte> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jbyte operator[](int n) {
@@ -826,7 +826,7 @@ template<> class JArray<jchar> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jchar operator[](int n) {
@@ -973,7 +973,7 @@ template<> class JArray<jdouble> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jdouble operator[](int n) {
@@ -1120,7 +1120,7 @@ template<> class JArray<jfloat> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jfloat operator[](int n) {
@@ -1267,7 +1267,7 @@ template<> class JArray<jint> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jint operator[](int n) {
@@ -1414,7 +1414,7 @@ template<> class JArray<jlong> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jlong operator[](long n) {
@@ -1561,7 +1561,7 @@ template<> class JArray<jshort> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap();
+    PyObject *wrap() const;
 #endif
 
     jshort operator[](int n) {
@@ -1579,10 +1579,18 @@ template<> class JArray<jshort> : public java::lang::Object {
 
 #ifdef PYTHON
 
-template<typename T> class t_jarray {
+template<typename T> class t_JArray {
 public:
     PyObject_HEAD
     JArray<T> array;
+
+    static PyObject *wrap_Object(const JArray<T>& array)
+    {
+        if (!!array)
+            return array.wrap();
+
+        Py_RETURN_NONE;
+    }
 };
 
 #endif

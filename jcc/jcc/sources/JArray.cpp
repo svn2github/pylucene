@@ -25,7 +25,7 @@
 using namespace java::lang;
 
 
-template<typename T> class _t_jarray : public t_jarray<T> {
+template<typename T> class _t_JArray : public t_JArray<T> {
 public:
     static PyObject *format;
 };
@@ -476,7 +476,7 @@ static PyObject *assignable_(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return instance_<T>(type, args, kwds);
 }
 
-template< typename T, typename U = _t_jarray<T> > class jarray_type {
+template< typename T, typename U = _t_JArray<T> > class jarray_type {
 public:
     PySequenceMethods seq_methods;
     PyTypeObject type_object;
@@ -607,7 +607,7 @@ public:
     }
 };
 
-template<typename T> class _t_jobjectarray : public _t_jarray<T> {
+template<typename T> class _t_jobjectarray : public _t_JArray<T> {
 public:
     PyObject *(*wrapfn)(const T&);
 };
@@ -894,7 +894,7 @@ template<> PyObject *assignable_<jobject>(PyTypeObject *type,
 
 
 template<typename T> PyTypeObject *_t_iterator<T>::JArrayIterator;
-template<typename T> PyObject *_t_jarray<T>::format;
+template<typename T> PyObject *_t_JArray<T>::format;
 
 static jarray_type< jobject, _t_jobjectarray<jobject> > jarray_jobject;
 
@@ -926,12 +926,12 @@ PyObject *JArray<jobject>::wrap(PyObject *(*wrapfn)(const jobject&))
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jstring>::wrap()
+PyObject *JArray<jstring>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jstring> *obj =
-            PyObject_New(_t_jarray<jstring>, &jarray_jstring.type_object);
+        _t_JArray<jstring> *obj =
+            PyObject_New(_t_JArray<jstring>, &jarray_jstring.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jstring>));
         obj->array = *this;
@@ -942,12 +942,12 @@ PyObject *JArray<jstring>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jboolean>::wrap()
+PyObject *JArray<jboolean>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jboolean> *obj =
-            PyObject_New(_t_jarray<jboolean>, &jarray_jboolean.type_object);
+        _t_JArray<jboolean> *obj =
+            PyObject_New(_t_JArray<jboolean>, &jarray_jboolean.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jboolean>));
         obj->array = *this;
@@ -958,12 +958,12 @@ PyObject *JArray<jboolean>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jbyte>::wrap()
+PyObject *JArray<jbyte>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jbyte> *obj =
-            PyObject_New(_t_jarray<jbyte>, &jarray_jbyte.type_object);
+        _t_JArray<jbyte> *obj =
+            PyObject_New(_t_JArray<jbyte>, &jarray_jbyte.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jbyte>));
         obj->array = *this;
@@ -974,12 +974,12 @@ PyObject *JArray<jbyte>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jchar>::wrap()
+PyObject *JArray<jchar>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jchar> *obj =
-            PyObject_New(_t_jarray<jchar>, &jarray_jchar.type_object);
+        _t_JArray<jchar> *obj =
+            PyObject_New(_t_JArray<jchar>, &jarray_jchar.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jchar>));
         obj->array = *this;
@@ -990,12 +990,12 @@ PyObject *JArray<jchar>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jdouble>::wrap()
+PyObject *JArray<jdouble>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jdouble> *obj =
-            PyObject_New(_t_jarray<jdouble>, &jarray_jdouble.type_object);
+        _t_JArray<jdouble> *obj =
+            PyObject_New(_t_JArray<jdouble>, &jarray_jdouble.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jdouble>));
         obj->array = *this;
@@ -1006,12 +1006,12 @@ PyObject *JArray<jdouble>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jfloat>::wrap()
+PyObject *JArray<jfloat>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jfloat> *obj =
-            PyObject_New(_t_jarray<jfloat>, &jarray_jfloat.type_object);
+        _t_JArray<jfloat> *obj =
+            PyObject_New(_t_JArray<jfloat>, &jarray_jfloat.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jfloat>));
         obj->array = *this;
@@ -1022,12 +1022,12 @@ PyObject *JArray<jfloat>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jint>::wrap()
+PyObject *JArray<jint>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jint> *obj =
-            PyObject_New(_t_jarray<jint>, &jarray_jint.type_object);
+        _t_JArray<jint> *obj =
+            PyObject_New(_t_JArray<jint>, &jarray_jint.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jint>));
         obj->array = *this;
@@ -1038,12 +1038,12 @@ PyObject *JArray<jint>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jlong>::wrap()
+PyObject *JArray<jlong>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jlong> *obj =
-            PyObject_New(_t_jarray<jlong>, &jarray_jlong.type_object);
+        _t_JArray<jlong> *obj =
+            PyObject_New(_t_JArray<jlong>, &jarray_jlong.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jlong>));
         obj->array = *this;
@@ -1054,12 +1054,12 @@ PyObject *JArray<jlong>::wrap()
     Py_RETURN_NONE;
 }
 
-PyObject *JArray<jshort>::wrap()
+PyObject *JArray<jshort>::wrap() const
 {
     if (this$ != NULL)
     {
-        _t_jarray<jshort> *obj =
-            PyObject_New(_t_jarray<jshort>, &jarray_jshort.type_object);
+        _t_JArray<jshort> *obj =
+            PyObject_New(_t_JArray<jshort>, &jarray_jshort.type_object);
 
         memset(&(obj->array), 0, sizeof(JArray<jshort>));
         obj->array = *this;
@@ -1139,13 +1139,13 @@ PyObject *JArray_Type(PyObject *self, PyObject *arg)
     return type;
 }
 
-static PyObject *t_jarray_jbyte__get_string_(t_jarray<jbyte> *self, void *data)
+static PyObject *t_JArray_jbyte__get_string_(t_JArray<jbyte> *self, void *data)
 {
     return self->array.to_string_();
 }
 
-static PyGetSetDef t_jarray_jbyte__fields[] = {
-    { "string_", (getter) t_jarray_jbyte__get_string_, NULL, "", NULL },
+static PyGetSetDef t_JArray_jbyte__fields[] = {
+    { "string_", (getter) t_JArray_jbyte__get_string_, NULL, "", NULL },
     { NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -1176,7 +1176,7 @@ void _install_jarray(PyObject *module)
                             "__JArray_bool_iterator", module);
     PY_TYPE(JArrayBool) = &jarray_jboolean.type_object;
 
-    jarray_jbyte.type_object.tp_getset = t_jarray_jbyte__fields;
+    jarray_jbyte.type_object.tp_getset = t_JArray_jbyte__fields;
     jarray_jbyte.install("JArray_byte", "byte",
                          "__JArray_byte_iterator", module);
     PY_TYPE(JArrayByte) = &jarray_jbyte.type_object;
