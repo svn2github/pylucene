@@ -1,12 +1,11 @@
 
-Version 2.10 ->
----------------
+Version 2.10 -> 2.11
+--------------------
  - improved recovery from toString() failure, displaying class name instead
  - non public classes listed on command line now wrapped (Lukasz Jancewicz)
  - fixed bug with generating wrappers for unimplemented interface methods
  - fixed bug with generating propMethods for void getters
  - fixed bug with missing code for returning arrays from iterators
- - 
 
 Version 2.9 -> 2.10
 -------------------
