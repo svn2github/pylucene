@@ -1,4 +1,9 @@
 
+Version 2.11 -> 
+--------------------
+ - fixed slice operation bug on JArray (int vs Py_ssize_t on 64-bit systems)
+ - 
+
 Version 2.10 -> 2.11
 --------------------
  - improved recovery from toString() failure, displaying class name instead
