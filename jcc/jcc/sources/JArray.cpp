@@ -1104,10 +1104,11 @@ PyObject *JArray_Type(PyObject *self, PyObject *arg)
     if (type_name != NULL)
     {
         name = PyString_AsString(type_name);
-        Py_DECREF(type_name);
-
         if (!name)
+        {
+            Py_DECREF(type_name);
             return NULL;
+        }
     }
 
     if (!strcmp(name, "object"))
@@ -1133,10 +1134,14 @@ PyObject *JArray_Type(PyObject *self, PyObject *arg)
     else
     {
         PyErr_SetObject(PyExc_ValueError, arg);
+        Py_XDECREF(type_name);
+
         return NULL;
     }
 
     Py_INCREF(type);
+    Py_XDECREF(type_name);
+
     return type;
 }
 
