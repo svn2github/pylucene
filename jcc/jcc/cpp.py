@@ -98,6 +98,9 @@ RESERVED = set(['delete', 'and', 'or', 'not', 'xor', 'union', 'register',
                 'const', 'bool', 'operator', 'typeof', 'asm',
                 'NULL', 'DOMAIN', 'IGNORE'])
 
+RENAME_METHOD_SUFFIX = '_'
+RENAME_FIELD_SUFFIX = '__'
+
 def cppname(name):
 
     if name in RESERVED:
@@ -598,7 +601,7 @@ def jcc(args):
                 line(out_h, 0, '#define %s_H', '_'.join(names))
 
                 (superCls, constructors, methods, protectedMethods,
-                 fields, instanceFields, declares) = \
+                 methodNames, fields, instanceFields, declares) = \
                     header(env, out_h, cls, typeset, packages, excludes,
                            generics, _dll_export)
 
@@ -607,13 +610,13 @@ def jcc(args):
                 names, superNames = code(env, out_cpp,
                                          cls, superCls, constructors,
                                          methods, protectedMethods,
-                                         fields, instanceFields, 
+                                         methodNames, fields, instanceFields, 
                                          declares, typeset)
                 if moduleName:
                     python(env, out_h, out_cpp,
                            cls, superCls, names, superNames,
                            constructors, methods, protectedMethods,
-                           fields, instanceFields,
+                           methodNames, fields, instanceFields,
                            mappings.get(className), sequences.get(className),
                            renames.get(className),
                            declares, typeset, moduleName, generics,
@@ -762,6 +765,7 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
 
     methods = methods.values()
     sort(methods, fn=_compare)
+    methodNames = set([cppname(method.getName()) for method in methods])
 
     for constructor in constructors:
         if generics:
@@ -874,6 +878,9 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
         for field in fields:
             fieldType = field.getType()
             fieldName = cppname(field.getName())
+            if fieldName in methodNames:
+                print >>sys.stderr, "  Warning: renaming static variable '%s' on class %s to '%s%s' since it is shadowed by a method of same name." %(fieldName, '.'.join(names), fieldName, RENAME_FIELD_SUFFIX)
+                fieldName += RENAME_FIELD_SUFFIX
             if fieldType.isPrimitive():
                 line(out, indent, 'static %s %s;',
                      typename(fieldType, cls, False), fieldName)
@@ -925,11 +932,11 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
         line(out, indent, '}')
 
     return (superCls, constructors, methods, protectedMethods,
-            fields, instanceFields, declares)
+            methodNames, fields, instanceFields, declares)
 
 
 def code(env, out, cls, superCls, constructors, methods, protectedMethods,
-         fields, instanceFields, declares, typeset):
+         methodNames, fields, instanceFields, declares, typeset):
 
     className = cls.getName()
     names = className.split('.')
@@ -964,6 +971,8 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
     for field in fields:
         fieldType = field.getType()
         fieldName = cppname(field.getName())
+        if fieldName in methodNames:
+            fieldName += RENAME_FIELD_SUFFIX
         typeName = typename(fieldType, cls, False)
         if fieldType.isPrimitive():
             line(out, indent, '%s %s::%s = (%s) 0;',
@@ -1027,15 +1036,18 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
         for field in fields:
             fieldType = field.getType()
             fieldName = field.getName()
+            cppFieldName = cppname(fieldName)
+            if cppFieldName in methodNames:
+                cppFieldName += RENAME_FIELD_SUFFIX
             if fieldType.isPrimitive():
                 line(out, indent + 2,
                      '%s = env->getStatic%sField(cls, "%s");',
-                     cppname(fieldName), fieldType.getName().capitalize(),
+                     cppFieldName, fieldType.getName().capitalize(),
                      fieldName)
             else:
                 line(out, indent + 2,
                      '%s = new %s(env->getStaticObjectField(cls, "%s", "%s"));',
-                     cppname(fieldName), typename(fieldType, cls, False),
+                     cppFieldName, typename(fieldType, cls, False),
                      fieldName, signature(field))
 
     line(out, indent + 1, '}')

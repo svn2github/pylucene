@@ -16,6 +16,7 @@ import os, sys, platform, shutil, _jcc
 from itertools import izip
 
 from cpp import PRIMITIVES, INDENT, HALF_INDENT
+from cpp import RENAME_METHOD_SUFFIX, RENAME_FIELD_SUFFIX
 from cpp import cppname, cppnames, absname, typename, findClass
 from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier, Class, Method
@@ -540,7 +541,8 @@ def extension(env, out, indent, cls, names, name, count, method, generics):
 
 
 def python(env, out_h, out, cls, superCls, names, superNames,
-           constructors, methods, protectedMethods, fields, instanceFields,
+           constructors, methods, protectedMethods,
+           methodNames, fields, instanceFields,
            mapping, sequence, rename, declares, typeset, moduleName, generics,
            _dll_export):
 
@@ -664,18 +666,18 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     if name in allMethods:
                         if Modifier.isStatic(allMethods[name][0].getModifiers()):
                             allMethods[name].append(method)
-                        elif name + '_' in allMethods:
-                            allMethods[name + '_'].append(method)
+                        elif name + RENAME_METHOD_SUFFIX in allMethods:
+                            allMethods[name + RENAME_METHOD_SUFFIX].append(method)
                         else:
-                            print >>sys.stderr, "  Warning: renaming static method '%s' on class %s to '%s_' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
-                            allMethods[name + '_'] = [method]
+                            print >>sys.stderr, "  Warning: renaming static method '%s' on class %s to '%s%s' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name, RENAME_METHOD_SUFFIX)
+                            allMethods[name + RENAME_METHOD_SUFFIX] = [method]
                     else:
                         allMethods[name] = [method]
                 else:
                     if name in allMethods:
                         if Modifier.isStatic(allMethods[name][0].getModifiers()):
-                            print >>sys.stderr, "  Warning: renaming static method '%s' on class %s to '%s_' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name)
-                            allMethods[name + '_'] = allMethods[name]
+                            print >>sys.stderr, "  Warning: renaming static method '%s' on class %s to '%s%s' since it is shadowed by non-static method of same name." %(name, '.'.join(names), name, RENAME_METHOD_SUFFIX)
+                            allMethods[name + RENAME_METHOD_SUFFIX] = allMethods[name]
                             allMethods[name] = [method]
                         else:
                             allMethods[name].append(method)
@@ -1090,7 +1092,11 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for field in fields:
         fieldType = field.getType()
         fieldName = field.getName()
-        value = '%s::%s' %(cppname(names[-1]), cppname(fieldName))
+        cppFieldName = cppname(fieldName)
+        if cppFieldName in methodNames:
+            fieldName += RENAME_FIELD_SUFFIX
+            cppFieldName += RENAME_FIELD_SUFFIX
+        value = '%s::%s' %(cppname(names[-1]), cppFieldName)
         value = fieldValue(cls, value, fieldType)
         line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "%s", make_descriptor(%s));',
              names[-1], fieldName, value)
