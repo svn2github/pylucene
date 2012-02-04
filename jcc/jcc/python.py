@@ -1563,7 +1563,7 @@ def module(out, allInOne, classes, imports, cppdir, moduleName,
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, home_dir, use_distutils,
             shared, compiler, modules, wininst, find_jvm_dll, arch, generics,
-            resources, imports):
+            resources, imports, egg_info, extra_setup_args):
 
     try:
         if use_distutils:
@@ -1730,7 +1730,10 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             if name.endswith('.cpp'):
                 sources.append(os.path.join(path, name))
 
-    script_args = ['build_ext']
+    if egg_info:
+        script_args = ['egg_info']
+    else:    
+        script_args = ['build_ext']
 
     includes[0:0] = INCLUDES
     compile_args = CFLAGS
@@ -1840,6 +1843,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         config_vars['CFLAGS'] = ' '.join(cflags)
 
     extensions = [Extension('.'.join([moduleName, extname]), **args)]
+    script_args.extend(extra_setup_args)
 
     args = {
         'name': moduleName,
@@ -1852,5 +1856,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     }
     if with_setuptools:
         args['zip_safe'] = False
+
+    print "setup args = %s" % args
 
     setup(**args)

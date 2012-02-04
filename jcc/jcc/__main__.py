@@ -31,6 +31,8 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               clashes with C/C++ reserved words or header
                               file definitions
     --vmarg                 - add extra Java VM initialization parameter
+    --maxheap               - set the maximum Java heap size, as passing -Xmx*
+                              using --vmarg doesn't do anything
     --resources             - include resource directory in distribution as
                               package data
 
@@ -77,6 +79,8 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --build                 - generate the wrapper and compile it
     --compile               - recompile the (previously generated) module
     --install               - install the wrapper in the local site-packages
+    --egg-info              - ask distutils setup() to generate egg info, and
+                              don't compile the module (for pip install)
 
   Distribution actions:
     --use-distutils         - use distutils even when setuptools is available
@@ -91,6 +95,8 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --install-dir INSTALLDIR
     --prefix PREFIX
     --home HOMEDIR
+    --extra-setup-arg       - pass an extra argument on setup.py command line
+                              (pip install uses --egg-base and --record params)
 '''
     print help
     sys.exit(0)
