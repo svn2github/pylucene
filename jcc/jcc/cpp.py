@@ -594,8 +594,16 @@ def jcc(args):
                 out_cpp = file(os.path.join(cppdir, fileName), 'w')
 
         done = set()
+        pythonNames = {}
         for importset in imports.itervalues():
             done.update(importset)
+            if moduleName:
+                for cls in importset:
+                    name = cls.getName().split_pkg('.')[-1]
+                    if name in pythonNames:
+                        raise ValueError, (cls, 'python class name already in use, use --rename', name, pythonNames[name])
+                    else:
+                        pythonNames[name] = cls
 
         todo = typeset - done
         if allInOne and wrapperFiles > 1:
@@ -628,6 +636,11 @@ def jcc(args):
                                          methodNames, fields, instanceFields, 
                                          declares, typeset)
                 if moduleName:
+                    name = renames.get(className) or names[-1]
+                    if name in pythonNames:
+                        raise ValueError, (cls, 'python class name already in use, use --rename', name, pythonNames[name])
+                    else:
+                        pythonNames[name] = cls
                     python(env, out_h, out_cpp,
                            cls, superCls, names, superNames,
                            constructors, methods, protectedMethods,
