@@ -233,10 +233,13 @@ def addRequiredTypes(cls, typeset, generics):
         if Class.instance_(cls):
             cls = Class.cast_(cls)
             if not (cls.isPrimitive() or cls in typeset):
-                typeset.add(cls)
-                cls = cls.getGenericSuperclass()
-                if cls is not None:
-                    addRequiredTypes(cls, typeset, True)
+                if cls.isArray():
+                    addRequiredTypes(cls.getComponentType(), typeset, True)
+                else:
+                    typeset.add(cls)
+                    cls = cls.getGenericSuperclass()
+                    if cls is not None:
+                        addRequiredTypes(cls, typeset, True)
         elif ParameterizedType.instance_(cls):
             pt = ParameterizedType.cast_(cls)
             addRequiredTypes(pt.getRawType(), typeset, True)

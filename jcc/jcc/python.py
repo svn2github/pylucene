@@ -288,7 +288,10 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
             clsArgs = []
             for clsArg in getActualTypeArguments(genericRT):
                 if Class.instance_(clsArg):
-                    clsNames = Class.cast_(clsArg).getName().split('.')
+                    clsArg = Class.cast_(clsArg)
+                    if clsArg.isArray():
+                        clsArg = Class.forName('java.lang.Object')
+                    clsNames = clsArg.getName().split('.')
                     clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                     clsArgs.append(clsArg)
                 elif TypeVariable.instance_(clsArg):
