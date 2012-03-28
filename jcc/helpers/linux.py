@@ -46,6 +46,7 @@ See %s/INSTALL for more information about shared mode.
 def patch_setuptools(with_setuptools):
 
     with_setuptools_c11 = ('00000000', '00000006', '*c', '00000011', '*final')
+    with_setuptools_15 = ('00000000', '00000006', '00000015', '*@', '*final')
 
     try:
         from setuptools.command.build_ext import sh_link_shared_object
@@ -54,10 +55,12 @@ def patch_setuptools(with_setuptools):
         import setuptools
         jccdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         st_egg = os.path.dirname(setuptools.__path__[0])
-        if with_setuptools < with_setuptools_c11:
+        if with_setuptools < with_setuptools_c11:     # old 0.6c7-10 series
             patch_version = '0.6c7'
+        elif with_setuptools >= with_setuptools_15:   # new 0.6.15 and up fork
+            patch_version = '0.6c7'                   # compatible with 0.6c9
         else:
-            patch_version = '0.6c11'
+            patch_version = '0.6c11'                  # old 0.6c11+ series
 
         if os.path.isdir(st_egg):
             raise NotImplementedError, patch_st_dir(patch_version, st_egg,

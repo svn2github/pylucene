@@ -3,6 +3,7 @@ Version 2.12 ->
  - fixed bug with name collision between method and static field of same name
  - added --maxheap, --egg-info and --extra-setup-arg parameters (Chris Wilson)
  - added check for duplicate class names in generated Python module
+ - updated setuptools patch logic to accomodate new 0.6.15 and up fork
  - 
 
 Version 2.11 -> 2.12
