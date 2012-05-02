@@ -89,6 +89,15 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
     _thr = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/RuntimeException"));
 #endif
 
+    _boo = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Boolean"));
+    _byt = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Byte"));
+    _cha = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Character"));
+    _dou = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Double"));
+    _flo = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Float"));
+    _int = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Integer"));
+    _lon = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Long"));
+    _sho = (jclass) vm_env->NewGlobalRef(vm_env->FindClass("java/lang/Short"));
+
     _mids = new jmethodID[max_mid];
 
     _mids[mid_sys_identityHashCode] =
@@ -135,29 +144,38 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
                             "nextElement", "()Ljava/lang/Object;");
 
     _mids[mid_Boolean_booleanValue] =
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Boolean"),
-                            "booleanValue", "()Z");
+        vm_env->GetMethodID(_boo, "booleanValue", "()Z");
     _mids[mid_Byte_byteValue] = 
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Byte"),
-                            "byteValue", "()B");
+        vm_env->GetMethodID(_byt, "byteValue", "()B");
     _mids[mid_Character_charValue] =
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Character"),
-                            "charValue", "()C");
+        vm_env->GetMethodID(_cha, "charValue", "()C");
     _mids[mid_Double_doubleValue] = 
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Double"),
-                            "doubleValue", "()D");
+        vm_env->GetMethodID(_dou, "doubleValue", "()D");
     _mids[mid_Float_floatValue] =
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Float"),
-                            "floatValue", "()F");
+        vm_env->GetMethodID(_flo, "floatValue", "()F");
     _mids[mid_Integer_intValue] = 
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Integer"),
-                            "intValue", "()I");
+        vm_env->GetMethodID(_int, "intValue", "()I");
     _mids[mid_Long_longValue] = 
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Long"),
-                            "longValue", "()J");
+        vm_env->GetMethodID(_lon, "longValue", "()J");
     _mids[mid_Short_shortValue] = 
-        vm_env->GetMethodID(vm_env->FindClass("java/lang/Short"),
-                            "shortValue", "()S");
+        vm_env->GetMethodID(_sho, "shortValue", "()S");
+
+    _mids[mid_Boolean_init] =
+        vm_env->GetMethodID(_boo, "<init>", "(Z)V");
+    _mids[mid_Byte_init] = 
+        vm_env->GetMethodID(_byt, "<init>", "(B)V");
+    _mids[mid_Character_init] =
+        vm_env->GetMethodID(_cha, "<init>", "(C)V");
+    _mids[mid_Double_init] = 
+        vm_env->GetMethodID(_dou, "<init>", "(D)V");
+    _mids[mid_Float_init] = 
+        vm_env->GetMethodID(_flo, "<init>", "(F)V");
+    _mids[mid_Integer_init] =
+        vm_env->GetMethodID(_int, "<init>", "(I)V");
+    _mids[mid_Long_init] = 
+        vm_env->GetMethodID(_lon, "<init>", "(J)V");
+    _mids[mid_Short_init] = 
+        vm_env->GetMethodID(_sho, "<init>", "(S)V");
 }
 
 int JCCEnv::attachCurrentThread(char *name, int asDaemon)
@@ -632,6 +650,46 @@ jlong JCCEnv::longValue(jobject obj) const
 jshort JCCEnv::shortValue(jobject obj) const
 {
     return get_vm_env()->CallShortMethod(obj, _mids[mid_Short_shortValue]);
+}
+
+jobject JCCEnv::boxBoolean(jboolean value) const
+{
+    return get_vm_env()->NewObject(_boo, _mids[mid_Boolean_init], value);
+}
+
+jobject JCCEnv::boxByte(jbyte value) const
+{
+    return get_vm_env()->NewObject(_byt, _mids[mid_Byte_init], value);
+}
+
+jobject JCCEnv::boxChar(jchar value) const
+{
+    return get_vm_env()->NewObject(_cha, _mids[mid_Character_init], value);
+}
+
+jobject JCCEnv::boxDouble(jdouble value) const
+{
+    return get_vm_env()->NewObject(_dou, _mids[mid_Double_init], value);
+}
+
+jobject JCCEnv::boxFloat(jfloat value) const
+{
+    return get_vm_env()->NewObject(_flo, _mids[mid_Float_init], value);
+}
+
+jobject JCCEnv::boxInteger(jint value) const
+{
+    return get_vm_env()->NewObject(_int, _mids[mid_Integer_init], value);
+}
+
+jobject JCCEnv::boxLong(jlong value) const
+{
+    return get_vm_env()->NewObject(_lon, _mids[mid_Long_init], value);
+}
+
+jobject JCCEnv::boxShort(jshort value) const
+{
+    return get_vm_env()->NewObject(_sho, _mids[mid_Short_init], value);
 }
 
 

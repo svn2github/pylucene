@@ -5,6 +5,9 @@ Version 2.12 ->
  - added check for duplicate class names in generated Python module
  - updated setuptools patch logic to accomodate new 0.6.15 and up fork
  - fixed issues with with arrays as generics parameters (openjdk 7)
+ - added support for auto-boxing primitive types when converting to object array
+ - fixed bug with setting a string into an object array
+ - fixed bug with decref'ing too early when converting a sequence to an array
  - 
 
 Version 2.11 -> 2.12

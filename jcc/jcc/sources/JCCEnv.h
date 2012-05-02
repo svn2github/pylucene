@@ -81,6 +81,7 @@ public:
 class _DLL_EXPORT JCCEnv {
 protected:
     jclass _sys, _obj, _thr;
+    jclass _boo, _byt, _cha, _dou, _flo, _int, _lon, _sho;
     jmethodID *_mids;
 
     enum {
@@ -101,6 +102,14 @@ protected:
         mid_Integer_intValue,
         mid_Long_longValue,
         mid_Short_shortValue,
+        mid_Boolean_init,
+        mid_Byte_init,
+        mid_Character_init,
+        mid_Double_init,
+        mid_Float_init,
+        mid_Integer_init,
+        mid_Long_init,
+        mid_Short_init,
         max_mid
     };
 
@@ -204,6 +213,15 @@ public:
     jint intValue(jobject obj) const;
     jlong longValue(jobject obj) const;
     jshort shortValue(jobject obj) const;
+
+    jobject boxBoolean(jboolean value) const;
+    jobject boxByte(jbyte value) const;
+    jobject boxChar(jchar value) const;
+    jobject boxDouble(jdouble value) const;
+    jobject boxFloat(jfloat value) const;
+    jobject boxInteger(jint value) const;
+    jobject boxLong(jlong value) const;
+    jobject boxShort(jshort value) const;
 
     jmethodID getMethodID(jclass cls, const char *name,
                                   const char *signature) const;

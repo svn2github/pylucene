@@ -81,8 +81,8 @@ def findClass(className):
     return cls
 
 
-INDENT = '    '
-HALF_INDENT = '  '
+INDENT = '  '
+HALF_INDENT = ' '
 
 PRIMITIVES = { 'boolean': 'Z',
                'byte': 'B',

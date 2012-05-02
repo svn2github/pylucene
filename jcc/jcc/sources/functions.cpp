@@ -1262,7 +1262,7 @@ jobjectArray fromPySequence(jclass cls, PyObject *sequence)
 
     for (int i = 0; i < length; i++) {
         PyObject *obj = PySequence_GetItem(sequence, i);
-        int fromString = 0;
+        int deleteLocal = 0;
         jobject jobj;
 
         if (!obj)
@@ -1272,26 +1272,46 @@ jobjectArray fromPySequence(jclass cls, PyObject *sequence)
         else if (PyString_Check(obj) || PyUnicode_Check(obj))
         {
             jobj = env->fromPyString(obj);
-            fromString = 1;
+            deleteLocal = 1;
         }
         else if (PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
             jobj = ((t_JObject *) obj)->object.this$;
         else if (PyObject_TypeCheck(obj, &PY_TYPE(FinalizerProxy)))
             jobj = ((t_JObject *) ((t_fp *) obj)->object)->object.this$;
-        else /* todo: add auto-boxing of primitive types */
+        else if (obj == Py_True || obj == Py_False)
+        {
+            jobj = env->boxBoolean(obj == Py_True);
+            deleteLocal = 1;
+        }
+        else if (PyFloat_Check(obj))
+        {
+            jobj = env->boxDouble(PyFloat_AS_DOUBLE(obj));
+            deleteLocal = 1;
+        }
+        else if (PyInt_Check(obj))
+        {
+            jobj = env->boxInteger(PyInt_AS_LONG(obj));
+            deleteLocal = 1;
+        }
+        else if (PyLong_Check(obj))
+        {
+            jobj = env->boxLong(PyLong_AsLongLong(obj));
+            deleteLocal = 1;
+        }
+        else
         {
             PyErr_SetObject(PyExc_TypeError, obj);
             Py_DECREF(obj);
             return NULL;
         }
 
-        Py_DECREF(obj);
-
         try {
             env->setObjectArrayElement(array, i, jobj);
-            if (fromString)
+            if (deleteLocal)
                 vm_env->DeleteLocalRef(jobj);
+            Py_DECREF(obj);
         } catch (int e) {
+            Py_DECREF(obj);
             switch (e) {
               case _EXC_JAVA:
                 PyErr_SetJavaError();

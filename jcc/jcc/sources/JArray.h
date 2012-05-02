@@ -180,13 +180,17 @@ template<> class JArray<jobject> : public java::lang::Object {
 
             if (n >= 0 && n < length)
             {
-                if (!PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
+                jobject jobj;
+
+                if (PyString_Check(obj) || PyUnicode_Check(obj))
+                    jobj = env->fromPyString(obj);
+                else if (!PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
                 {
                     PyErr_SetObject(PyExc_TypeError, obj);
                     return -1;
                 }
-
-                jobject jobj = ((t_JObject *) obj)->object.this$;
+                else
+                    jobj = ((t_JObject *) obj)->object.this$;
 
                 try {
                     env->setObjectArrayElement((jobjectArray) this$, n, jobj);
