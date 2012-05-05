@@ -1,5 +1,5 @@
-Version 2.12 ->
----------------
+Version 2.12 -> 2.13
+--------------------
  - fixed bug with name collision between method and static field of same name
  - added --maxheap, --egg-info and --extra-setup-arg parameters (Chris Wilson)
  - added check for duplicate class names in generated Python module
@@ -8,7 +8,6 @@ Version 2.12 ->
  - added support for auto-boxing primitive types when converting to object array
  - fixed bug with setting a string into an object array
  - fixed bug with decref'ing too early when converting a sequence to an array
- - 
 
 Version 2.11 -> 2.12
 --------------------
