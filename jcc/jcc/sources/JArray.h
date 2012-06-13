@@ -19,6 +19,10 @@
 #include <Python.h>
 #include "macros.h"
 
+#if PY_VERSION_HEX < 0x02050000
+typedef int Py_ssize_t;
+#endif
+
 extern jobjectArray fromPySequence(jclass cls, PyObject *sequence);
 extern PyObject *PyErr_SetJavaError();
 
