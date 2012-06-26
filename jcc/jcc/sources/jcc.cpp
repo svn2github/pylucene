@@ -351,9 +351,9 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
     };
     char *classpath = NULL;
     char *initialheap = NULL, *maxheap = NULL, *maxstack = NULL;
-    char *vmargs = NULL;
+    PyObject *vmargs = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zzzzz", kwnames,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zzzzO", kwnames,
                                      &classpath,
                                      &initialheap, &maxheap, &maxstack,
                                      &vmargs))
@@ -431,18 +431,18 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         if (maxstack)
             add_option("-Xss", maxstack, &vm_options[nOptions++]);
 
-        if (vmargs)
+        if (vmargs != NULL && PyString_Check(vmargs))
         {
 #ifdef _MSC_VER
-            char *buf = _strdup(vmargs);
+            char *buf = _strdup(PyString_AS_STRING(vmargs));
 #else
-            char *buf = strdup(vmargs);
+            char *buf = strdup(PyString_AS_STRING(vmargs));
 #endif
             char *sep = ",";
             char *option;
 
-            for (option = strtok(buf, sep); option; option = strtok(NULL, sep))
-            {
+            for (option = strtok(buf, sep); option != NULL;
+                 option = strtok(NULL, sep)) {
                 if (nOptions < sizeof(vm_options) / sizeof(JavaVMOption))
                     add_option("", option, &vm_options[nOptions++]);
                 else
@@ -450,12 +450,57 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                     free(buf);
                     for (unsigned int i = 0; i < nOptions; i++)
                         delete vm_options[i].optionString;
-                    PyErr_Format(PyExc_ValueError, "Too many options (> %d)",
-                                 nOptions);
+                    PyErr_Format(PyExc_ValueError,
+                                 "Too many options (> %d)", nOptions);
                     return NULL;
                 }
             }
             free(buf);
+        }
+        else if (vmargs != NULL && PySequence_Check(vmargs))
+        {
+            PyObject *fast =
+                PySequence_Fast(vmargs, "error converting vmargs to a tuple");
+
+            if (fast == NULL)
+                return NULL;
+
+            for (int i = 0; i < PySequence_Fast_GET_SIZE(fast); ++i) {
+                PyObject *arg = PySequence_Fast_GET_ITEM(fast, i);
+
+                if (PyString_Check(arg))
+                {
+                    char *option = PyString_AS_STRING(arg);
+
+                    if (nOptions < sizeof(vm_options) / sizeof(JavaVMOption))
+                        add_option("", option, &vm_options[nOptions++]);
+                    else
+                    {
+                        for (unsigned int i = 0; i < nOptions; i++)
+                            delete vm_options[i].optionString;
+                        PyErr_Format(PyExc_ValueError,
+                                     "Too many options (> %d)", nOptions);
+                        return NULL;
+                    }
+                }
+                else
+                {
+                    for (unsigned int i = 0; i < nOptions; i++)
+                        delete vm_options[i].optionString;
+                    PyErr_Format(PyExc_TypeError,
+                                 "vmargs arg %d is not a string", i);
+                    Py_DECREF(fast);
+                    return NULL;
+                }
+            }
+
+            Py_DECREF(fast);
+        }
+        else if (vmargs != NULL)
+        {
+            PyErr_SetString(PyExc_TypeError,
+                            "vmargs is not a string or sequence");
+            return NULL;
         }
 
         //vm_options[nOptions++].optionString = "-verbose:gc";

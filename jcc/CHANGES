@@ -1,6 +1,7 @@
 Version 2.13 ->
 --------------------
  - fixed class initialization race bug PYLUCENE-17 (with Patrick J. McNerthney)
+ - added support for initVM's vmargs to be a [list, of, args], PYLUCENE-19
  - 
 
 Version 2.12 -> 2.13

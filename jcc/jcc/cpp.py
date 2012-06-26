@@ -508,7 +508,7 @@ def jcc(args):
         vmargs.append('-Djava.library.path=' + os.pathsep.join(libpath))
 
     initvm_args['maxstack'] = '512k'
-    initvm_args['vmargs'] = ' '.join(vmargs)
+    initvm_args['vmargs'] = vmargs
 
     env = initVM(os.pathsep.join(classpath) or None, **initvm_args)
 
