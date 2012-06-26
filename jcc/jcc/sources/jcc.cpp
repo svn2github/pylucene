@@ -476,17 +476,18 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                         add_option("", option, &vm_options[nOptions++]);
                     else
                     {
-                        for (unsigned int i = 0; i < nOptions; i++)
-                            delete vm_options[i].optionString;
+                        for (unsigned int j = 0; j < nOptions; j++)
+                            delete vm_options[j].optionString;
                         PyErr_Format(PyExc_ValueError,
                                      "Too many options (> %d)", nOptions);
+                        Py_DECREF(fast);
                         return NULL;
                     }
                 }
                 else
                 {
-                    for (unsigned int i = 0; i < nOptions; i++)
-                        delete vm_options[i].optionString;
+                    for (unsigned int j = 0; j < nOptions; j++)
+                        delete vm_options[j].optionString;
                     PyErr_Format(PyExc_TypeError,
                                  "vmargs arg %d is not a string", i);
                     Py_DECREF(fast);
