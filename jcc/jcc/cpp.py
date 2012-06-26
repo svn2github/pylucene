@@ -893,13 +893,14 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
     line(out, indent, 'static jmethodID *mids$;');
     if instanceFields:
         line(out, indent, 'static jfieldID *fids$;');
-    line(out, indent, 'static jclass initializeClass();');
+    line(out, indent, 'static bool live$;');
+    line(out, indent, 'static jclass initializeClass(bool);');
     line(out)
 
     line(out, indent, 'explicit %s(jobject obj) : %s(obj) {',
          cppname(names[-1]), absname(cppnames(superNames)))
     line(out, indent + 1, 'if (obj != NULL)');
-    line(out, indent + 2, 'initializeClass();')
+    line(out, indent + 2, 'env->getClass(initializeClass);')
     line(out, indent, '}')
     line(out, indent, '%s(const %s& obj) : %s(obj) {}',
          cppname(names[-1]), cppname(names[-1]),
@@ -999,6 +1000,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
     line(out, indent, 'jmethodID *%s::mids$ = NULL;', cppname(names[-1]))
     if instanceFields:
         line(out, indent, 'jfieldID *%s::fids$ = NULL;', cppname(names[-1]))
+    line(out, indent, 'bool %s::live$ = false;', cppname(names[-1]))
 
     for field in fields:
         fieldType = field.getType()
@@ -1014,11 +1016,13 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
                  typeName, cppname(names[-1]), fieldName)
 
     line(out)
-    line(out, indent, 'jclass %s::initializeClass()', cppname(names[-1]))
+    line(out, indent, 'jclass %s::initializeClass(bool getOnly)',
+         cppname(names[-1]))
     line(out, indent, '{')
-    line(out, indent + 1, 'if (!class$)')
+    line(out, indent + 1, 'if (getOnly)')
+    line(out, indent + 2, 'return (jclass) (live$ ? class$->this$ : NULL);')
+    line(out, indent + 1, 'if (class$ == NULL)')
     line(out, indent + 1, '{')
-    line(out)
     line(out, indent + 2, 'jclass cls = (jclass) env->findClass("%s");',
          className.replace('.', '/'))
 
@@ -1082,6 +1086,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
                      cppFieldName, typename(fieldType, cls, False),
                      fieldName, signature(field))
 
+    line(out, indent + 2, "live$ = true;")
     line(out, indent + 1, '}')
     line(out, indent + 1, 'return (jclass) class$->this$;')
     line(out, indent, '}')
@@ -1137,7 +1142,8 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
              cppname(methodName), decls, const)
         line(out, indent, '{')
         if isStatic:
-            line(out, indent + 1, 'jclass cls = initializeClass();');
+            line(out, indent + 1,
+                 'jclass cls = env->getClass(initializeClass);');
         if returnType.isPrimitive():
             line(out, indent + 1,
                  '%senv->call%s%sMethod(%s, %smids$[%smid_%s_%s]%s);',

@@ -48,8 +48,10 @@ namespace java {
             Class *Method::class$ = NULL;
             jmethodID *Method::_mids = NULL;
 
-            jclass Method::initializeClass()
+            jclass Method::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
                     jclass cls = env->findClass("java/lang/reflect/Method");

@@ -29,8 +29,10 @@ namespace java {
         java::lang::Class *PrintWriter::class$ = NULL;
         jmethodID *PrintWriter::_mids = NULL;
 
-        jclass PrintWriter::initializeClass()
+        jclass PrintWriter::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/io/PrintWriter");

@@ -33,8 +33,10 @@ namespace java {
         Boolean *Boolean::TRUE = NULL;
         Boolean *Boolean::FALSE = NULL;
         
-        jclass Boolean::initializeClass()
+        jclass Boolean::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Boolean");

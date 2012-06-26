@@ -30,8 +30,10 @@ namespace java {
         Class *Enumeration::class$ = NULL;
         jmethodID *Enumeration::mids$ = NULL;
 
-        jclass Enumeration::initializeClass()
+        jclass Enumeration::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/util/Enumeration");

@@ -63,8 +63,10 @@ namespace java {
         Class *Class::class$ = NULL;
         jmethodID *Class::_mids = NULL;
 
-        jclass Class::initializeClass()
+        jclass Class::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Class");
@@ -150,7 +152,7 @@ namespace java {
 
         Class Class::forName(const String& className)
         {
-            jclass cls = initializeClass();
+            jclass cls = initializeClass(false);
             jobject obj = env->callStaticObjectMethod(cls, _mids[mid_forName], className.this$);
 
             return Class((jclass) obj);

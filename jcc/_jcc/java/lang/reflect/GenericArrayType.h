@@ -25,11 +25,11 @@ namespace java {
 
                 static java::lang::Class *class$;
                 static jmethodID *mids$;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 explicit GenericArrayType(jobject obj) : java::lang::reflect::Type(obj) {
                     if (obj != NULL)
-                        initializeClass();
+                        initializeClass(false);
                 }
                 GenericArrayType(const GenericArrayType& obj) : java::lang::reflect::Type(obj) {}
 

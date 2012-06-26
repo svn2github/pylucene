@@ -30,8 +30,10 @@ namespace java {
         Class *Short::class$ = NULL;
         jmethodID *Short::_mids = NULL;
 
-        jclass Short::initializeClass()
+        jclass Short::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Short");

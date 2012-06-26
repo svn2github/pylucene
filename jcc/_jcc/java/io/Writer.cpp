@@ -28,8 +28,10 @@ namespace java {
         java::lang::Class *Writer::class$ = NULL;
         jmethodID *Writer::_mids = NULL;
 
-        jclass Writer::initializeClass()
+        jclass Writer::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/io/Writer");

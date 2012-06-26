@@ -30,8 +30,10 @@ namespace java {
         Class *Byte::class$ = NULL;
         jmethodID *Byte::_mids = NULL;
 
-        jclass Byte::initializeClass()
+        jclass Byte::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Byte");

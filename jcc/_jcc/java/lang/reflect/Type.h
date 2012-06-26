@@ -21,11 +21,11 @@ namespace java {
 
                 static java::lang::Class *class$;
                 static jmethodID *mids$;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 explicit Type(jobject obj) : java::lang::Object(obj) {
                     if (obj != NULL)
-                        initializeClass();
+                        initializeClass(false);
                 }
                 Type(const Type& obj) : java::lang::Object(obj) {}
             };

@@ -21,7 +21,6 @@
 class _DLL_EXPORT JObject {
 public:
     jobject this$;
-    int id;  /* zero when this$ is a weak ref */
 
     inline explicit JObject(jobject obj)
     {
@@ -83,6 +82,9 @@ public:
 
         return *this;
     }
+
+private:
+    int id;      // zero when this$ is a weak ref */
 };
 
 

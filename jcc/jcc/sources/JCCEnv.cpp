@@ -60,13 +60,17 @@ JCCEnv::JCCEnv(JavaVM *vm, JNIEnv *vm_env)
     if (!mutex)
     {
         mutex = new CRITICAL_SECTION();
-        InitializeCriticalSection(mutex);
+        InitializeCriticalSection(mutex);  // recursive by default
     }
 #else
     if (!mutex)
     {
+        pthread_mutexattr_t attr;
+
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
         mutex = new pthread_mutex_t();
-        pthread_mutex_init(mutex, NULL);
+        pthread_mutex_init(mutex, &attr);
     }
 #endif
 
@@ -245,7 +249,7 @@ jobject JCCEnv::enumerationNext(jobject obj) const
 
 jboolean JCCEnv::isInstanceOf(jobject obj, getclassfn initializeClass) const
 {
-    return get_vm_env()->IsInstanceOf(obj, (*initializeClass)());
+    return get_vm_env()->IsInstanceOf(obj, getClass(initializeClass));
 }
 
 jclass JCCEnv::findClass(const char *className) const
@@ -386,10 +390,23 @@ jobject JCCEnv::deleteGlobalRef(jobject obj, int id)
     return NULL;
 }
 
+jclass JCCEnv::getClass(getclassfn initializeClass) const
+{
+    jclass cls = (*initializeClass)(true);
+
+    if (cls == NULL)
+    {
+        lock locked;
+        cls = (*initializeClass)(false);
+    }
+
+    return cls;
+}
+
 jobject JCCEnv::newObject(getclassfn initializeClass, jmethodID **mids,
                           int m, ...)
 {
-    jclass cls = (*initializeClass)();
+    jclass cls = getClass(initializeClass);
     JNIEnv *vm_env = get_vm_env();
     jobject obj;
 

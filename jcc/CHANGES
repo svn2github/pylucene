@@ -1,3 +1,8 @@
+Version 2.13 ->
+--------------------
+ - fixed class initialization race bug PYLUCENE-17 (with Patrick J. McNerthney)
+ - 
+
 Version 2.12 -> 2.13
 --------------------
  - fixed bug with name collision between method and static field of same name

@@ -152,7 +152,7 @@ template<class T, class U> PyObject *get_iterator_next(T *self)
     jobject next;
     OBJ_CALL(next = env->iteratorNext(self->object.this$));
 
-    jclass cls = java::lang::String::initializeClass();
+    jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next, cls))
         return env->fromJString((jstring) next, 1);
 
@@ -173,7 +173,7 @@ template<class T, class U> PyObject *get_generic_iterator_next(T *self)
     jobject next;
     OBJ_CALL(next = env->iteratorNext(self->object.this$));
 
-    jclass cls = java::lang::String::initializeClass();
+    jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next, cls))
         return env->fromJString((jstring) next, 1);
 
@@ -198,7 +198,7 @@ template<class T, class U> PyObject *get_enumeration_next(T *self)
     jobject next;
     OBJ_CALL(next = env->enumerationNext(self->object.this$));
 
-    jclass cls = java::lang::String::initializeClass();
+    jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next, cls))
         return env->fromJString((jstring) next, 1);
 
@@ -219,7 +219,7 @@ template<class T, class U> PyObject *get_generic_enumeration_next(T *self)
     jobject next;
     OBJ_CALL(next = env->enumerationNext(self->object.this$));
 
-    jclass cls = java::lang::String::initializeClass();
+    jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next, cls))
         return env->fromJString((jstring) next, 1);
 
@@ -241,7 +241,7 @@ template<class T, class U, class V> PyObject *get_next(T *self)
         return NULL;
     }
         
-    jclass cls = java::lang::String::initializeClass();
+    jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
         return env->fromJString((jstring) next.this$, 0);
 
@@ -259,7 +259,7 @@ template<class T, class U, class V> PyObject *get_generic_next(T *self)
         return NULL;
     }
         
-    jclass cls = java::lang::String::initializeClass();
+    jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
         return env->fromJString((jstring) next.this$, 0);
 

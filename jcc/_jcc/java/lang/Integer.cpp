@@ -30,8 +30,10 @@ namespace java {
         Class *Integer::class$ = NULL;
         jmethodID *Integer::_mids = NULL;
         
-        jclass Integer::initializeClass()
+        jclass Integer::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Integer");

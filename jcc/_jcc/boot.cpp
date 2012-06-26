@@ -39,8 +39,8 @@ PyObject *__initialize__(PyObject *module, PyObject *args, PyObject *kwds)
     if (env == NULL)
         return NULL;
 
-    java::lang::Class::initializeClass();
-    java::lang::RuntimeException::initializeClass();
+    java::lang::Class::initializeClass(false);
+    java::lang::RuntimeException::initializeClass(false);
 
     return env;
 }

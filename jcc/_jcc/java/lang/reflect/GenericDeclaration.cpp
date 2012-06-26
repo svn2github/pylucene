@@ -14,8 +14,10 @@ namespace java {
             java::lang::Class *GenericDeclaration::class$ = NULL;
             jmethodID *GenericDeclaration::mids$ = NULL;
 
-            jclass GenericDeclaration::initializeClass()
+            jclass GenericDeclaration::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
 

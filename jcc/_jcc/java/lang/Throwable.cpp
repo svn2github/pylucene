@@ -33,8 +33,10 @@ namespace java {
         Class *Throwable::class$ = NULL;
         jmethodID *Throwable::_mids = NULL;
 
-        jclass Throwable::initializeClass()
+        jclass Throwable::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Throwable");

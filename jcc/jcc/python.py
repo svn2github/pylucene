@@ -1075,10 +1075,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
 
     if isExtension:
-        line(out, indent + 1, 'jclass cls = %s::initializeClass();',
+        line(out, indent + 1, 'jclass cls = env->getClass(%s::initializeClass);',
              cppname(names[-1]))
     elif fields:
-        line(out, indent + 1, '%s::initializeClass();', cppname(names[-1]))
+        line(out, indent + 1, 'env->getClass(%s::initializeClass);', cppname(names[-1]))
 
     if isExtension:
         count = 0

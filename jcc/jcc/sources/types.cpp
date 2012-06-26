@@ -552,10 +552,10 @@ static PyObject *t_descriptor___get__(t_descriptor *self,
     {
 #ifdef _java_generics
         if (self->flags & DESCRIPTOR_GENERIC)
-            return t_Class::wrap_Object(Class((*self->access.initializeClass)()), (PyTypeObject *) type);
+            return t_Class::wrap_Object(Class(env->getClass(self->access.initializeClass)), (PyTypeObject *) type);
         else
 #endif
-            return t_Class::wrap_Object(Class((*self->access.initializeClass)()));
+            return t_Class::wrap_Object(Class(env->getClass(self->access.initializeClass)));
     }
 
     Py_RETURN_NONE;

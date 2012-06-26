@@ -30,8 +30,10 @@ namespace java {
         Class *Double::class$ = NULL;
         jmethodID *Double::_mids = NULL;
         
-        jclass Double::initializeClass()
+        jclass Double::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Double");

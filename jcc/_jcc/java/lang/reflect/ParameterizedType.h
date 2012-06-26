@@ -27,11 +27,11 @@ namespace java {
 
                 static java::lang::Class *class$;
                 static jmethodID *mids$;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 explicit ParameterizedType(jobject obj) : java::lang::reflect::Type(obj) {
                     if (obj != NULL)
-                        initializeClass();
+                        initializeClass(false);
                 }
                 ParameterizedType(const ParameterizedType& obj) : java::lang::reflect::Type(obj) {}
 

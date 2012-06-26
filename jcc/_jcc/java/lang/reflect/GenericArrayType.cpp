@@ -13,8 +13,10 @@ namespace java {
             java::lang::Class *GenericArrayType::class$ = NULL;
             jmethodID *GenericArrayType::mids$ = NULL;
 
-            jclass GenericArrayType::initializeClass()
+            jclass GenericArrayType::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
 

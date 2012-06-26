@@ -13,8 +13,10 @@ namespace java {
             java::lang::Class *Type::class$ = NULL;
             jmethodID *Type::mids$ = NULL;
 
-            jclass Type::initializeClass()
+            jclass Type::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
 

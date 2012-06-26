@@ -55,7 +55,7 @@ public:
     }
 
 #ifdef PYTHON
-    JArray<T>(PyObject *sequence) : java::lang::Object(fromPySequence(T::initializeClass(), sequence)) {
+    JArray<T>(PyObject *sequence) : java::lang::Object(fromPySequence(env->getClass(T::initializeClass), sequence)) {
         length = this$ ? env->getArrayLength((jobjectArray) this$) : 0;
     }
 

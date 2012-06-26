@@ -400,7 +400,7 @@ static int seq_setslice(U *self, Py_ssize_t lo, Py_ssize_t hi, PyObject *values)
 }
 
 template<typename T> 
-static jclass initializeClass(void)
+static jclass initializeClass(bool getOnly)
 {
     return env->get_vm_env()->GetObjectClass(JArray<T>((Py_ssize_t) 0).this$);
 }
@@ -717,7 +717,7 @@ template<> int init< jobject,_t_jobjectarray<jobject> >(_t_jobjectarray<jobject>
     return 0;
 }
 
-template<> jclass initializeClass<jobject>(void)
+template<> jclass initializeClass<jobject>(bool getOnly)
 {
     jclass cls = env->findClass("java/lang/Object");
     return env->get_vm_env()->GetObjectClass(JArray<jobject>(cls, (Py_ssize_t) 0).this$);

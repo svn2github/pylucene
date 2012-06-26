@@ -15,8 +15,10 @@ namespace java {
             java::lang::Class *TypeVariable::class$ = NULL;
             jmethodID *TypeVariable::mids$ = NULL;
 
-            jclass TypeVariable::initializeClass()
+            jclass TypeVariable::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
 

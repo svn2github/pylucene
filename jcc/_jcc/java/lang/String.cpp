@@ -32,8 +32,10 @@ namespace java {
         Class *String::class$ = NULL;
         jmethodID *String::_mids = NULL;
 
-        jclass String::initializeClass()
+        jclass String::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/String");

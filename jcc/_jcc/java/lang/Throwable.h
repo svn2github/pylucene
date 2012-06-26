@@ -33,10 +33,10 @@ namespace java {
         public:
             static Class *class$;
             static jmethodID *_mids;
-            static jclass initializeClass();
+            static jclass initializeClass(bool);
 
             explicit Throwable(jobject obj) : Object(obj) {
-                initializeClass();
+                initializeClass(false);
             }
 
             void printStackTrace() const;

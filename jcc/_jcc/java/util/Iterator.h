@@ -30,10 +30,10 @@ namespace java {
         public:
             static Class *class$;
             static jmethodID *mids$;
-            static jclass initializeClass();
+            static jclass initializeClass(bool);
 
             explicit Iterator(jobject obj) : JObject(obj) {
-                initializeClass();
+                initializeClass(false);
             }
 
             jboolean hasNext() const;

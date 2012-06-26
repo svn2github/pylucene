@@ -30,8 +30,10 @@ namespace java {
         Class *Float::class$ = NULL;
         jmethodID *Float::_mids = NULL;
 
-        jclass Float::initializeClass()
+        jclass Float::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Float");

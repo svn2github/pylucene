@@ -28,11 +28,11 @@ namespace java {
 
                 static java::lang::Class *class$;
                 static jmethodID *mids$;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 explicit GenericDeclaration(jobject obj) : java::lang::Object(obj) {
                     if (obj != NULL)
-                        initializeClass();
+                        initializeClass(false);
                 }
                 GenericDeclaration(const GenericDeclaration& obj) : java::lang::Object(obj) {}
 

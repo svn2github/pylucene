@@ -29,8 +29,10 @@ namespace java {
         java::lang::Class *StringWriter::class$ = NULL;
         jmethodID *StringWriter::_mids = NULL;
 
-        jclass StringWriter::initializeClass()
+        jclass StringWriter::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/io/StringWriter");

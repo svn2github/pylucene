@@ -39,8 +39,10 @@ namespace java {
             Class *Field::class$ = NULL;
             jmethodID *Field::_mids = NULL;
 
-            jclass Field::initializeClass()
+            jclass Field::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
                     jclass cls = env->findClass("java/lang/reflect/Field");

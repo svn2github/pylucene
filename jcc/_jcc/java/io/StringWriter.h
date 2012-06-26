@@ -26,10 +26,10 @@ namespace java {
         public:
             static java::lang::Class *class$;
             static jmethodID *_mids;
-            static jclass initializeClass();
+            static jclass initializeClass(bool);
 
             explicit StringWriter(jobject obj) : Writer(obj) {
-                initializeClass();
+                initializeClass(false);
             }
             StringWriter();
             StringWriter(const StringWriter& obj) : Writer(obj) {}

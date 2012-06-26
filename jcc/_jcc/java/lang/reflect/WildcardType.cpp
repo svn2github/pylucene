@@ -13,8 +13,10 @@ namespace java {
             java::lang::Class *WildcardType::class$ = NULL;
             jmethodID *WildcardType::mids$ = NULL;
 
-            jclass WildcardType::initializeClass()
+            jclass WildcardType::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
 

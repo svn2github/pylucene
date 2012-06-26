@@ -27,10 +27,10 @@ namespace java {
         public:
             static Class *class$;
             static jmethodID *_mids;
-            static jclass initializeClass();
+            static jclass initializeClass(bool);
 
             explicit String(jobject obj) : Object(obj) {
-                initializeClass();
+                initializeClass(false);
             }
             String();
             String(const String& obj) : Object(obj) {}

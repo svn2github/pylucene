@@ -70,7 +70,7 @@ extern JCCEnv *env;
 #define _EXC_PYTHON ((int) 0)
 #define _EXC_JAVA   ((int) 1)
 
-typedef jclass (*getclassfn)(void);
+typedef jclass (*getclassfn)(bool);
 
 class countedRef {
 public:
@@ -152,6 +152,7 @@ public:
     jobject newGlobalRef(jobject obj, int id);
     jobject deleteGlobalRef(jobject obj, int id);
 
+    jclass getClass(getclassfn initializeClass) const;
     jobject newObject(getclassfn initializeClass, jmethodID **mids, int m, ...);
 
     jobjectArray newObjectArray(jclass cls, int size);

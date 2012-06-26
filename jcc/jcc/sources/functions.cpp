@@ -216,7 +216,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                 case 'K':
                   try {
                       getclassfn initializeClass = va_arg(list, getclassfn);
-                      cls = (*initializeClass)();
+                      cls = env->getClass(initializeClass);
                   } catch (int e) {
                       switch (e) {
                         case _EXC_PYTHON:
@@ -238,7 +238,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                * case because of earlier recursion avoidance (JObject(cls)).
                */
               if (!Class::class$)
-                  Class::initializeClass();
+                  env->getClass(Class::initializeClass);
 
               if (array)
               {
@@ -623,7 +623,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                 case 'k':
                 case 'K':
                   getclassfn initializeClass = va_arg(check, getclassfn);
-                  cls = (*initializeClass)();
+                  cls = env->getClass(initializeClass);
                   break;
               }
 

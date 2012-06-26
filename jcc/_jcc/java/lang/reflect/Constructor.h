@@ -33,10 +33,10 @@ namespace java {
             public:
                 static Class *class$;
                 static jmethodID *_mids;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 explicit Constructor(jobject obj) : Object(obj) {
-                    initializeClass();
+                    initializeClass(false);
                 }
                 Constructor(const Constructor& obj) : Object(obj) {}
 

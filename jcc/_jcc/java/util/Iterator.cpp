@@ -30,8 +30,10 @@ namespace java {
         Class *Iterator::class$ = NULL;
         jmethodID *Iterator::mids$ = NULL;
 
-        jclass Iterator::initializeClass()
+        jclass Iterator::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/util/Iterator");

@@ -29,8 +29,10 @@ namespace java {
         Class *RuntimeException::class$ = NULL;
         jmethodID *RuntimeException::_mids = NULL;
 
-        jclass RuntimeException::initializeClass()
+        jclass RuntimeException::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/RuntimeException");

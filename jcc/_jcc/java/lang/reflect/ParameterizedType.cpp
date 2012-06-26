@@ -13,8 +13,10 @@ namespace java {
             java::lang::Class *ParameterizedType::class$ = NULL;
             jmethodID *ParameterizedType::mids$ = NULL;
 
-            jclass ParameterizedType::initializeClass()
+            jclass ParameterizedType::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
 

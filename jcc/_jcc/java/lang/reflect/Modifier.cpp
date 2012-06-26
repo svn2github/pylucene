@@ -37,8 +37,10 @@ namespace java {
             Class *Modifier::class$ = NULL;
             jmethodID *Modifier::_mids = NULL;
 
-            jclass Modifier::initializeClass()
+            jclass Modifier::initializeClass(bool getOnly)
             {
+                if (getOnly)
+                    return (jclass) (class$ == NULL ? NULL : class$->this$);
                 if (!class$)
                 {
                     jclass cls = env->findClass("java/lang/reflect/Modifier");
@@ -74,43 +76,43 @@ namespace java {
 
             int Modifier::isPublic(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isPublic], mod);
             }
 
             int Modifier::isStatic(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isStatic], mod);
             }
 
             int Modifier::isNative(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isNative], mod);
             }
 
             int Modifier::isFinal(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isFinal], mod);
             }
 
             int Modifier::isAbstract(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isAbstract], mod);
             }
 
             int Modifier::isPrivate(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isPrivate], mod);
             }
 
             int Modifier::isProtected(int mod)
             {
-                jclass cls = initializeClass();
+                jclass cls = env->getClass(initializeClass);
                 return (int) env->callStaticBooleanMethod(cls, _mids[mid_isProtected], mod);
             }
         }

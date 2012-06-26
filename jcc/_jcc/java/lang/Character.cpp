@@ -30,8 +30,10 @@ namespace java {
         Class *Character::class$ = NULL;
         jmethodID *Character::_mids = NULL;
 
-        jclass Character::initializeClass()
+        jclass Character::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Character");

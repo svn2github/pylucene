@@ -26,11 +26,11 @@ namespace java {
 
                 static java::lang::Class *class$;
                 static jmethodID *mids$;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 explicit WildcardType(jobject obj) : java::lang::reflect::Type(obj) {
                     if (obj != NULL)
-                        initializeClass();
+                        initializeClass(false);
                 }
                 WildcardType(const WildcardType& obj) : java::lang::reflect::Type(obj) {}
 

@@ -33,8 +33,10 @@ namespace java {
         Class *Object::class$ = NULL;
         jmethodID *Object::mids$ = NULL;
 
-        jclass Object::initializeClass()
+        jclass Object::initializeClass(bool getOnly)
         {
+            if (getOnly)
+                return (jclass) (class$ == NULL ? NULL : class$->this$);
             if (!class$)
             {
                 jclass cls = env->findClass("java/lang/Object");

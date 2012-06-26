@@ -29,11 +29,11 @@ namespace java {
                 explicit Modifier();
             public:
                 explicit Modifier(jobject obj) : Object(obj) {
-                    initializeClass();
+                    initializeClass(false);
                 }
                 static Class *class$;
                 static jmethodID *_mids;
-                static jclass initializeClass();
+                static jclass initializeClass(bool);
 
                 static int isPublic(int mod);
                 static int isStatic(int mod);
