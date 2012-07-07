@@ -87,7 +87,7 @@ class FSversusRAMDirectoryTest(TestCase):
                           Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
-        writer.optimize()
+        writer.commit()
         writer.close()
 
     def loadDocuments(self, numDocs, wordsPerDoc):

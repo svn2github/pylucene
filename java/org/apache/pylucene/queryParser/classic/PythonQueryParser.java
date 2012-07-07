@@ -13,25 +13,30 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.queryParser;
+package org.apache.pylucene.queryParser.classic;
 
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.CharStream;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.util.Version;
 
 
-public class PythonMultiFieldQueryParser extends MultiFieldQueryParser {
+public class PythonQueryParser extends QueryParser {
 
     private long pythonObject;
 
-    public PythonMultiFieldQueryParser(Version version, String[] fields,
-                                       Analyzer analyzer)
+    public PythonQueryParser(Version version, String field, Analyzer analyzer)
     {
-        super(version, fields, analyzer);
+        super(version, field, analyzer);
+    }
+
+    public PythonQueryParser(CharStream stream)
+    {
+        super(stream);
     }
 
     public void pythonExtension(long pythonObject)
@@ -51,7 +56,6 @@ public class PythonMultiFieldQueryParser extends MultiFieldQueryParser {
 
     public native void pythonDecRef();
     public native Query getBooleanQuery(List clauses, boolean disableCoord);
-
     public native Query getFuzzyQuery(String field, String termText,
                                       float minSimilarity);
     public native Query getPrefixQuery(String field, String termText);

@@ -40,7 +40,7 @@ class VerboseIndexing(object):
                              Field.Store.YES, Field.Index.UN_TOKENIZED))
             writer.addDocument(doc)
 
-        writer.optimize()
+        writer.commit()
         writer.close()
 
     main = classmethod(main)

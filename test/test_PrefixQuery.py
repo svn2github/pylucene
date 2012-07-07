@@ -37,7 +37,7 @@ class PrefixQueryTestCase(TestCase):
         writer.close()
 
         query = PrefixQuery(Term("category", "/Computers"))
-        searcher = IndexSearcher(directory, True)
+        searcher = self.getSearcher()
         topDocs = searcher.search(query, 50)
         self.assertEqual(3, topDocs.totalHits,
                          "All documents in /Computers category and below")

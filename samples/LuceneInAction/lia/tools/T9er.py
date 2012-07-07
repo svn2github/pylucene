@@ -64,7 +64,7 @@ class T9er(object):
             if id % 100 == 0:
                 print "Document", id
 
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         reader.close()

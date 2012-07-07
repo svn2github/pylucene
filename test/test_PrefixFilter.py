@@ -44,7 +44,7 @@ class PrefixFilterTestCase(TestCase):
         # PrefixFilter combined with ConstantScoreQuery
         filter = PrefixFilter(Term("category", "/Computers"))
         query = ConstantScoreQuery(filter)
-        searcher = IndexSearcher(directory, True)
+        searcher = self.getSearcher()
         topDocs = searcher.search(query, 50)
         self.assertEqual(4, topDocs.totalHits,
                          "All documents in /Computers category and below")

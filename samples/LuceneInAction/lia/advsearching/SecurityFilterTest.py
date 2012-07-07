@@ -48,7 +48,7 @@ class SecurityFilterTest(TestCase):
 
         query = TermQuery(Term("keywords", "info"))
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         topDocs = searcher.search(query, 50)
         self.assertEqual(2, topDocs.totalHits, "Both documents match")
 

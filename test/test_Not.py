@@ -31,7 +31,7 @@ class NotTestCase(TestCase):
         d1.add(Field("field", "a b", Field.Store.YES, Field.Index.ANALYZED))
 
         writer.addDocument(d1)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         searcher = IndexSearcher(store, True)

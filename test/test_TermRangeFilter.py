@@ -399,7 +399,7 @@ class TestTermRangeFilter(BaseTestRangeFilter):
                       Field.Store.YES, Field.Index.NOT_ANALYZED))
         writer.addDocument(doc)
             
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         reader = IndexReader.open(farsiIndex, True)
@@ -441,7 +441,7 @@ class TestTermRangeFilter(BaseTestRangeFilter):
                           Field.Index.NOT_ANALYZED))
             writer.addDocument(doc)
 
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         reader = IndexReader.open(danishIndex, True)

@@ -48,7 +48,7 @@ class PyLuceneThreadTestCase(TestCase):
         writer.addDocument(doc2)
         writer.addDocument(doc3)
         writer.addDocument(doc4)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         self.testData = [('one',2), ('two',1), ('three', 1), ('five', 0)] * 500
@@ -99,7 +99,7 @@ class PyLuceneThreadTestCase(TestCase):
             getVMEnv().attachCurrentThread()
         time.sleep(0.5)
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         try:
             self.query = PhraseQuery()
             for word, count in self.testData[0:runCount]:
@@ -111,7 +111,7 @@ class PyLuceneThreadTestCase(TestCase):
                 self.totalQueries += 1
                 self.lock.release()
         finally:
-            searcher.close()
+            del searcher
 
 
 if __name__ == "__main__":

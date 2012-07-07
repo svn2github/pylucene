@@ -57,7 +57,7 @@ class PositionalPorterStopAnalyzerTest(TestCase):
 
     def testExactPhrase(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         query = QueryParser(Version.LUCENE_24, "contents",
                             self.porterAnalyzer).parse('"over the lazy"')
         topDocs = searcher.search(query, 50)
@@ -66,7 +66,7 @@ class PositionalPorterStopAnalyzerTest(TestCase):
 
     def testWithSlop(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
 
         parser = QueryParser(Version.LUCENE_CURRENT, "contents",
                              self.porterAnalyzer)

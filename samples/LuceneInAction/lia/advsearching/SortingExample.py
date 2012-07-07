@@ -28,7 +28,7 @@ class SortingExample(object):
 
     def displayResults(self, query, sort):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
 
         fillFields = False
         computeMaxScore = False
@@ -61,7 +61,7 @@ class SortingExample(object):
             print "  ", doc["category"]
             # print searcher.explain(query, scoreDoc.doc)
 
-        searcher.close()
+        del searcher
 
     def main(cls, argv):
 

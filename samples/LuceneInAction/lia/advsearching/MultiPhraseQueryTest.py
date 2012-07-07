@@ -37,7 +37,7 @@ class MultiPhraseQueryTest(TestCase):
         writer.addDocument(doc2)
         writer.close()
 
-        self.searcher = IndexSearcher(directory, True)
+        self.searcher = self.getSearcher()
 
     def testBasic(self):
         

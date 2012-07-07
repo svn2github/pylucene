@@ -13,34 +13,18 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.analysis;
+package org.apache.pylucene.util;
 
-import org.apache.lucene.analysis.Analyzer;
-import java.io.Reader;
+import java.util.ListIterator;
 
-public class PythonAnalyzer extends Analyzer {
-
-    private long pythonObject;
-
-    public PythonAnalyzer()
-    {
-    }
-
-    public void pythonExtension(long pythonObject)
-    {
-        this.pythonObject = pythonObject;
-    }
-    public long pythonExtension()
-    {
-        return this.pythonObject;
-    }
-
-    public void finalize()
-        throws Throwable
-    {
-        pythonDecRef();
-    }
-
-    public native void pythonDecRef();
-    public native TokenStreamComponents createComponents(final String fieldName, final Reader reader);
+public class PythonListIterator extends PythonIterator implements ListIterator {
+    public native boolean hasPrevious();
+    public native Object previous();
+    
+    public native int nextIndex();
+    public native int previousIndex();
+    
+    public native void set(Object obj);    
+    public native void add(Object obj);
+    public native void remove();
 }

@@ -18,7 +18,7 @@ from lucene import *
 
 class SimpleSimilarity(PythonSimilarity):
 
-    def lengthNorm(self, field, numTerms):
+    def computeNorm(self, field, state):
         return 1.0
 
     def queryNorm(self, sumOfSquaredWeights):
@@ -64,7 +64,7 @@ class SimilarityTestCase(TestCase):
     
         writer.addDocument(d1)
         writer.addDocument(d2)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         searcher = IndexSearcher(store, True)

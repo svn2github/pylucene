@@ -51,7 +51,7 @@ class Indexer(object):
         cls.indexDirectory(writer, dataDir)
 
         numIndexed = writer.numDocs()
-        writer.optimize()
+        writer.commit()
         writer.close()
         dir.close()
 

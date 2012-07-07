@@ -22,7 +22,7 @@ class CollectorTest(LiaTestCase):
     def testCollecting(self):
 
         query = TermQuery(Term("contents", "junit"))
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
 
         collector = BookLinkCollector(searcher)
         searcher.search(query, collector)
@@ -34,4 +34,4 @@ class CollectorTest(LiaTestCase):
         scoreDocs = searcher.search(query, 10).scoreDocs
         self.dumpHits(searcher, scoreDocs)
 
-        searcher.close()
+        del searcher

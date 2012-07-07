@@ -85,7 +85,7 @@ class AdvancedQueryParserTest(TestCase):
         self.assertEqual("id:[0000000037 TO 0000000346]",
                          query.toString("field"), "padded")
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         scoreDocs = searcher.search(query, 1000).scoreDocs
         self.assertEqual(310, len(scoreDocs))
 

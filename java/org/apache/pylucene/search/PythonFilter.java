@@ -19,8 +19,8 @@ import java.io.IOException;
 
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.DocIdSet;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.AtomicReaderContext;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.index.AtomicReaderContext;
 
 
 public class PythonFilter extends Filter {
@@ -47,6 +47,6 @@ public class PythonFilter extends Filter {
     }
 
     public native void pythonDecRef();
-    public native DocIdSet getDocIdSet(AtomicReaderContext context)
-        throws IOException;
+	public native DocIdSet getDocIdSet(AtomicReaderContext context, Bits acceptDocs)
+			throws IOException;
 }

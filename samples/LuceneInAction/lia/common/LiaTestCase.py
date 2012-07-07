@@ -17,10 +17,14 @@ import os
 from unittest import TestCase
 from lucene import \
     SimpleFSDirectory, Document, \
-    System, SimpleDateFormat, File
+    System, SimpleDateFormat, File, IndexSearcher, DirectoryReader, \
+    Version, IndexWriterConfig, LimitTokenCountAnalyzer, WhitespaceAnalyzer, \
+    IndexWriter
 
 
 class LiaTestCase(TestCase):
+    
+    TEST_VERSION = Version.LUCENE_CURRENT
 
     def __init__(self, *args):
 
@@ -32,9 +36,24 @@ class LiaTestCase(TestCase):
         self.directory = SimpleFSDirectory(File(self.indexDir))
 
     def tearDown(self):
-
         self.directory.close()
-
+        
+        
+    def getWriter(self, directory=None, analyzer=None, open_mode=None):
+        config = IndexWriterConfig(self.TEST_VERSION,
+                    analyzer or LimitTokenCountAnalyzer(WhitespaceAnalyzer(Version.LUCENE_CURRENT), 10000)
+                    )
+        config.setOpenMode(open_mode or IndexWriterConfig.OpenMode.CREATE)
+        return IndexWriter(directory or self.directory, config)
+    
+        
+    def getSearcher(self, directory=None, reader=None):
+        if reader is not None:
+            return IndexSearcher(reader)
+        
+        return IndexSearcher(DirectoryReader.open(directory or self.directory))
+        
+        
     #
     # For troubleshooting
     #

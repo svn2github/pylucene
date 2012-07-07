@@ -21,7 +21,7 @@ class PrefixQueryTest(LiaTestCase):
 
     def testPrefix(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
 
         # search for programming books, including subcategories
         term = Term("category", "/technology/computers/programming")

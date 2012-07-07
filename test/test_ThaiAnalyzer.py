@@ -23,7 +23,6 @@ class ThaiAnalyzerTestCase(BaseTokenStreamTestCase):
     def testOffsets(self):
         self.assert_(ThaiWordFilter.DBBI_AVAILABLE,
                      "JRE does not support Thai dictionary-based BreakIterator")
-
         self._assertAnalyzesTo(ThaiAnalyzer(Version.LUCENE_CURRENT),
                                u"การที่ได้ต้องแสดงว่างานดี", 
                                [ u"การ", u"ที่", u"ได้", u"ต้อง", u"แสดง",
@@ -51,6 +50,49 @@ class ThaiAnalyzerTestCase(BaseTokenStreamTestCase):
                      "JRE does not support Thai dictionary-based BreakIterator")
 
         analyzer = ThaiAnalyzer(Version.LUCENE_CURRENT)
+=======
+    def testTokenType(self):
+        self.assert_(ThaiWordFilter.DBBI_AVAILABLE,
+                     "JRE does not support Thai dictionary-based BreakIterator")
+
+        self._assertAnalyzesTo(ThaiAnalyzer(Version.LUCENE_35),
+                               u"การที่ได้ต้องแสดงว่างานดี ๑๒๓", 
+                               [ u"การ", u"ที่", u"ได้", u"ต้อง", u"แสดง",
+                                 u"ว่า", u"งาน", u"ดี", u"๑๒๓" ],
+                               None, None,
+                               [ "<SOUTHEAST_ASIAN>", "<SOUTHEAST_ASIAN>", 
+                                 "<SOUTHEAST_ASIAN>", "<SOUTHEAST_ASIAN>", 
+                                 "<SOUTHEAST_ASIAN>", "<SOUTHEAST_ASIAN>",
+                                 "<SOUTHEAST_ASIAN>", "<SOUTHEAST_ASIAN>",
+                                 "<NUM>" ])
+
+    def testPositionIncrements(self):
+        self.assert_(ThaiWordFilter.DBBI_AVAILABLE,
+                     "JRE does not support Thai dictionary-based BreakIterator")
+
+        analyzer = ThaiAnalyzer(Version.LUCENE_35)
+
+        self._assertAnalyzesTo(analyzer, u"การที่ได้ต้อง the แสดงว่างานดี", 
+                               [ u"การ", u"ที่", u"ได้", u"ต้อง", u"แสดง",
+                                 u"ว่า", u"งาน", u"ดี" ],
+                               [ 0, 3, 6, 9, 18, 22, 25, 28 ],
+                               [ 3, 6, 9, 13, 22, 25, 28, 30 ],
+                               None,
+                               [ 1, 1, 1, 1, 2, 1, 1, 1 ])
+	 
+        # case that a stopword is adjacent to thai text, with no whitespace
+        self._assertAnalyzesTo(analyzer, u"การที่ได้ต้องthe แสดงว่างานดี", 
+                               [ u"การ", u"ที่", u"ได้", u"ต้อง", u"แสดง",
+                                 u"ว่า", u"งาน", u"ดี" ],
+                               [ 0, 3, 6, 9, 17, 21, 24, 27 ],
+                               [ 3, 6, 9, 13, 21, 24, 27, 29 ],
+                               None,
+                               [ 1, 1, 1, 1, 2, 1, 1, 1 ])
+
+    def testAnalyzer30(self):
+
+        analyzer = ThaiAnalyzer(Version.LUCENE_30)
+>>>>>>> .merge-right.r1358562
 
         self._assertAnalyzesTo(analyzer, u"การที่ได้ต้อง the แสดงว่างานดี", 
                                [ u"การ", u"ที่", u"ได้", u"ต้อง", u"แสดง",
@@ -94,12 +136,15 @@ class ThaiAnalyzerTestCase(BaseTokenStreamTestCase):
 if __name__ == "__main__":
     import sys, lucene
     lucene.initVM()
-    if '-loop' in sys.argv:
-        sys.argv.remove('-loop')
-        while True:
-            try:
-                main()
-            except:
-                pass
+    if ThaiWordFilter.DBBI_AVAILABLE:
+        if '-loop' in sys.argv:
+            sys.argv.remove('-loop')
+            while True:
+                try:
+                    main()
+                except:
+                    pass
+        else:
+            main()
     else:
-        main()
+        print >>sys.stderr, "Thai not supported by this JVM, tests skipped"

@@ -60,7 +60,7 @@ class PositionIncrementTestCase(TestCase):
         d.add(Field("field", "bogus",
                     Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(d)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         searcher = IndexSearcher(store, True)

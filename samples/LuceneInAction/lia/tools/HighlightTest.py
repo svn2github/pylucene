@@ -36,7 +36,7 @@ class HighlightTest(LiaTestCase):
 
     def testHits(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         query = TermQuery(Term("title", "action"))
         scoreDocs = searcher.search(query, 50).scoreDocs
 

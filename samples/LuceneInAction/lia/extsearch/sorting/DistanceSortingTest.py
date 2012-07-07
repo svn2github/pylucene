@@ -38,7 +38,7 @@ class DistanceSortingTest(TestCase):
 
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
         self.query = TermQuery(Term("type", "restaurant"))
 
     def addPoint(self, writer, name, type, x, y):

@@ -38,7 +38,7 @@ if __name__ == '__main__':
     initVM()
     print 'lucene', VERSION
     directory = SimpleFSDirectory(File(STORE_DIR))
-    searcher = IndexSearcher(directory, True)
+    searcher = self.getSearcher()
     analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
     run(searcher, analyzer)
-    searcher.close()
+    del searcher

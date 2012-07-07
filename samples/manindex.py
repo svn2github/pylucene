@@ -96,5 +96,5 @@ if __name__ == '__main__':
                 path = os.path.join(dir, name)
                 if os.path.isdir(path):
                     indexDirectory(path)
-        writer.optimize()
+        writer.commit()
         writer.close()

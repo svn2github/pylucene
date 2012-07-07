@@ -23,7 +23,7 @@ class BasicSearchingTest(LiaTestCase):
 
     def testTerm(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         t = Term("subject", "ant")
         query = TermQuery(t)
         scoreDocs = searcher.search(query, 50).scoreDocs
@@ -33,11 +33,11 @@ class BasicSearchingTest(LiaTestCase):
         scoreDocs = searcher.search(TermQuery(t), 50).scoreDocs
         self.assertEqual(2, len(scoreDocs))
 
-        searcher.close()
+        del searcher
 
     def testKeyword(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         t = Term("isbn", "1930110995")
         query = TermQuery(t)
         scoreDocs = searcher.search(query, 50).scoreDocs
@@ -45,16 +45,16 @@ class BasicSearchingTest(LiaTestCase):
 
     def testQueryParser(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
 
-        query = QueryParser(Version.LUCENE_CURRENT, "contents",
-                            SimpleAnalyzer()).parse("+JUNIT +ANT -MOCK")
+        query = QueryParser(self.TEST_VERSION, "contents",
+                            SimpleAnalyzer(self.TEST_VERSION)).parse("+JUNIT +ANT -MOCK")
         scoreDocs = searcher.search(query, 50).scoreDocs
         self.assertEqual(1, len(scoreDocs))
         d = searcher.doc(scoreDocs[0].doc)
         self.assertEqual("Java Development with Ant", d.get("title"))
 
-        query = QueryParser(Version.LUCENE_CURRENT, "contents",
-                            SimpleAnalyzer()).parse("mock OR junit")
+        query = QueryParser(self.TEST_VERSION, "contents",
+                            SimpleAnalyzer(self.TEST_VERSION)).parse("mock OR junit")
         scoreDocs = searcher.search(query, 50).scoreDocs
         self.assertEqual(2, len(scoreDocs), "JDwA and JIA")

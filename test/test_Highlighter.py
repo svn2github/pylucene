@@ -122,7 +122,7 @@ class HighlighterTestCase(TestCase):
         for text in self.texts:
             self.addDoc(writer, text)
 
-        writer.optimize()
+        writer.commit()
         writer.close()
         self.reader = IndexReader.open(self.ramDir, True)
         self.numHighlights = 0;

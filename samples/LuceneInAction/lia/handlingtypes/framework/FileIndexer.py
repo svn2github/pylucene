@@ -68,7 +68,7 @@ class FileIndexer(object):
         writer.setUseCompoundFile(False)
 
         numIndexed = cls.indexDirectory(writer, dataDir)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         return numIndexed

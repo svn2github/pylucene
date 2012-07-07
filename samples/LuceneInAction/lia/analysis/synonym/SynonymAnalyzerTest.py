@@ -41,11 +41,11 @@ class SynonymAnalyzerTest(TestCase):
         writer.addDocument(doc)
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
 
     def tearDown(self):
 
-        self.searcher.close()
+        del self.searcher
 
     def testJumps(self):
 

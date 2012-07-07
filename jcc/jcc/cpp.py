@@ -95,7 +95,7 @@ PRIMITIVES = { 'boolean': 'Z',
                'void': 'V' }
 
 RESERVED = set(['delete', 'and', 'or', 'not', 'xor', 'union', 'register',
-                'const', 'bool', 'operator', 'typeof', 'asm',
+                'const', 'bool', 'operator', 'typeof', 'asm', 'mutable',
                 'NULL', 'DOMAIN', 'IGNORE'])
 
 RENAME_METHOD_SUFFIX = '_'

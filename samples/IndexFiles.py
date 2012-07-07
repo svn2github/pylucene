@@ -31,19 +31,33 @@ class IndexFiles(object):
         if not os.path.exists(storeDir):
             os.mkdir(storeDir)
         store = lucene.SimpleFSDirectory(lucene.File(storeDir))
-        writer = lucene.IndexWriter(store, analyzer, True,
-                                    lucene.IndexWriter.MaxFieldLength.LIMITED)
-        writer.setMaxFieldLength(1048576)
+        analyzer = lucene.LimitTokenCountAnalyzer(analyzer, 1048576)
+        config = lucene.IndexWriterConfig(lucene.Version.LUCENE_CURRENT, analyzer)
+        writer = lucene.IndexWriter(store, config)
         self.indexDocs(root, writer)
         ticker = Ticker()
-        print 'optimizing index',
+        print 'commit index',
         threading.Thread(target=ticker.run).start()
-        writer.optimize()
+        writer.commit()
         writer.close()
         ticker.tick = False
         print 'done'
 
     def indexDocs(self, root, writer):
+        
+        t1 = lucene.FieldType()
+        t1.setIndexed(True)
+        t1.setStored(True)
+        t1.setTokenized(False)
+        t1.setIndexOptions(lucene.FieldInfo.IndexOptions.DOCS_AND_FREQS)
+        
+        t2 = lucene.FieldType()
+        t2.setIndexed(True)
+        t2.setStored(False)
+        t2.setTokenized(True)
+        t2.setIndexOptions(lucene.FieldInfo.IndexOptions.DOCS_AND_FREQS_AND_POSITIONS)
+        
+        
         for root, dirnames, filenames in os.walk(root):
             for filename in filenames:
                 if not filename.endswith('.txt'):
@@ -56,15 +70,12 @@ class IndexFiles(object):
                     file.close()
                     doc = lucene.Document()
                     doc.add(lucene.Field("name", filename,
-                                         lucene.Field.Store.YES,
-                                         lucene.Field.Index.NOT_ANALYZED))
+                                         t1))
                     doc.add(lucene.Field("path", path,
-                                         lucene.Field.Store.YES,
-                                         lucene.Field.Index.NOT_ANALYZED))
+                                         t2))
                     if len(contents) > 0:
                         doc.add(lucene.Field("contents", contents,
-                                             lucene.Field.Store.NO,
-                                             lucene.Field.Index.ANALYZED))
+                                             t2))
                     else:
                         print "warning: no content in %s" % filename
                     writer.addDocument(doc)
@@ -84,3 +95,4 @@ if __name__ == '__main__':
         print end - start
     except Exception, e:
         print "Failed: ", e
+        raise e

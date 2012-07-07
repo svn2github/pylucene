@@ -46,7 +46,7 @@ class SpanQueryTest(TestCase):
 
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
         self.reader = IndexReader.open(self.directory, True)
 
         self.quick = SpanTermQuery(Term("f", "quick"))

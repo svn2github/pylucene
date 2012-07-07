@@ -1,16 +1,53 @@
+Version 3.5.0 -> 3.6.0
+----------------------
+ - using Lucene 3.6.0 sources
+ - renamed classes whose python name would not be unique in lucene module
+ - refreshed Linux build options, added an OpenJDK 7 example
+ - added JavaList to collections.py, a Python java.util.List (Thomas Koch)
+ - added samples/FacetExample.py (Thomas Koch)
+ - PyLucene built with JCC 2.13
 
-Version 3.0.0 ->
-----------------
+Version 3.4 -> 3.5.0
+--------------------
+ - using Lucene 3.5 sources
+ - added facet contrib module to build
+ - refreshed SynonymAnalyzerViewer sample and wordnet index (Thomas Koch)
+ - added PythonReusableAnalyzerBase (Michael McCandless)
+ - added PythonIndexDeletionPolicy.java (Michael McCandless)
+ - added spellchecker contrib module to build
+ - PyLucene built with JCC 2.12
+
+Version 3.3 -> 3.4
+------------------
+ - added new join contrib module to build
+ - PyLucene built with JCC 2.11
+
+Version 3.2 -> 3.3
+------------------
+ - using Lucene 3.3 sources
+ - adapted to FieldComparator becoming generic
+ - added new grouping contrib module to build
+ - PyLucene built with JCC 2.10
+
+Version 3.1.0 -> 3.2
+--------------------
+ - using Lucene 3.2 sources
+ - PyLucene built with JCC 2.9
+ - rearranged Lucene source checkout tree to reflect new constraints
+
+Version 3.0.0 -> 3.1.0
+----------------------
+ - using Lucene 3.1 sources
  - improved support for building on Windows with mingw32
  - added wininst target to Makefile
- - added port of ICUNormalizer2Filter using C++ ICU's Normalizer2 via PyICU
- - added port of ICUFoldingFilter using C++ ICU's Normalizer2 via PyICU
- - added port of ICUTransformFilter using C++ ICU's Transliterator via PyICU
- - PyLucene built with JCC 2.6
- - fixed "Lucene in Action" samples leftover on old API
+ - added port of ICUNormalizer2Filter using C++ ICU's Normalizer2 via PyICU 1.1
+ - added port of ICUFoldingFilter using C++ ICU's Normalizer2 via PyICU 1.1
+ - added port of ICUTransformFilter using C++ ICU's Transliterator via PyICU 1.1
+ - fixed "Lucene in Action" samples left over on old API
  - improved support for adding optional contrib modules
  - added --package java.util.regex to wrap constructors on PatternAnalyzer
- - 
+ - fixed mansearch.py sample to reflect API changes
+ - PyLucene built with JCC 2.8
 
 Version 2.9.0 -> 3.0.0
 ----------------------

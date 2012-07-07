@@ -24,24 +24,28 @@ class PhraseQueryTestCase(TestCase):
     def setUp(self):
 
         self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory, WhitespaceAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter()
     
         doc = Document()
         doc.add(Field("field", "one two three four five",
-                      Field.Store.YES, Field.Index.ANALYZED))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
     
-        writer.optimize()
         writer.close()
-
-        self.searcher = IndexSearcher(self.directory, True)
+        
+        self.reader = DirectoryReader.open(writer.getDirectory())
+        self.searcher = IndexSearcher(self.reader)
         self.query = PhraseQuery()
 
     def tearDown(self):
 
-        self.searcher.close()
+        self.reader.close()
         self.directory.close()
+        
+    def getWriter(self, directory=None, analyzer=None):
+        return IndexWriter(directory or self.directory, IndexWriterConfig(Version.LUCENE_CURRENT,
+                             LimitTokenCountAnalyzer(analyzer or WhitespaceAnalyzer(Version.LUCENE_CURRENT), 10000))
+                             .setOpenMode(IndexWriterConfig.OpenMode.CREATE))
 
     def testNotCloseEnough(self):
 
@@ -140,16 +144,16 @@ class PhraseQueryTestCase(TestCase):
     def testPhraseQueryWithStopAnalyzer(self):
 
         directory = RAMDirectory()
-        stopAnalyzer = StopAnalyzer(Version.LUCENE_24)
-        writer = IndexWriter(directory, stopAnalyzer, True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        stopAnalyzer = StopAnalyzer(Version.LUCENE_CURRENT)
+        writer = self.getWriter(directory, stopAnalyzer)
         doc = Document()
         doc.add(Field("field", "the stop words are here",
-                      Field.Store.YES, Field.Index.ANALYZED))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
         writer.close()
 
-        searcher = IndexSearcher(directory, True)
+        reader = DirectoryReader.open(writer.getDirectory())
+        searcher = IndexSearcher(reader)
 
         # valid exact phrase query
         query = PhraseQuery()
@@ -165,33 +169,28 @@ class PhraseQueryTestCase(TestCase):
         topDocs = searcher.search(query, 50)
         self.assertEqual(1, topDocs.totalHits)
 
-        searcher.close()
   
     def testPhraseQueryInConjunctionScorer(self):
 
         directory = RAMDirectory()
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter()
     
         doc = Document()
         doc.add(Field("source", "marketing info",
-                      Field.Store.YES, Field.Index.ANALYZED,
-                      Field.TermVector.YES))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
     
         doc = Document()
         doc.add(Field("contents", "foobar",
-                      Field.Store.YES, Field.Index.ANALYZED,
-                      Field.TermVector.YES))
+                      TextField.TYPE_STORED))
         doc.add(Field("source", "marketing info",
-                      Field.Store.YES, Field.Index.ANALYZED,
-                      Field.TermVector.YES))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
     
-        writer.optimize()
         writer.close()
-    
-        searcher = IndexSearcher(directory, True)
+        
+        reader = DirectoryReader.open(writer.getDirectory())
+        searcher = IndexSearcher(reader)
     
         phraseQuery = PhraseQuery()
         phraseQuery.add(Term("source", "marketing"))
@@ -206,32 +205,29 @@ class PhraseQueryTestCase(TestCase):
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(1, topDocs.totalHits)
     
-        searcher.close()
+        reader.close()
     
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(directory)
+        
         doc = Document()
         doc.add(Field("contents", "map entry woo",
-                      Field.Store.YES, Field.Index.ANALYZED,
-                      Field.TermVector.YES))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("contents", "woo map entry",
-                      Field.Store.YES, Field.Index.ANALYZED,
-                      Field.TermVector.YES))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         doc = Document()
         doc.add(Field("contents", "map foobarword entry woo",
-                      Field.Store.YES, Field.Index.ANALYZED,
-                      Field.TermVector.YES))
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
 
-        writer.optimize()
         writer.close()
-    
-        searcher = IndexSearcher(directory, True)
+        
+        reader = DirectoryReader.open(writer.getDirectory())
+        searcher = IndexSearcher(reader)
     
         termQuery = TermQuery(Term("contents", "woo"))
         phraseQuery = PhraseQuery()
@@ -255,7 +251,6 @@ class PhraseQueryTestCase(TestCase):
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(2, topDocs.totalHits)
     
-        searcher.close()
         directory.close()
 
 

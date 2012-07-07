@@ -26,7 +26,7 @@ class QueryParserTest(LiaTestCase):
 
         super(QueryParserTest, self).setUp()
         self.analyzer = WhitespaceAnalyzer()
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
 
     def testToString(self):
 

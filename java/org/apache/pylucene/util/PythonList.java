@@ -15,17 +15,17 @@
 
 package org.apache.pylucene.util;
 
-import java.util.Set;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Collection;
 import java.util.Iterator;
 import java.lang.reflect.Array;
 
-
-public class PythonSet implements Set {
+public class PythonList implements List {
 
     private long pythonObject;
 
-    public PythonSet()
+    public PythonList()
     {
     }
 
@@ -45,26 +45,65 @@ public class PythonSet implements Set {
     }
 
     public native void pythonDecRef();
-
+  
     public native boolean add(Object obj);
+    public native void add(int index, Object obj);
     public native boolean addAll(Collection c);
+    public native boolean addAll(int index, Collection c);
     public native void clear();
     public native boolean contains(Object obj);
     public native boolean containsAll(Collection c);
     public native boolean equals(Object obj);
+    public native Object get(int index);
+    // public native int hashCode();
+    public native int indexOf(Object obj);
     public native boolean isEmpty();
     public native Iterator iterator();
-    public native boolean remove(Object obj);
+    public native int lastIndexOf(Object obj);
+
+    public native ListIterator listIterator(int index); 
+    public ListIterator listIterator()
+    {
+        return listIterator(0);
+    }
+
+    private native Object removeAt(int index);
+    public Object remove(int index)
+        throws IndexOutOfBoundsException
+    { 
+        if (index < 0 || index >= this.size())
+            throw new IndexOutOfBoundsException(); 
+
+        return removeAt(index);
+    }
+    
+    private native boolean removeObject(Object obj);
+    public boolean remove(Object obj)
+    {
+        return removeObject(obj);
+    }
+    
     public native boolean removeAll(Collection c);
     public native boolean retainAll(Collection c);
+    public native Object set(int index, Object obj);
     public native int size();
-
-    public native Object[] toArray();
     
+    private native List subListChecked(int fromIndex, int toIndex);     
+    public List subList(int fromIndex, int toIndex) 
+        throws IndexOutOfBoundsException, IllegalArgumentException
+    { 
+        if (fromIndex < 0 || toIndex >= size() || fromIndex > toIndex)
+            throw new IndexOutOfBoundsException(); 
+
+        return subListChecked(fromIndex, toIndex);
+    }
+    
+    public native Object[] toArray();
+
     public Object[] toArray(Object[] a)
     {
         Object[] array = toArray();
-
+        
         if (a.length < array.length)
             a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
                                              array.length);

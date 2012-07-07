@@ -40,10 +40,10 @@ class FuzzyQueryTestCase(TestCase):
         self._addDoc("abbbb", writer)
         self._addDoc("bbbbb", writer)
         self._addDoc("ddddd", writer)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
-        searcher = IndexSearcher(directory, True)
+        searcher = self.getSearcher()
 
         query = FuzzyQuery(Term("field", "aaaaa"))
         topDocs = searcher.search(query, 50)
@@ -85,7 +85,7 @@ class FuzzyQueryTestCase(TestCase):
         topDocs = searcher.search(query, 50)
         self.assertEqual(0, topDocs.totalHits)
 
-        searcher.close()
+        del searcher
         directory.close()
 
     def testDefaultFuzzinessLong(self):
@@ -95,9 +95,9 @@ class FuzzyQueryTestCase(TestCase):
                              IndexWriter.MaxFieldLength.LIMITED)
         self._addDoc("aaaaaaa", writer)
         self._addDoc("segment", writer)
-        writer.optimize()
+        writer.commit()
         writer.close()
-        searcher = IndexSearcher(directory, True)
+        searcher = self.getSearcher()
 
         # not similar enough:
         query = FuzzyQuery(Term("field", "xxxxx"))
@@ -124,7 +124,7 @@ class FuzzyQueryTestCase(TestCase):
         topDocs = searcher.search(query, 50)
         self.assertEqual(1, topDocs.totalHits)
 
-        searcher.close()
+        del searcher
         directory.close()
 
 

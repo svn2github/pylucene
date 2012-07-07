@@ -95,6 +95,170 @@ PyObject *findClass(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static const char interface_bytes[] = {
+    '\xca', '\xfe', '\xba', '\xbe',   // magic number: 0xcafebabe
+    '\x00', '\x00', '\x00', '\x32',   // version 50.0
+    '\x00', '\x07',                   // constant pool max index: 6
+    '\x07', '\x00', '\x04',           // 1: class name at 4
+    '\x07', '\x00', '\x05',           // 2: class name at 5
+    '\x07', '\x00', '\x06',           // 3: class name at 6
+    '\x01', '\x00', '\x00',           // 4: empty string
+    '\x01', '\x00', '\x10',           // 5: 16-byte string: java/lang/Object
+    'j', 'a', 'v', 'a', '/', 'l', 'a', 'n', 'g', '/',
+    'O', 'b', 'j', 'e', 'c', 't',
+    '\x01', '\x00', '\x00',           // 6: empty string
+    '\x06', '\x01',                   // public abstract interface
+    '\x00', '\x01',                   // this class at 1
+    '\x00', '\x02',                   // superclass at 2
+    '\x00', '\x01',                   // 1 interface
+    '\x00', '\x03',                   // interface at 3
+    '\x00', '\x00',                   // 0 fields
+    '\x00', '\x00',                   // 0 methods
+    '\x00', '\x00'                    // 0 attributes
+};
+
+/* make an empty interface that extends an interface */
+PyObject *makeInterface(PyObject *self, PyObject *args)
+{
+    char *name, *extName;
+    int name_len, extName_len;
+
+    if (!PyArg_ParseTuple(args, "s#s#",
+                          &name, &name_len, &extName, &extName_len))
+        return NULL;
+    
+    JNIEnv *vm_env = env->get_vm_env();
+    jclass _ucl = (jclass) vm_env->FindClass("java/net/URLClassLoader");
+    jmethodID mid = vm_env->GetStaticMethodID(_ucl, "getSystemClassLoader",
+                                              "()Ljava/lang/ClassLoader;");
+    jobject classLoader = vm_env->CallStaticObjectMethod(_ucl, mid);
+    const int bytes_len = sizeof(interface_bytes);
+    const int len = bytes_len + name_len + extName_len;
+    char *buf = (char *) malloc(len);
+
+    if (buf == NULL)
+        return PyErr_NoMemory();
+
+    int name_pos = 22;
+    int extName_pos = 44;
+    jclass cls;
+
+    memcpy(buf, interface_bytes, name_pos);
+    memcpy(buf + name_pos + name_len, interface_bytes + name_pos,
+           extName_pos - name_pos);
+    memcpy(buf + extName_pos + name_len + extName_len,
+           interface_bytes + extName_pos, bytes_len - extName_pos);
+    extName_pos += name_len;
+
+    *((unsigned short *) (buf + name_pos - 2)) = htons(name_len);
+    memcpy(buf + name_pos, name, name_len);
+
+    *((unsigned short *) (buf + extName_pos - 2)) = htons(extName_len);
+    memcpy(buf + extName_pos, extName, extName_len);
+
+    cls = vm_env->DefineClass(name, classLoader, (const jbyte *) buf, len);
+    free(buf);
+
+    if (cls)
+        return t_Class::wrap_Object(Class(cls));
+
+    return PyErr_SetJavaError();
+}
+
+static const char class_bytes[] = {
+    '\xca', '\xfe', '\xba', '\xbe',          // magic number: 0xcafebabe
+    '\x00', '\x00', '\x00', '\x32',          // version 50.0
+    '\x00', '\x0c',                          // constant pool max index: 11
+    '\x0a', '\x00', '\x03', '\x00', '\x08',  // 1: method for class 3 at 8
+    '\x07', '\x00', '\x09',                  // 2: class name at 9
+    '\x07', '\x00', '\x0a',                  // 3: class name at 10
+    '\x07', '\x00', '\x0b',                  // 4: class name at 11
+    '\x01', '\x00', '\x06',                  // 5: 6-byte string: <init>
+    '<', 'i', 'n', 'i', 't', '>',
+    '\x01', '\x00', '\x03', '(', ')', 'V',   // 6: 3-byte string: ()V
+    '\x01', '\x00', '\x04',                  // 7: 4-byte string: Code
+    'C', 'o', 'd', 'e',
+    '\x0c', '\x00', '\x05', '\x00', '\x06',  // 8: name at 5, signature at 6
+    '\x01', '\x00', '\x00',                  // 9: empty string
+    '\x01', '\x00', '\x00',                  // 10: empty string
+    '\x01', '\x00', '\x00',                  // 11: empty string
+    '\x00', '\x21',                          // super public
+    '\x00', '\x02',                          // this class at 2
+    '\x00', '\x03',                          // superclass at 3
+    '\x00', '\x01',                          // 1 interface
+    '\x00', '\x04',                          // interface at 4
+    '\x00', '\x00',                          // 0 fields
+    '\x00', '\x01',                          // 1 method
+    '\x00', '\x01', '\x00', '\x05',          // public, name at 5
+    '\x00', '\x06', '\x00', '\x01',          // signature at 6, 1 attribute
+    '\x00', '\x07',                          // attribute name at 7: Code
+    '\x00', '\x00', '\x00', '\x11',          // 17 bytes past 6 attribute bytes
+    '\x00', '\x01',                          // max stack: 1
+    '\x00', '\x01',                          // max locals: 1
+    '\x00', '\x00', '\x00', '\x05',          // code length: 5
+    '\x2a', '\xb7', '\x00', '\x01', '\xb1',  // actual code bytes
+    '\x00', '\x00',                          // 0 method exceptions
+    '\x00', '\x00',                          // 0 method attributes
+    '\x00', '\x00',                          // 0 attributes
+};
+
+/* make an empty class that extends a class and implements an interface */
+PyObject *makeClass(PyObject *self, PyObject *args)
+{
+    char *name, *extName, *implName;
+    int name_len, extName_len, implName_len;
+
+    if (!PyArg_ParseTuple(args, "s#s#s#",
+                          &name, &name_len, &extName, &extName_len,
+                          &implName, &implName_len))
+        return NULL;
+    
+    JNIEnv *vm_env = env->get_vm_env();
+    jclass _ucl = (jclass) vm_env->FindClass("java/net/URLClassLoader");
+    jmethodID mid = vm_env->GetStaticMethodID(_ucl, "getSystemClassLoader",
+                                              "()Ljava/lang/ClassLoader;");
+    jobject classLoader = vm_env->CallStaticObjectMethod(_ucl, mid);
+    const int bytes_len = sizeof(class_bytes);
+    const int len = bytes_len + name_len + extName_len + implName_len;
+    char *buf = (char *) malloc(len);
+
+    if (buf == NULL)
+        return PyErr_NoMemory();
+
+    int name_pos = 54;
+    int extName_pos = 57;
+    int implName_pos = 60;
+    jclass cls;
+
+    memcpy(buf, class_bytes, name_pos);
+    memcpy(buf + name_pos + name_len, class_bytes + name_pos,
+           extName_pos - name_pos);
+    memcpy(buf + extName_pos + name_len + extName_len,
+           class_bytes + extName_pos, bytes_len - extName_pos);
+    memcpy(buf + implName_pos + name_len + extName_len + implName_len,
+           class_bytes + implName_pos, bytes_len - implName_pos);
+
+    extName_pos += name_len;
+    implName_pos += name_len + extName_len;
+
+    *((unsigned short *) (buf + name_pos - 2)) = htons(name_len);
+    memcpy(buf + name_pos, name, name_len);
+
+    *((unsigned short *) (buf + extName_pos - 2)) = htons(extName_len);
+    memcpy(buf + extName_pos, extName, extName_len);
+
+    *((unsigned short *) (buf + implName_pos - 2)) = htons(implName_len);
+    memcpy(buf + implName_pos, implName, implName_len);
+
+    cls = vm_env->DefineClass(name, classLoader, (const jbyte *) buf, len);
+    free(buf);
+
+    if (cls)
+        return t_Class::wrap_Object(Class(cls));
+
+    return PyErr_SetJavaError();
+}
+
 static boxfn get_boxfn(PyTypeObject *type)
 {
     static PyObject *boxfn_ = PyString_FromString("boxfn_");

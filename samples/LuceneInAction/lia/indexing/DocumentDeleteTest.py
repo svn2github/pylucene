@@ -51,7 +51,7 @@ class DocumentDeleteTest(BaseIndexingTestCase):
 
         writer = IndexWriter(self.dir, self.getAnalyzer(), False,
                              IndexWriter.MaxFieldLength.UNLIMITED)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         reader = IndexReader.open(self.dir, True)

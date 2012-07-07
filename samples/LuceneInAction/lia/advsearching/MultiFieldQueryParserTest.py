@@ -29,7 +29,7 @@ class MultiFieldQueryParserTest(LiaTestCase):
                                             [SHOULD, SHOULD],
                                             SimpleAnalyzer())
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         scoreDocs = searcher.search(query, 50).scoreDocs
 
         self.assertHitsIncludeTitle(searcher, scoreDocs,
@@ -47,7 +47,7 @@ class MultiFieldQueryParserTest(LiaTestCase):
                                             [MUST, MUST],
                                             SimpleAnalyzer())
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         scoreDocs = searcher.search(query, 50).scoreDocs
 
         self.assertHitsIncludeTitle(searcher, scoreDocs,

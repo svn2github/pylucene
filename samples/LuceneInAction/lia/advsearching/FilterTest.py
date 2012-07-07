@@ -28,7 +28,7 @@ class FilterTest(LiaTestCase):
         super(FilterTest, self).setUp()
 
         self.allBooks = MatchAllDocsQuery()
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
         scoreDocs = self.searcher.search(self.allBooks, 50).scoreDocs
         self.numAllBooks = len(scoreDocs)
 

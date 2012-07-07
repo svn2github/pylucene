@@ -40,7 +40,7 @@ class KeywordAnalyzerTest(TestCase):
         writer.addDocument(doc)
         writer.close()
 
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
 
     def testTermQuery(self):
 

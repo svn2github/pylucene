@@ -97,7 +97,7 @@ class SortTestCase(TestCase):
                                   Field.Index.NOT_ANALYZED))
                 doc.setBoost(2.0)  # produce some scores above 1.0
                 writer.addDocument(doc)
-        # writer.optimize()
+        # writer.commit()
         writer.close()
         s = IndexSearcher(indexStore, True)
         s.setDefaultFieldSortScoring(True, True)
@@ -131,7 +131,7 @@ class SortTestCase(TestCase):
             writer.setMaxBufferedDocs(self.getRandomNumber(2, 12))
             writer.addDocument(doc)
       
-        # writer.optimize()
+        # writer.commit()
         # print writer.getSegmentCount()
         writer.close()
 
@@ -297,27 +297,27 @@ class SortTestCase(TestCase):
         
         class intParser(PythonIntParser):
             def parseInt(_self, val):
-                return (val.bytes[0] - ord('A')) * 123456
+                return (ord(val[0]) - ord('A')) * 123456
 
         class floatParser(PythonFloatParser):
             def parseFloat(_self, val):
-                return math.sqrt(val.bytes[0])
+                return math.sqrt(ord(val[0]))
 
         class longParser(PythonLongParser):
             def parseLong(_self, val):
-                return (val.bytes[0] - ord('A')) * 1234567890L
+                return (ord(val[0]) - ord('A')) * 1234567890L
 
         class doubleParser(PythonDoubleParser):
             def parseDouble(_self, val):
-                return math.pow(val.bytes[0], val.bytes[0] - ord('A'))
+                return math.pow(ord(val[0]), ord(val[0]) - ord('A'))
 
         class byteParser(PythonByteParser):
             def parseByte(_self, val):
-                return chr(val.bytes[0] - ord('A'))
+                return chr(ord(val[0]) - ord('A'))
 
         class shortParser(PythonShortParser):
             def parseShort(_self, val):
-                return val.bytes[0] - ord('A')
+                return ord(val[0]) - ord('A')
 
         sort = Sort()
         sort.setSort([SortField("parser", intParser()),
@@ -936,7 +936,7 @@ class SortTestCase(TestCase):
         """
 
         # ScoreDoc[] result = searcher.search(query, None, 1000, sort).scoreDocs
-        hits = searcher.search(query, None, len(expectedResult), sort)
+        hits = searcher.search(query, None, len(expectedResult) or 1, sort)
         sds = hits.scoreDocs
 
         self.assertEqual(hits.totalHits, len(expectedResult))
@@ -1004,7 +1004,7 @@ class MyFieldComparator(PythonFieldComparator):
         
         class intParser(PythonIntParser):
             def parseInt(_self, val):
-                return (val.bytes[0] - ord('A')) * 123456
+                return (ord(val[0]) - ord('A')) * 123456
                 
         self.docValues = FieldCache.DEFAULT.getInts(context.reader, "parser",
                                                     intParser())

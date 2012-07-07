@@ -32,7 +32,7 @@ class Test_Bug1564(unittest.TestCase):
                       Field.Store.NO, Field.Index.ANALYZED))
         doc.add(Field('id', '1', Field.Store.YES, Field.Index.NO))
         writer.addDocument(doc)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
     def tearDown(self):

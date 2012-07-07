@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
@@ -60,7 +61,7 @@ public class PythonDirectory extends Directory {
 
     public native void close()
         throws IOException;
-    public native IndexOutput createOutput(String name)
+    public native IndexOutput createOutput(String name, IOContext context) //new4.0
         throws IOException;
     public native void deleteFile(String name)
         throws IOException;
@@ -72,12 +73,11 @@ public class PythonDirectory extends Directory {
         throws IOException;
     public native String[] listAll()
         throws IOException;
-    public native IndexInput openInput(String name)
-        throws IOException;
-    public native IndexInput openInput(String name, int bufferSize)
+    public native IndexInput openInput(String name, IOContext context) //new4.0
         throws IOException;
     public native void touchFile(String name)
         throws IOException;
     public native void sync(String name) 
         throws IOException;
+
 }

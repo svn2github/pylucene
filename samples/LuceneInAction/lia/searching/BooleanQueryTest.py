@@ -33,7 +33,7 @@ class BooleanQueryTest(LiaTestCase):
         searchingBooks2004.add(searchingBooks, BooleanClause.Occur.MUST)
         searchingBooks2004.add(books2004, BooleanClause.Occur.MUST)
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         scoreDocs = searcher.search(searchingBooks2004, 50).scoreDocs
 
         self.assertHitsIncludeTitle(searcher, scoreDocs, "Lucene in Action")
@@ -49,7 +49,7 @@ class BooleanQueryTest(LiaTestCase):
         enlightenmentBooks.add(methodologyBooks, BooleanClause.Occur.SHOULD)
         enlightenmentBooks.add(easternPhilosophyBooks, BooleanClause.Occur.SHOULD)
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         scoreDocs = searcher.search(enlightenmentBooks, 50).scoreDocs
         print "or =", enlightenmentBooks
 

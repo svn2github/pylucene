@@ -62,21 +62,21 @@ class TermRangeQueryTestCase(TestCase):
         topDocs = searcher.search(query, 50)
         self.assertEqual(1, topDocs.totalHits,
                          "A,B,C,D, only B in range")
-        searcher.close()
+        del searcher
 
         self._initializeIndex(["A", "B", "D"])
         searcher = IndexSearcher(self.dir, True)
         topDocs = searcher.search(query, 50)
         self.assertEqual(1, topDocs.totalHits,
                          "A,B,D, only B in range")
-        searcher.close()
+        del searcher
 
         self._addDoc("C")
         searcher = IndexSearcher(self.dir, True)
         topDocs = searcher.search(query, 50)
         self.assertEqual(1, topDocs.totalHits,
                          "C added, still only B in range")
-        searcher.close()
+        del searcher
 
     def testInclusive(self):
 
@@ -87,21 +87,21 @@ class TermRangeQueryTestCase(TestCase):
         topDocs = searcher.search(query, 50)
         self.assertEqual(3, topDocs.totalHits,
                          "A,B,C,D - A,B,C in range")
-        searcher.close()
+        del searcher
 
         self._initializeIndex(["A", "B", "D"])
         searcher = IndexSearcher(self.dir, True)
         topDocs = searcher.search(query, 50)
         self.assertEqual(2, topDocs.totalHits,
                          "A,B,D - A and B in range")
-        searcher.close()
+        del searcher
 
         self._addDoc("C")
         searcher = IndexSearcher(self.dir, True)
         topDocs = searcher.search(query, 50)
         self.assertEqual(3, topDocs.totalHits,
                          "C added - A, B, C in range")
-        searcher.close()
+        del searcher
 
 
 if __name__ == "__main__":

@@ -258,7 +258,7 @@ class Test_PyLuceneBase(object):
         finally:
             self.closeStore(store, reader)
 
-    def test_getFieldNames(self):
+    def test_getFieldInfos(self):
 
         self.test_indexDocument()
 
@@ -266,20 +266,18 @@ class Test_PyLuceneBase(object):
         reader = None
         try:
             reader = IndexReader.open(store, True)
-            fieldNames = reader.getFieldNames(IndexReader.FieldOption.ALL)
-            for fieldName in fieldNames:
-                self.assert_(fieldName in ['owner', 'search_name', 'meta_words',
-                                           'docid', 'title'])
+            fieldInfos = ReaderUtil.getMergedFieldInfos(reader)
+            for fieldInfo in fieldInfos.iterator():
+                self.assert_(fieldInfo.name in ['owner', 'search_name',
+                                                'meta_words', 'docid', 'title'])
         
-            fieldNames = reader.getFieldNames(IndexReader.FieldOption.INDEXED)
-            for fieldName in fieldNames:
-                self.assert_(fieldName in ['owner', 'meta_words',
-                                           'docid', 'title'])
+                if fieldInfo.isIndexed:
+                    self.assert_(fieldInfo.name in ['owner', 'meta_words',
+                                                    'docid', 'title'])
 
-            fieldNames = reader.getFieldNames(IndexReader.FieldOption.INDEXED_NO_TERMVECTOR)
-            for fieldName in fieldNames:
-                self.assert_(fieldName in ['owner', 'meta_words',
-                                           'docid', 'title'])
+                if fieldInfo.isIndexed and not fieldInfo.storeTermVector:
+                    self.assert_(fieldInfo.name in ['owner', 'meta_words',
+                                                    'docid', 'title'])
         finally:
             store = self.closeStore(store, reader)
 

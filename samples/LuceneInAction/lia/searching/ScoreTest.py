@@ -69,7 +69,7 @@ class ScoreTest(LiaTestCase):
         self.assertEqual(1, len(scoreDocs))
 
         self.assertEqual(scoreDocs[0].score, 1.0)
-        searcher.close()
+        del searcher
 
     def indexSingleFieldDocs(self, fields):
 
@@ -81,7 +81,7 @@ class ScoreTest(LiaTestCase):
             doc.add(field)
             writer.addDocument(doc)
 
-        writer.optimize()
+        writer.commit()
         writer.close()
 
     def testWildcard(self):

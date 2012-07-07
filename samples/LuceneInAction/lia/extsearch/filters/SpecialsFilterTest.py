@@ -28,7 +28,7 @@ class SpecialsFilterTest(LiaTestCase):
         super(SpecialsFilterTest, self).setUp()
 
         self.allBooks = MatchAllDocsQuery()
-        self.searcher = IndexSearcher(self.directory, True)
+        self.searcher = self.getSearcher()
 
     def testCustomFilter(self):
 

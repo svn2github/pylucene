@@ -40,7 +40,7 @@ class DocumentUpdateTest(BaseIndexingTestCase):
         doc.add(Field("city", "St. Petersburg",
                       Field.Store.YES, Field.Index.ANALYZED))
         writer.addDocument(doc)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         self.assertEqual(0, self.getHitCount("city", "Amsterdam"))
@@ -57,6 +57,6 @@ class DocumentUpdateTest(BaseIndexingTestCase):
         t = Term(fieldName, searchString)
         query = TermQuery(t)
         hitCount = len(searcher.search(query, 50).scoreDocs)
-        searcher.close()
+        del searcher
 
         return hitCount

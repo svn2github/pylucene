@@ -17,35 +17,68 @@ from lucene import *
 
 class BaseTokenStreamTestCase(TestCase):
     """
-    Base class for all Lucene unit tests that use TokenStreams.  
+    some helpers to test Analyzers and TokenStreams
     """
+
+    class CheckClearAttributesAttributeImpl(PythonAttributeImpl):
+
+        def __init__(_self):
+            super(PythonAttributeImpl, _self).__init__()
+            _self.clearCalled = False
+    
+        def getAndResetClearCalled(_self):
+            try:
+                return _self.clearCalled
+            finally:
+                _self.clearCalled = False
+
+        def clear(_self):
+            _self.clearCalled = True
+
+        def equals(_self, other):
+            return (
+                CheckClearAttributesAttributeImpl.instance_(other) and
+                CheckClearAttributesAttributeImpl.cast_(other).clearCalled ==
+                _self.clearCalled)
+
+        def hashCode(_self):
+            return 76137213 ^ Boolean.valueOf(_self.clearCalled).hashCode()
+    
+        def copyTo(_self, target):
+            CheckClearAttributesAttributeImpl.cast_(target).clear()
+
 
     def _assertTokenStreamContents(self, ts, output,
                                    startOffsets=None, endOffsets=None,
-                                   types=None, posIncrements=None):
+                                   types=None, posIncrements=None,
+                                   finalOffset=None):
+
+        #checkClearAtt = ts.addAttribute(PythonAttribute.class_);
 
         self.assert_(output is not None)
         self.assert_(ts.hasAttribute(CharTermAttribute.class_),
-                                     "has TermAttribute")
+                                     "has no CharTermAttribute")
 
         termAtt = ts.getAttribute(CharTermAttribute.class_)
 
         offsetAtt = None
-        if startOffsets is not None or endOffsets is not None:
+        if (startOffsets is not None or
+            endOffsets is not None or
+            finalOffset is not None):
             self.assert_(ts.hasAttribute(OffsetAttribute.class_),
-                                         "has OffsetAttribute")
+                                         "has no OffsetAttribute")
             offsetAtt = ts.getAttribute(OffsetAttribute.class_)
     
         typeAtt = None
         if types is not None:
             self.assert_(ts.hasAttribute(TypeAttribute.class_),
-                         "has TypeAttribute")
+                         "has no TypeAttribute")
             typeAtt = ts.getAttribute(TypeAttribute.class_)
     
         posIncrAtt = None
         if posIncrements is not None:
             self.assert_(ts.hasAttribute(PositionIncrementAttribute.class_),
-                         "has PositionIncrementAttribute")
+                         "has no PositionIncrementAttribute")
             posIncrAtt = ts.getAttribute(PositionIncrementAttribute.class_)
     
         ts.reset()
@@ -53,7 +86,7 @@ class BaseTokenStreamTestCase(TestCase):
             # extra safety to enforce, that the state is not preserved and
             # also assign bogus values
             ts.clearAttributes()
-            termAtt.append("bogusTerm")
+            termAtt.setEmpty().append("bogusTerm")
             if offsetAtt is not None:
                 offsetAtt.setOffset(14584724, 24683243)
             if typeAtt is not None:

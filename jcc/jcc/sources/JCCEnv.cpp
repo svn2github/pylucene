@@ -123,7 +123,6 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
         vm_env->GetMethodID(_obj, "getClass",
                             "()Ljava/lang/Class;");
 
-
     jclass iterable = vm_env->FindClass("java/lang/Iterable");
 
     if (iterable == NULL) /* JDK < 1.5 */
@@ -141,7 +140,6 @@ void JCCEnv::set_vm(JavaVM *vm, JNIEnv *vm_env)
             vm_env->GetMethodID(vm_env->FindClass("java/util/Iterator"),
                                 "next", "()Ljava/lang/Object;");
     }
-
 
     _mids[mid_enumeration_nextElement] =
         vm_env->GetMethodID(vm_env->FindClass("java/util/Enumeration"),

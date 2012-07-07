@@ -14,28 +14,25 @@
 
 from unittest import TestCase, main
 from lucene import *
+from pylucene_testcase import PyLuceneTestCase
 
-
-class TestRegexQuery(TestCase):
+class TestRegexQuery(PyLuceneTestCase):
 
     FN = "field"
 
     def setUp(self):
-
-        directory = RAMDirectory()
-
-        writer = IndexWriter(directory, SimpleAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        PyLuceneTestCase.setUp(self)
+        writer = self.getWriter(analyzer=SimpleAnalyzer(self.TEST_VERSION))
         doc = Document()
-        doc.add(Field(self.FN, "the quick brown fox jumps over the lazy dog", Field.Store.NO, Field.Index.ANALYZED))
+        doc.add(Field(self.FN, "the quick brown fox jumps over the lazy dog", TextField.TYPE_NOT_STORED))
         writer.addDocument(doc)
-        writer.optimize()
+        writer.commit()
         writer.close()
-        self.searcher = IndexSearcher(directory, True)
+        self.searcher = self.getSearcher()
 
     def tearDown(self):
 
-        self.searcher.close()
+        del self.searcher
 
     def newTerm(self, value):
   
@@ -49,8 +46,8 @@ class TestRegexQuery(TestCase):
 
     def spanRegexQueryNrHits(self, regex1, regex2, slop, ordered):
 
-        srq1 = SpanRegexQuery(self.newTerm(regex1))
-        srq2 = SpanRegexQuery(self.newTerm(regex2))
+        srq1 = SpanMultiTermQueryWrapper(RegexQuery(self.newTerm(regex1)))
+        srq2 = SpanMultiTermQueryWrapper(RegexQuery(self.newTerm(regex2)))
         query = SpanNearQuery([srq1, srq2], slop, ordered)
 
         return self.searcher.search(query, 50).totalHits

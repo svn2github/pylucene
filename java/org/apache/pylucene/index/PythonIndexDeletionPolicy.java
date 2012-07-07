@@ -13,21 +13,18 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.search;
+package org.apache.pylucene.index;
 
 import java.io.IOException;
-import org.apache.lucene.search.FieldComparator;
-import org.apache.lucene.index.AtomicReaderContext;
+import java.util.List;
 
-/**
- * @author Andi Vajda
- */
+import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexDeletionPolicy;
 
-public class PythonFieldComparator<T> extends FieldComparator<T> {
-
+public class PythonIndexDeletionPolicy implements IndexDeletionPolicy {
     private long pythonObject;
 
-    public PythonFieldComparator()
+    public PythonIndexDeletionPolicy()
     {
     }
 
@@ -48,18 +45,9 @@ public class PythonFieldComparator<T> extends FieldComparator<T> {
 
     public native void pythonDecRef();
 
-    public native int compare(int slot1, int slot2);
-    public native void setBottom(final int slot);
-    public native int compareBottom(int doc)
-        throws IOException;
-    public native void copy(int slot, int doc) 
+    public native void onInit(List<? extends IndexCommit> commits)
         throws IOException;
 
-    public native FieldComparator setNextReader(AtomicReaderContext context)
-        throws IOException;
-
-    public native T value(int slot);
-
-    public native int compareDocToValue(int doc, T value)
+    public native void onCommit(List<? extends IndexCommit> commits)
         throws IOException;
 }

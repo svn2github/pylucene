@@ -22,7 +22,7 @@ class NumericRangeQueryTest(LiaTestCase):
 
     def testInclusive(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         # pub date of TTC was October 1988
         query = NumericRangeQuery.newIntRange("pubmonth",
                                               Integer(198805),
@@ -31,11 +31,11 @@ class NumericRangeQueryTest(LiaTestCase):
 
         topDocs = searcher.search(query, 100)
         self.assertEqual(1, topDocs.totalHits)
-        searcher.close()
+        del searcher
 
     def testExclusive(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         # pub date of TTC was October 1988
         query = NumericRangeQuery.newIntRange("pubmonth",
                                               Integer(198805),
@@ -43,4 +43,4 @@ class NumericRangeQueryTest(LiaTestCase):
                                               False, False)
         topDocs = searcher.search(query, 100)
         self.assertEqual(0, topDocs.totalHits)
-        searcher.close()
+        del searcher

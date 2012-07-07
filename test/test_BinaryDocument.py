@@ -12,11 +12,12 @@
 #   limitations under the License.
 # ====================================================================
 
+from pylucene_testcase import PyLuceneTestCase
 from unittest import TestCase, main
 from lucene import *
 
 
-class TestBinaryDocument(TestCase):
+class TestBinaryDocument(PyLuceneTestCase):
 
     binaryValStored = "this text will be stored as a byte array in the index"
     binaryValCompressed = "this text will be also stored and compressed as a byte array in the index"
@@ -24,36 +25,41 @@ class TestBinaryDocument(TestCase):
     def testBinaryFieldInIndex(self):
 
         bytes = JArray('byte')(self.binaryValStored)
-        binaryFldStored = Field("binaryStored", bytes)
-        stringFldStored = Field("stringStored", self.binaryValStored,
-                                Field.Store.YES, Field.Index.NO,
-                                Field.TermVector.NO)
-
-        try:
-            # binary fields with store off are not allowed
-            Field("fail", bytes, Field.Store.NO)
-            self.fail()
-        except JavaError, e:
-            self.assertEqual(e.getJavaException().getClass().getName(),
-                             'java.lang.IllegalArgumentException')
+        binaryFldStored = StoredField("binaryStored", bytes)
+        ft = FieldType()
+        ft.setStored(True)
+        ft.setIndexed(False)
+        ft.setStoreTermVectors(False)
+        stringFldStored = Field("stringStored", self.binaryValStored, ft)
+        
+        
+        # couldn't find any combination with lucene4.0 where it would raise errors
+        #try:
+        #    # binary fields with store off are not allowed
+        #    Field("fail", bytes, Field.Store.NO)
+        #    self.fail()
+        #except JavaError, e:
+        #    self.assertEqual(e.getJavaException().getClass().getName(),
+        #                     'java.lang.IllegalArgumentException')
+        
     
         doc = Document()
         doc.add(binaryFldStored)
         doc.add(stringFldStored)
+        
+        
 
         # test for field count
         self.assertEqual(2, doc.fields.size())
     
         # add the doc to a ram index
-        dir = RAMDirectory()
-        writer = IndexWriter(dir, StandardAnalyzer(Version.LUCENE_CURRENT),
-                             True, IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
         writer.addDocument(doc)
         writer.close()
     
         # open a reader and fetch the document
-        reader = IndexReader.open(dir, False)
-        docFromReader = reader.document(0)
+        reader = self.getReader()
+        docFromReader = reader.document(0) #segfault
         self.assert_(docFromReader is not None)
     
         # fetch the binary stored field and compare it's content with the

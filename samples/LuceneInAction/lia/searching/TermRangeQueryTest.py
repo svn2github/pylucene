@@ -21,9 +21,9 @@ class TermRangeQueryTest(LiaTestCase):
 
     def testTermRangeQuery(self):
 
-        searcher = IndexSearcher(self.directory, True)
+        searcher = self.getSearcher()
         query = TermRangeQuery("title2", "d", "j", True, True)
 
         topDocs = searcher.search(query, 100)
         self.assertEqual(3, topDocs.totalHits)
-        searcher.close()
+        del searcher

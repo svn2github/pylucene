@@ -47,7 +47,7 @@ class DocBoostTestCase(TestCase):
         writer.addDocument(d2)
         writer.addDocument(d3)
         writer.addDocument(d4)
-        writer.optimize()
+        writer.commit()
         writer.close()
 
         scores = [0.0] * 4

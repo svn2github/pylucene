@@ -52,7 +52,7 @@ class FieldLengthTest(TestCase):
         t = Term(fieldName, searchString)
         query = TermQuery(t)
         hitCount = len(searcher.search(query, 50).scoreDocs)
-        searcher.close()
+        del searcher
 
         return hitCount
 
@@ -74,5 +74,5 @@ class FieldLengthTest(TestCase):
                           Field.Store.YES, Field.Index.ANALYZED))
             writer.addDocument(doc)
 
-        writer.optimize()
+        writer.commit()
         writer.close()

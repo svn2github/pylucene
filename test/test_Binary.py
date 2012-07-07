@@ -15,15 +15,15 @@
 # test PyLucene binary field
 
 from unittest import TestCase, main
-from lucene import Field, JArray
+from lucene import StoredField, JArray
 
 class BinaryTestCase(TestCase):
 
     def binary(self, b):
 
         c = JArray('byte')(b)
-        field = Field("bin", c)
-        v = field.binaryValue
+        field = StoredField("bin", c)
+        v = field.binaryValue().bytes
         assert c == v and b == [a for a in v]
 
     def testBinary(self):

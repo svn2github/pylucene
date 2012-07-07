@@ -16,7 +16,7 @@ for t in ts:
                   Field.Store.YES, Field.Index.ANALYZED,
                   Field.TermVector.WITH_POSITIONS_OFFSETS))
     iwriter.addDocument(doc)
-iwriter.optimize()
+iwriter.commit()
 iwriter.close()
 
 ireader = IndexReader.open(directory, True)

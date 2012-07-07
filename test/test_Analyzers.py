@@ -79,7 +79,7 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
             b += 1
             if not ts.incrementToken():
                 break
-            self.assertEqual(b, payloadAtt.getPayload().toByteArray()[0])
+            self.assertEqual(b, payloadAtt.getPayload().bytes[0])
 
     # Make sure old style next() calls result in a new copy of payloads
     def testPayloadCopy(self):
@@ -102,7 +102,7 @@ class PayloadSetter(PythonTokenFilter):
         self.input = input
         self.payloadAtt = self.addAttribute(PayloadAttribute.class_)
         self.data = JArray('byte')(1)
-        self.p = Payload(self.data, 0, 1)
+        self.p = BytesRef(self.data, 0, 1)
 
     def incrementToken(self):
 

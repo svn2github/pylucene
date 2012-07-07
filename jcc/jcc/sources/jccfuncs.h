@@ -23,6 +23,8 @@ PyObject *getVMEnv(PyObject *self);
 PyObject *_set_exception_types(PyObject *self, PyObject *args);
 PyObject *_set_function_self(PyObject *self, PyObject *args);
 PyObject *findClass(PyObject *self, PyObject *args);
+PyObject *makeInterface(PyObject *self, PyObject *args);
+PyObject *makeClass(PyObject *self, PyObject *args);
 PyObject *JArray_Type(PyObject *self, PyObject *arg);
 
 PyMethodDef jcc_funcs[] = {
@@ -31,6 +33,10 @@ PyMethodDef jcc_funcs[] = {
     { "getVMEnv", (PyCFunction) getVMEnv,
       METH_NOARGS, NULL },
     { "findClass", (PyCFunction) findClass,
+      METH_VARARGS, NULL },
+    { "makeInterface", (PyCFunction) makeInterface,
+      METH_VARARGS, NULL },
+    { "makeClass", (PyCFunction) makeClass,
       METH_VARARGS, NULL },
     { "_set_exception_types", (PyCFunction) _set_exception_types,
       METH_VARARGS, NULL },
