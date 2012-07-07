@@ -59,13 +59,6 @@ LUCENE=$(LUCENE_SRC)/lucene
 #JCC=$(PYTHON) -m jcc --shared --arch x86_64
 #NUM_FILES=8
 
-# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
-PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
-ANT=ant
-PYTHON=$(PREFIX_PYTHON)/bin/python
-JCC=$(PYTHON) -m jcc --shared --arch x86_64
-NUM_FILES=8
-
 # Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
 #PREFIX_PYTHON=/usr
 #ANT=ant

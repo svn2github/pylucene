@@ -47,6 +47,6 @@ public class PythonFilter extends Filter {
     }
 
     public native void pythonDecRef();
-	public native DocIdSet getDocIdSet(AtomicReaderContext context, Bits acceptDocs)
-			throws IOException;
+    public native DocIdSet getDocIdSet(AtomicReaderContext context, Bits acceptDocs)
+        throws IOException;
 }
