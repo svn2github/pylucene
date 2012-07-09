@@ -14,6 +14,7 @@
 
 #include <jni.h>
 #include <stdarg.h>
+#include <arpa/inet.h>
 
 #include "java/lang/Object.h"
 #include "java/lang/Class.h"
