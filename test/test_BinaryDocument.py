@@ -12,9 +12,9 @@
 #   limitations under the License.
 # ====================================================================
 
-from pylucene_testcase import PyLuceneTestCase
 from unittest import TestCase, main
 from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
 
 
 class TestBinaryDocument(PyLuceneTestCase):
@@ -32,7 +32,6 @@ class TestBinaryDocument(PyLuceneTestCase):
         ft.setStoreTermVectors(False)
         stringFldStored = Field("stringStored", self.binaryValStored, ft)
         
-        
         # couldn't find any combination with lucene4.0 where it would raise errors
         #try:
         #    # binary fields with store off are not allowed
@@ -47,8 +46,6 @@ class TestBinaryDocument(PyLuceneTestCase):
         doc.add(binaryFldStored)
         doc.add(stringFldStored)
         
-        
-
         # test for field count
         self.assertEqual(2, doc.fields.size())
     
@@ -65,7 +62,7 @@ class TestBinaryDocument(PyLuceneTestCase):
         # fetch the binary stored field and compare it's content with the
         # original one
         bytes = docFromReader.getBinaryValue("binaryStored")
-        binaryFldStoredTest = bytes.string_
+        binaryFldStoredTest = bytes.bytes.string_
         self.assertEqual(binaryFldStoredTest, self.binaryValStored)
         
         # fetch the string field and compare it's content with the original

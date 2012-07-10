@@ -14,10 +14,10 @@
 
 from unittest import TestCase, main
 from lucene import *
-from pylucene_testcase import PyLuceneTestCase
+from PyLuceneTestCase import PyLuceneTestCase
+
 
 class TestRegexQuery(PyLuceneTestCase):
-
     FN = "field"
 
     def setUp(self):
