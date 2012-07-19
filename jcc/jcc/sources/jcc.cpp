@@ -537,6 +537,57 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
     }
 }
 
+/* returns borrowed reference */
+_DLL_EXPORT PyObject *getJavaModule(PyObject *module,
+                                    const char *parent, const char *name) {
+    PyObject *modules = PyImport_GetModuleDict();
+    PyObject *parent_module, *full_name;
+
+    if (parent[0] == '\0')
+    {
+        parent_module = NULL;
+        full_name = PyString_FromString(name);
+    }
+    else if ((parent_module = PyDict_GetItemString(modules, parent)) == NULL)
+    {
+        PyErr_Format(PyExc_ValueError, "Parent module '%s' not found", parent);
+        return NULL;
+    }
+    else
+        full_name = PyString_FromFormat("%s.%s", parent, name);
+
+    PyObject *child_module = PyDict_GetItem(modules, full_name);
+
+    if (child_module == NULL)
+    {
+        child_module = PyModule_New(PyString_AS_STRING(full_name));
+        if (child_module != NULL)
+        {
+            if (parent_module != NULL)
+                PyDict_SetItemString(PyModule_GetDict(parent_module),
+                                     name, child_module);
+            PyDict_SetItem(modules, full_name, child_module);
+            Py_DECREF(child_module);  /* borrow reference */
+        }
+    }
+    Py_DECREF(full_name);
+
+    /* During __install__ pass, __file__ is not yet set on module.
+     * During __initialize__ pass, __file__ is passed down to child_module.
+     */
+    if (child_module != NULL)
+    {
+        PyObject *__file__ = PyString_FromString("__file__");
+        PyObject *file = PyDict_GetItem(PyModule_GetDict(module), __file__);
+
+        if (file != NULL)
+            PyDict_SetItem(PyModule_GetDict(child_module), __file__, file);
+        Py_DECREF(__file__);
+    }
+
+    return child_module;
+}
+
 #ifdef _jcc_lib
 
 static void raise_error(JNIEnv *vm_env, const char *message)

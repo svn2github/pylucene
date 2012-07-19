@@ -1411,7 +1411,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out, indent, '}')
 
 
-def package(out, allInOne, cppdir, namespace, names):
+def package(out, allInOne, cppdir, namespace, names, use_full_names):
 
     if not allInOne:
         out = file(os.path.join(os.path.join(cppdir, *names),
@@ -1426,6 +1426,8 @@ def package(out, allInOne, cppdir, namespace, names):
     if not names:
         line(out)
         line(out, 0, 'PyObject *initVM(PyObject *module, PyObject *args, PyObject *kwds);')
+        if use_full_names:
+            line(out, 0, 'PyObject *getJavaModule(PyObject *module, const char *parent, const char *name);')
 
     packages = []
     types = []
@@ -1459,6 +1461,13 @@ def package(out, allInOne, cppdir, namespace, names):
     line(out)
     line(out, indent, 'void __install__(PyObject *module)')
     line(out, indent, '{')
+
+    if use_full_names and names:
+        parent_name = '.'.join(names[:-1])
+        line(out, indent + 1, 'module = getJavaModule(module, "%s", "%s");',
+             parent_name, names[-1])
+        line(out)
+
     for name in types:
         line(out, indent + 1, 't_%s::install(module);', name)
     for name, entries in packages:
@@ -1479,6 +1488,12 @@ def package(out, allInOne, cppdir, namespace, names):
     else:
         line(out, indent, 'void __initialize__(PyObject *module)')
         line(out, indent, '{')
+
+    if use_full_names and names:
+        line(out, indent + 1, 'module = getJavaModule(module, "%s", "%s");',
+             parent_name, names[-1])
+        line(out)
+
     for name in types:
         line(out, indent + 1, 't_%s::initialize(module);', name)
     for name, entries in packages:
@@ -1507,11 +1522,11 @@ def package(out, allInOne, cppdir, namespace, names):
         line(out)
 
     for name, entries in packages:
-        package(out, allInOne, cppdir, entries, names + (name,))
+        package(out, allInOne, cppdir, entries, names + (name,), use_full_names)
 
 
 def module(out, allInOne, classes, imports, cppdir, moduleName,
-           shared, generics):
+           shared, generics, use_full_names):
 
     extname = '_%s' %(moduleName)
     line(out, 0, '#include <Python.h>')
@@ -1532,10 +1547,10 @@ def module(out, allInOne, classes, imports, cppdir, moduleName,
                 namespace = namespace.setdefault(className, {})
             namespace[classNames[-1]] = True
     if allInOne:
-        package(out_init, True, cppdir, namespaces, ())
+        package(out_init, True, cppdir, namespaces, (), use_full_names)
         out_init.close()
     else:
-        package(None, False, cppdir, namespaces, ())
+        package(None, False, cppdir, namespaces, (), use_full_names)
 
     line(out)
     line(out, 0, 'PyObject *initJCC(PyObject *module);')
