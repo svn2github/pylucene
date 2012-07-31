@@ -605,7 +605,7 @@ def jcc(args):
             done.update(importset)
             if moduleName:
                 for cls in importset:
-                    name = cls.getName().split_pkg('.')[-1]
+                    name = split_pkg(cls.getName(), '.')[-1]
                     if not use_full_names:
                         if name in pythonNames:
                             raise ValueError, (cls, 'python class name already in use, use --rename', name, pythonNames[name])
