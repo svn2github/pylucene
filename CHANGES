@@ -1,3 +1,15 @@
+Version 3.6.1 -> 4.0
+--------------------
+ - using Lucene 4.0 sources from Lucene's branch_4x
+ - switched build to --use_full_names, Python wrappers now follow Java packages
+ - removed all --rename and most --exclude entries from jcc command line
+ - 
+
+Version 3.6.0 -> 3.6.1
+----------------------
+ - using Lucene 3.6.1 sources
+ - PyLucene built with JCC 2.14
+
 Version 3.5.0 -> 3.6.0
 ----------------------
  - using Lucene 3.6.0 sources

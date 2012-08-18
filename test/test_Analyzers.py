@@ -14,7 +14,14 @@
 
 from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
-from lucene import *
+from lucene import JArray
+
+from java.io import StringReader
+from org.apache.lucene.analysis.core import \
+    SimpleAnalyzer, WhitespaceAnalyzer, StopAnalyzer, WhitespaceTokenizer
+from org.apache.lucene.analysis.tokenattributes import PayloadAttribute
+from org.apache.lucene.util import Version, BytesRef
+from org.apache.pylucene.analysis import PythonTokenFilter
 
 
 class AnalyzersTestCase(BaseTokenStreamTestCase):

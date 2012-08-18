@@ -13,7 +13,14 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from lucene import JArray
+
+from java.io import StringReader
+from java.lang import Boolean
+from org.apache.lucene.analysis.tokenattributes import \
+    OffsetAttribute, CharTermAttribute, TypeAttribute, \
+    PositionIncrementAttribute
+from org.apache.pylucene.util import PythonAttributeImpl
 
 class BaseTokenStreamTestCase(TestCase):
     """

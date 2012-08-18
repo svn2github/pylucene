@@ -287,7 +287,7 @@ resources:
 endif
 
 GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
-           $(JCCFLAGS) \
+           $(JCCFLAGS) --use_full_names \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
            --package java.util java.util.Arrays \
@@ -303,41 +303,12 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
                              java.io.FileInputStream \
-           --exclude org.apache.lucene.queryparser.classic.Token \
-           --exclude org.apache.lucene.queryparser.classic.TokenMgrError \
-           --exclude org.apache.lucene.queryparser.classic.QueryParserTokenManager \
-           --exclude org.apache.lucene.queryparser.classic.ParseException \
-           --exclude org.apache.lucene.queryparser.classic.CharStream \
-           --exclude org.apache.lucene.queryparser.classic.FastCharStream \
-           --exclude org.apache.lucene.queryparser.classic.QueryParserConstants \
-           --exclude org.apache.lucene.queryparser.surround.parser.Token \
-           --exclude org.apache.lucene.queryparser.surround.parser.CharStream \
-           --exclude org.apache.lucene.queryparser.surround.parser.QueryParserConstants \
-           --exclude org.apache.lucene.queryparser.surround.parser.TokenMgrError \
-           --exclude org.apache.lucene.queryparser.surround.parser.ParseException \
-           --exclude org.apache.lucene.queryparser.flexible.standard.parser.Token \
-           --exclude org.apache.lucene.queryparser.flexible.standard.parser.TokenMgrError \
-           --exclude org.apache.lucene.queryparser.flexible.standard.parser.ParseException \
            --exclude org.apache.lucene.sandbox.queries.regex.JakartaRegexpCapabilities \
            --exclude org.apache.regexp.RegexpTunnel \
-           --exclude org.apache.lucene.analysis.cn.smart.AnalyzerProfile \
            --python lucene \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
            --sequence java.util.AbstractList 'size:()I' 'get:(I)Ljava/lang/Object;' \
-           --rename org.apache.lucene.search.highlight.SpanScorer=HighlighterSpanScorer \
-           --rename org.apache.lucene.search.highlight.Scorer=HighlighterScorer \
-           --rename org.apache.lucene.search.spell.Dictionary=SpellDictionary \
-           --rename org.apache.lucene.search.suggest.fst.Sort=SuggestSort \
-           --rename org.apache.lucene.store.DataInput=StoreDataInput \
-           --rename org.apache.lucene.store.DataOutput=StoreDataOutput \
-           --rename org.tartarus.snowball.ext.DutchStemmer=DutchPorterStemmer \
-           --rename org.tartarus.snowball.ext.FrenchStemmer=FrenchPorterStemmer \
-           --rename org.tartarus.snowball.ext.GermanStemmer=GermanPorterStemmer \
-           --rename org.tartarus.snowball.ext.PortugueseStemmer=PortuguesePorterStemmer \
-           --rename org.apache.lucene.queryparser.surround.parser.QueryParser=SurroundQueryParser \
-           --rename org.apache.lucene.codecs.lucene40.values.Writer=ValuesWriter \
-           --rename org.apache.lucene.queryparser.xml.QueryBuilder=XMLQueryBuilder \
            --version $(LUCENE_VER) \
            --module python/collections.py \
            --module python/ICUNormalizer2Filter.py \
