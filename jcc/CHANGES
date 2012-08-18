@@ -1,10 +1,9 @@
-Version 2.13 ->
+Version 2.13 -> 2.14
 --------------------
  - fixed class initialization race bug PYLUCENE-17 (with Patrick J. McNerthney)
  - added support for initVM's vmargs to be a [list, of, args], PYLUCENE-19
  - added support for using full Java class names in Python via --use_full_names
  - fixed bug PYLUCENE-20 (Roman Chyla)
- - 
 
 Version 2.12 -> 2.13
 --------------------

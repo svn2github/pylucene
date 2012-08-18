@@ -7,7 +7,7 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     help = '''
   JCC - C++/Python Java Native Interface Code Generator
 
-  Usage: python -m jcc.__main__ [options] [actions]
+  Usage: python -m jcc [options] [actions]
 
   Input options:
     --jar JARFILE           - make JCC wrap all public classes found in
@@ -54,6 +54,9 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               avoid name clashes due to the flattening of
                               the Java package namespaces as mapped into
                               Python
+    --use_full_names        - map the full Java package structure into Python
+                              modules, as an alternative to selectively renaming
+                              or excluding classes due to name conflicts
     --no-generics           - disable support for Java generics
 
     If you're planning to use pythonic wrappers you should read the relevant
