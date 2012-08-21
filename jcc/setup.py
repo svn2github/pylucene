@@ -133,7 +133,7 @@ LFLAGS = {
     'sunos5': ['-L%(sunos5)s/jre/lib/i386' %(JDK), '-ljava',
                '-L%(sunos5)s/jre/lib/i386/client' %(JDK), '-ljvm',
                '-R%(sunos5)s/jre/lib/i386:%(sunos5)s/jre/lib/i386/client' %(JDK)],
-    'win32': ['/LIBPATH:%(win32)s/lib' %(JDK), 'jvm.lib'],
+    'win32': ['/LIBPATH:%(win32)s/lib' %(JDK), 'Ws2_32.lib', 'jvm.lib'],
     'mingw32': ['-L%(mingw32)s/lib' %(JDK), '-ljvm'],
     'freebsd7': ['-L%(freebsd7)s/jre/lib/i386' %(JDK), '-ljava', '-lverify',
                  '-L%(freebsd7)s/jre/lib/i386/client' %(JDK), '-ljvm',

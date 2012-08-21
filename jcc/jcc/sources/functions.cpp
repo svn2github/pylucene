@@ -14,7 +14,11 @@
 
 #include <jni.h>
 #include <stdarg.h>
+#ifdef _MSC_VER
+#include <Winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 
 #include "java/lang/Object.h"
 #include "java/lang/Class.h"
