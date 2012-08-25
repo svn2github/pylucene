@@ -100,7 +100,7 @@ class BaseTokenStreamTestCase(TestCase):
                 typeAtt.setType("bogusType")
             if posIncrAtt is not None:
                 posIncrAtt.setPositionIncrement(45987657)
-      
+
             self.assert_(ts.incrementToken(), "token %d exists" %(i))
             self.assertEqual(output[i], termAtt.toString(), "term %d" %(i))
             if startOffsets is not None:

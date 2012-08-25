@@ -24,7 +24,9 @@ except ImportError, e:
 from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
-from lucene import *
+from org.apache.lucene.util import Version
+from org.apache.lucene.analysis.core import WhitespaceTokenizer
+from org.apache.pylucene.analysis import PythonAnalyzer
 
 
 class TestICUNormalizer2Filter(BaseTokenStreamTestCase):

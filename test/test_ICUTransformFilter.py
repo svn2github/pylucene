@@ -24,7 +24,10 @@ except ImportError, e:
 from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
-from lucene import *
+from java.io import StringReader
+from org.apache.lucene.util import Version
+from org.apache.lucene.analysis.core import KeywordTokenizer
+from org.apache.pylucene.analysis import PythonTokenFilter
 
 
 class TestICUTransformFilter(BaseTokenStreamTestCase):

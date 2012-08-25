@@ -36,8 +36,10 @@
 #
 # ====================================================================
 
-from lucene import PythonTokenFilter, CharTermAttribute
 from icu import Normalizer2, UNormalizationMode2, UNormalizationCheckResult
+
+from org.apache.lucene.analysis.tokenattributes import CharTermAttribute
+from org.apache.pylucene.analysis import PythonTokenFilter
 
 
 class ICUNormalizer2Filter(PythonTokenFilter):
