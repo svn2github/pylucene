@@ -1,3 +1,8 @@
+Version 2.14 ->
+--------------------
+ - improved JCC build on Linux by mokey patching setuptools (Caleb Burns)
+ - 
+
 Version 2.13 -> 2.14
 --------------------
  - fixed class initialization race bug PYLUCENE-17 (with Patrick J. McNerthney)

@@ -51,7 +51,7 @@ else:
 JDK = {
     'darwin': JAVAHOME,
     'ipod': '/usr/include/gcc',
-    'linux2': '/usr/lib/jvm/java-6-openjdk',
+    'linux2': '/usr/lib/jvm/java-7-openjdk-amd64',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
     'win32': JAVAHOME,
     'mingw32': JAVAHOME,
