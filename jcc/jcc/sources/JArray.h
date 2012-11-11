@@ -216,7 +216,7 @@ template<> class JArray<jobject> : public java::lang::Object {
         return -1;
     }
 
-    PyObject *wrap(PyObject *(*wrapfn)(const jobject&));
+    PyObject *wrap(PyObject *(*wrapfn)(const jobject&)) const;
 #endif
 
     jobject operator[](Py_ssize_t n) {
@@ -1592,11 +1592,41 @@ template<typename T> class t_JArray {
 public:
     PyObject_HEAD
     JArray<T> array;
+};
 
-    static PyObject *wrap_Object(const JArray<T>& array)
+template<typename T, typename U> class t_JArrayWrapper {
+public:
+    static PyObject *wrap_Object(const JArray<T> &array)
+    {
+        if (!!array)
+            return array.wrap(U::wrap_jobject);
+
+        Py_RETURN_NONE;
+    }
+
+    static PyObject *wrap_jobject(const jobject &array)
+    {
+        if (!!array)
+            return JArray<T>(array).wrap(U::wrap_jobject);
+
+        Py_RETURN_NONE;
+    }
+};
+
+template<typename T> class t_JArrayWrapper<T, T> {
+public:
+    static PyObject *wrap_Object(const JArray<T> &array)
     {
         if (!!array)
             return array.wrap();
+
+        Py_RETURN_NONE;
+    }
+
+    static PyObject *wrap_jobject(const jobject &array)
+    {
+        if (!!array)
+            return JArray<T>(array).wrap();
 
         Py_RETURN_NONE;
     }

@@ -910,7 +910,7 @@ static jarray_type<jlong> jarray_jlong;
 static jarray_type<jshort> jarray_jshort;
 
 
-PyObject *JArray<jobject>::wrap(PyObject *(*wrapfn)(const jobject&))
+PyObject *JArray<jobject>::wrap(PyObject *(*wrapfn)(const jobject&)) const
 {
     if (this$ != NULL)
     {

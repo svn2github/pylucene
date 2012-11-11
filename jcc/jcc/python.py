@@ -444,6 +444,22 @@ def jniargs(params):
     return ''
 
 
+def wrapper_typename(returnType, cls):
+
+    if returnType.isArray():
+        componentType = returnType.getComponentType()
+        componentName = typename(componentType, cls, False)
+        if componentType.isPrimitive():
+            return "t_JArrayWrapper< %s >" %(componentName)
+
+        ns, sep, n = rpartition(componentName, '::')
+        return "t_JArrayWrapper< jobject,%s%st_%s >" %(ns, sep, n)
+
+    returnName = typename(returnType, cls, False)
+    ns, sep, n = rpartition(returnName, '::')
+    return "%s%st_%s" %(ns, sep, n)
+
+
 def extension(env, out, indent, cls, names, name, count, method, generics):
 
     line(out, indent, 'jlong ptr = jenv->CallLongMethod(jobj, %s::mids$[%s::mid_pythonExtension_%s]);',
@@ -913,12 +929,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         tp_iternext = '0'
     elif nextMethod and iterable is not None and iterator.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
-        returnName = typename(nextMethod.getReturnType(), cls, False)
-        ns, sep, n = rpartition(returnName, '::')
         if nextExt:
             tp_iternext = 'get_extension_next'
         else:
-            tp_iternext = '((PyObject *(*)(::java::util::t_Iterator *)) get_%siterator_next< ::java::util::t_Iterator,%s%st_%s >)' %(clsParams and 'generic_' or '', ns, sep, n)
+            tp_iternext = '((PyObject *(*)(::java::util::t_Iterator *)) get_%siterator_next< ::java::util::t_Iterator,%s >)' %(clsParams and 'generic_' or '', wrapper_typename(nextMethod.getReturnType(), cls))
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextElementMethod.getReturnType(), cls, False)
@@ -926,15 +940,14 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
         else:
-            tp_iternext = '((PyObject *(*)(::java::util::t_Enumeration *)) get_%senumeration_next< ::java::util::t_Enumeration,%s%st_%s >)' %(clsParams and 'generic_' or '', ns, sep, n)
+            tp_iternext = '((PyObject *(*)(::java::util::t_Enumeration *)) get_%senumeration_next< ::java::util::t_Enumeration,%s >)' %(clsParams and 'generic_' or '', wrapper_typename(nextElementMethod.getReturnType(), cls))
     elif nextMethod:
         tp_iter = 'PyObject_SelfIter'
-        returnName = typename(nextMethod.getReturnType(), cls, False)
-        ns, sep, n = rpartition(returnName, '::')
         if nextExt:
             tp_iternext = 'get_extension_next'
         else:
-            tp_iternext = '((PyObject *(*)(t_%s *)) get_%snext< t_%s,%s%st_%s,%s >)' %(names[-1], clsParams and 'generic_' or '', names[-1], ns, sep, n, returnName)
+            returnType = nextMethod.getReturnType()
+            tp_iternext = '((PyObject *(*)(t_%s *)) get_%snext< t_%s,%s,%s >)' %(names[-1], clsParams and 'generic_' or '', names[-1], wrapper_typename(returnType, cls), typename(returnType, cls, False))
     else:
         tp_iter = '0'
         tp_iternext = '0'
