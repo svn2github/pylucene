@@ -12,11 +12,12 @@
 #   limitations under the License.
 # ====================================================================
 
-
+import lucene
 from unittest import TestCase
 
 from java.io import File
 from org.apache.lucene.analysis.core import WhitespaceAnalyzer
+from org.apache.lucene.document import Field
 from org.apache.lucene.analysis.miscellaneous import LimitTokenCountAnalyzer
 from org.apache.lucene.index import \
     IndexWriter, IndexWriterConfig, DirectoryReader
@@ -51,3 +52,6 @@ class PyLuceneTestCase(TestCase):
     
     def getReader(self, directory=None):
         return DirectoryReader.open(directory or self.directory)
+
+    def newField(self, name, value, type):
+        return Field(name, value, type)

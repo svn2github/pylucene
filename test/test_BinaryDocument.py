@@ -20,7 +20,6 @@ from org.apache.lucene.document import \
     Document, StoredField, CompressionTools, Field, FieldType
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.index import IndexWriter
-from org.apache.lucene.store import RAMDirectory
 from org.apache.lucene.util import Version
 
 
