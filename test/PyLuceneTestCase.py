@@ -14,9 +14,16 @@
 
 
 from unittest import TestCase
-from lucene import RAMDirectory, File, IndexWriter, IndexWriterConfig, \
-    LimitTokenCountAnalyzer, WhitespaceAnalyzer, Version, IndexSearcher, \
-    DirectoryReader
+
+from java.io import File
+from org.apache.lucene.analysis.core import WhitespaceAnalyzer
+from org.apache.lucene.analysis.miscellaneous import LimitTokenCountAnalyzer
+from org.apache.lucene.index import \
+    IndexWriter, IndexWriterConfig, DirectoryReader
+from org.apache.lucene.search import IndexSearcher
+from org.apache.lucene.store import RAMDirectory
+from org.apache.lucene.util import Version
+
 
 class PyLuceneTestCase(TestCase):
 

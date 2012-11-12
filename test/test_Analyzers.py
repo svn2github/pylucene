@@ -80,6 +80,7 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
 
     def _verifyPayload(self, ts):
 
+        ts.reset()
         payloadAtt = ts.getAttribute(PayloadAttribute.class_)
         b = 0
         while True:

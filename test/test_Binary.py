@@ -15,7 +15,10 @@
 # test PyLucene binary field
 
 from unittest import TestCase, main
-from lucene import StoredField, JArray
+from lucene import JArray
+
+from org.apache.lucene.document import StoredField
+
 
 class BinaryTestCase(TestCase):
 
