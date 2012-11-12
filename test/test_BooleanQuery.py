@@ -13,10 +13,13 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import BooleanClause, BooleanQuery, TermQuery
 
 
-class TestBooleanQuery(TestCase):
+class TestBooleanQuery(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """

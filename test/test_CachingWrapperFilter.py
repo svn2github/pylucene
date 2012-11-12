@@ -13,31 +13,33 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.index import SlowCompositeReaderWrapper
+from org.apache.lucene.search import CachingWrapperFilter
+from org.apache.lucene.util import Version, FixedBitSet
+from org.apache.pylucene.search import PythonFilter
 
 
-class CachingWrapperFilterTestCase(TestCase):
+class CachingWrapperFilterTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
 
     def testCachingWorks(self):
-
-        dir = RAMDirectory()
-        writer = IndexWriter(dir, StandardAnalyzer(Version.LUCENE_CURRENT),
-                             True, IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
         writer.close()
-
-        reader = IndexReader.open(dir, True)
-        context = reader.getTopReaderContext();
+        reader = SlowCompositeReaderWrapper.wrap(self.getReader())
+        context = reader.getContext()
 
         class mockFilter(PythonFilter):
             def __init__(self):
                 super(mockFilter, self).__init__()
                 self._wasCalled = False
-            def getDocIdSet(self, context):
+            def getDocIdSet(self, context, acceptDocs):
                 self._wasCalled = True;
-                return DocIdBitSet(BitSet())
+                return FixedBitSet(context.reader().maxDoc())
             def clear(self):
                 self._wasCalled = False
             def wasCalled(self):
@@ -47,12 +49,12 @@ class CachingWrapperFilterTestCase(TestCase):
         cacher = CachingWrapperFilter(filter)
 
         # first time, nested filter is called
-        cacher.getDocIdSet(context)
+        strongRef = cacher.getDocIdSet(context, context.reader().getLiveDocs())
         self.assert_(filter.wasCalled(), "first time")
 
         # second time, nested filter should not be called
         filter.clear()
-        cacher.getDocIdSet(context)
+        cacher.getDocIdSet(context, context.reader().getLiveDocs())
         self.assert_(not filter.wasCalled(), "second time")
 
         reader.close()

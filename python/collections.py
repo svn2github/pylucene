@@ -10,9 +10,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from lucene import JArray, \
-    PythonSet, PythonList, PythonIterator, PythonListIterator, JavaError, \
-    NoSuchElementException, IllegalStateException, IndexOutOfBoundsException
+from lucene import JArray
+
+from java.lang import IllegalStateException, IndexOutOfBoundsException
+from java.util import NoSuchElementException
+from org.apache.pylucene.util import \
+    PythonSet, PythonList, PythonIterator, PythonListIterator
 
 
 class JavaSet(PythonSet):

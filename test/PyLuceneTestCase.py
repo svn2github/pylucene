@@ -12,7 +12,8 @@
 #   limitations under the License.
 # ====================================================================
 
-import lucene
+import lucene   # so that 'org' is found
+
 from unittest import TestCase
 
 from java.io import File

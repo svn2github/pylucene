@@ -15,6 +15,9 @@
 import unittest, lucene
 from lucene.collections import JavaSet, JavaList
 
+from java.lang import Class, Boolean, Integer, Long, Double, String
+from java.util import ArrayList, HashSet
+
 
 class Test_CollectionsSetBase(unittest.TestCase):
     """base test case for JavaSet (uses integers)
@@ -54,7 +57,7 @@ class Test_CollectionsSetBase(unittest.TestCase):
     def test_HashSet(self):
         """create HashSet in JVM (from the JavaSet)
         """
-        hashSet = lucene.HashSet(self.javaSet)
+        hashSet = HashSet(self.javaSet)
         # print "created HashSet:", hashSet, type(hashSet)
         self.assertEqual(self.javaSet.size(),
                          hashSet.size(),
@@ -77,7 +80,7 @@ class Test_CollectionsSetBase(unittest.TestCase):
     def test_ArrayList(self):
         """create ArrayList in JVM (from the JavaSet)
         """
-        arrayList = lucene.ArrayList(self.javaSet)
+        arrayList = ArrayList(self.javaSet)
         # print "created ArrayList:", arrayList, type(arrayList)
         self.assertEqual(self.javaSet.size(), arrayList.size(),
                          "ArrayList has same size")
@@ -118,11 +121,11 @@ class Test_CollectionsListBase(unittest.TestCase):
         unittest.TestCase.__init__(self, *args, **kwds)
 
         self._primitive_types = {
-            lucene.Class.forName('java.lang.Boolean'): lucene.Boolean,
-            lucene.Class.forName('java.lang.Integer'): lucene.Integer,
-            lucene.Class.forName('java.lang.Long'): lucene.Long,
-            lucene.Class.forName('java.lang.Double'): lucene.Double,
-            lucene.Class.forName('java.lang.String'): lucene.String
+            Class.forName('java.lang.Boolean'): Boolean,
+            Class.forName('java.lang.Integer'): Integer,
+            Class.forName('java.lang.Long'): Long,
+            Class.forName('java.lang.Double'): Double,
+            Class.forName('java.lang.String'): String
         }
 
     def createTestList(self):
@@ -159,7 +162,7 @@ class Test_CollectionsListBase(unittest.TestCase):
     def test_HashSet(self):
         """create HashSet in JVM (from the JavaSet)
         """
-        hashSet = lucene.HashSet(self.javaList)
+        hashSet = HashSet(self.javaList)
         # print "created HashSet:", hashSet, type(hashSet)
         self.assertEqual(self.javaList.size(),
                          hashSet.size(),
@@ -197,7 +200,7 @@ class Test_CollectionsListBase(unittest.TestCase):
     def test_ArrayList(self):
         """create ArrayList in JVM (from the JavaSet)
         """
-        arrayList = lucene.ArrayList(self.javaList)
+        arrayList = ArrayList(self.javaList)
         # print "created ArrayList:", arrayList, type(arrayList)
         self.assertEqual(self.javaList.size(), arrayList.size(),
                          "ArrayList has same size")
