@@ -13,7 +13,16 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from java.io import StringReader
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.queryparser.classic import QueryParser
+from org.apache.lucene.search.highlight import \
+    Highlighter, QueryScorer, SimpleFragmenter
+from org.apache.lucene.util import Version
+from org.apache.pylucene.search.highlight import PythonFormatter
 
 
 class TestFormatter(PythonFormatter):
@@ -31,7 +40,7 @@ class TestFormatter(PythonFormatter):
         return "<b>" + originalText + "</b>"
     
 
-class HighlighterTestCase(TestCase):
+class HighlighterTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene.
     2004 by Yura Smolsky ;)
@@ -45,10 +54,24 @@ class HighlighterTestCase(TestCase):
               "This text has a typo in referring to whicked problems" ];
 
     def __init__(self, *args):
-
         super(HighlighterTestCase, self).__init__(*args)
+
         self.parser = QueryParser(Version.LUCENE_CURRENT, self.FIELD_NAME,
                                   StandardAnalyzer(Version.LUCENE_CURRENT))
+
+    def setUp(self):
+        super(HighlighterTestCase, self).setUp()
+
+        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+
+        writer = self.getWriter(analyzer=self.analyzer)
+        for text in self.texts:
+            self.addDoc(writer, text)
+
+        writer.commit()
+        writer.close()
+        self.reader = self.getReader()
+        self.numHighlights = 0;
 
     def testSimpleHighlighter(self):
 
@@ -80,7 +103,7 @@ class HighlighterTestCase(TestCase):
         
     def doSearching(self, queryString):
 
-        self.searcher = IndexSearcher(self.ramDir, True)
+        self.searcher = self.getSearcher()
         self.query = self.parser.parse(queryString)
         # for any multi-term queries to work (prefix, wildcard, range,
         # fuzzy etc) you must use a rewritten query!
@@ -113,26 +136,11 @@ class HighlighterTestCase(TestCase):
 
         self.numHighlights += 1 # update stats used in assertions
         
-    def setUp(self):
-
-        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
-        self.ramDir = RAMDirectory()
-        writer = IndexWriter(self.ramDir, self.analyzer, True,
-                             IndexWriter.MaxFieldLength.LIMITED)
-        for text in self.texts:
-            self.addDoc(writer, text)
-
-        writer.commit()
-        writer.close()
-        self.reader = IndexReader.open(self.ramDir, True)
-        self.numHighlights = 0;
-
     def addDoc(self, writer, text):
 
         d = Document()
-        f = Field(self.FIELD_NAME, text,
-                  Field.Store.YES, Field.Index.ANALYZED,
-                  Field.TermVector.YES)
+        f = self.newField(self.FIELD_NAME, text, TextField.TYPE_STORED)
+
         d.add(f)
         writer.addDocument(d)
         
