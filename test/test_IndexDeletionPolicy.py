@@ -13,7 +13,12 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis.core import WhitespaceAnalyzer
+from org.apache.lucene.document import Document
+from org.apache.lucene.index import DirectoryReader, IndexWriterConfig
+from org.apache.pylucene.index import PythonIndexDeletionPolicy
 
 
 # Test reusableTokenStream, using ReusableAnalyzerBase:
@@ -29,51 +34,54 @@ class MyDeletionPolicy(PythonIndexDeletionPolicy):
       self.onCommitCalled = True
     
 
-class IndexDeletionPolicyTestCase(TestCase):
+class IndexDeletionPolicyTestCase(PyLuceneTestCase):
+
+    def getConfig(self, analyzer):
+
+        self.policy = MyDeletionPolicy()
+        config = IndexWriterConfig(self.TEST_VERSION, analyzer)
+        config.setIndexDeletionPolicy(self.policy)
+        
+        return config
 
     def testIndexDeletionPolicy(self):
 
-        dir = RAMDirectory()
-        config = IndexWriterConfig(Version.LUCENE_CURRENT,
-                                   WhitespaceAnalyzer())
-        policy = MyDeletionPolicy()
-        config.setIndexDeletionPolicy(policy)
-        writer = IndexWriter(dir, config)
+        writer = self.getWriter()
+
         # no commits exist in the index yet
-        self.assertFalse(policy.onInitCalled)
+        self.assertFalse(self.policy.onInitCalled)
         # we haven't called commit yet
-        self.assertFalse(policy.onCommitCalled)
+        self.assertFalse(self.policy.onCommitCalled)
+
         doc = Document()
         writer.addDocument(doc)
         writer.commit()
 
         # now we called commit
-        self.assertTrue(policy.onCommitCalled)
+        self.assertTrue(self.policy.onCommitCalled)
 
         # external IR sees 1 commit:
-        self.assertEquals(1, IndexReader.listCommits(dir).size())
+        self.assertEquals(1, DirectoryReader.listCommits(self.directory).size())
 
         # commit again:
         writer.addDocument(doc)
         writer.commit()
 
         # external IR sees 2 commits:
-        self.assertEquals(2, IndexReader.listCommits(dir).size())
+        self.assertEquals(2, DirectoryReader.listCommits(self.directory).size())
 
         writer.close()
 
         # open same index, make sure both commits survived:
-        config = IndexWriterConfig(Version.LUCENE_CURRENT,
-                                   WhitespaceAnalyzer())
-        policy = MyDeletionPolicy()
-        config.setIndexDeletionPolicy(policy)
-        writer = IndexWriter(dir, config)
-        self.assertTrue(policy.onInitCalled)
-        self.assertFalse(policy.onCommitCalled)
-        self.assertEquals(2, IndexReader.listCommits(dir).size())
+        writer = self.getWriter()
+
+        self.assertTrue(self.policy.onInitCalled)
+        self.assertFalse(self.policy.onCommitCalled)
+        self.assertEquals(2, DirectoryReader.listCommits(self.directory).size())
         writer.close()
 
-        self.assertEquals(2, IndexReader.listCommits(dir).size())
+        # 3 from closing writer again
+        self.assertEquals(3, DirectoryReader.listCommits(self.directory).size())
 
 if __name__ == "__main__":
     import sys, lucene
