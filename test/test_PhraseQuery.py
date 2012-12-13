@@ -13,39 +13,37 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis import Analyzer
+from org.apache.lucene.analysis.core import LowerCaseTokenizer, StopAnalyzer
+from org.apache.lucene.analysis.tokenattributes import CharTermAttribute
+from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import \
+    BooleanClause, BooleanQuery, PhraseQuery, TermQuery
+from org.apache.lucene.util import Version
+from org.apache.pylucene.analysis import \
+    PythonAnalyzer, PythonFilteringTokenFilter
 
 
-class PhraseQueryTestCase(TestCase):
+class PhraseQueryTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
 
     def setUp(self):
+        super(PhraseQueryTestCase, self).setUp()
 
-        self.directory = RAMDirectory()
-        writer = self.getWriter()
-    
         doc = Document()
-        doc.add(Field("field", "one two three four five",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("field", "one two three four five",
+                              TextField.TYPE_STORED))
+        writer = self.getWriter()
         writer.addDocument(doc)
-    
         writer.close()
         
-        self.reader = DirectoryReader.open(writer.getDirectory())
-        self.searcher = IndexSearcher(self.reader)
+        self.searcher = self.getSearcher()
         self.query = PhraseQuery()
-
-    def tearDown(self):
-
-        self.reader.close()
-        self.directory.close()
-        
-    def getWriter(self, directory=None, analyzer=None):
-        return IndexWriter(directory or self.directory, IndexWriterConfig(Version.LUCENE_CURRENT,
-                             LimitTokenCountAnalyzer(analyzer or WhitespaceAnalyzer(Version.LUCENE_CURRENT), 10000))
-                             .setOpenMode(IndexWriterConfig.OpenMode.CREATE))
 
     def testNotCloseEnough(self):
 
@@ -143,54 +141,79 @@ class PhraseQueryTestCase(TestCase):
 
     def testPhraseQueryWithStopAnalyzer(self):
 
-        directory = RAMDirectory()
-        stopAnalyzer = StopAnalyzer(Version.LUCENE_CURRENT)
-        writer = self.getWriter(directory, stopAnalyzer)
+        writer = self.getWriter(analyzer=StopAnalyzer(Version.LUCENE_CURRENT))
         doc = Document()
-        doc.add(Field("field", "the stop words are here",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("field", "the stop words are here",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
         writer.close()
 
-        reader = DirectoryReader.open(writer.getDirectory())
-        searcher = IndexSearcher(reader)
+        searcher = self.getSearcher()
 
         # valid exact phrase query
         query = PhraseQuery()
-        query.add(Term("field","stop"))
-        query.add(Term("field","words"))
-        topDocs = searcher.search(query, 50)
-        self.assertEqual(1, topDocs.totalHits)
+        query.add(Term("field", "stop"))
+        query.add(Term("field", "words"))
+        scoreDocs = searcher.search(query, None, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
 
-        # currently StopAnalyzer does not leave "holes", so this matches.
+        # StopAnalyzer leaves "holes", so this does not match.
         query = PhraseQuery()
         query.add(Term("field", "words"))
         query.add(Term("field", "here"))
-        topDocs = searcher.search(query, 50)
-        self.assertEqual(1, topDocs.totalHits)
+        scoreDocs = searcher.search(query, None, 50).scoreDocs
+        self.assertEqual(0, len(scoreDocs))
+  
+        # Not leaving "holes" with a PythonFilteringTokenFilter setup to not
+        # enable position increments, this does match.
 
+        class stopFilter(PythonFilteringTokenFilter):
+            def __init__(_self, tokenStream):
+                super(stopFilter, _self).__init__(False, tokenStream)
+                _self.termAtt = _self.addAttribute(CharTermAttribute.class_);
+            def accept(_self):
+                return _self.termAtt.toString() not in ("not", "are")
+
+        class stopAnalyzer(PythonAnalyzer):
+            def createComponents(_self, fieldName, reader):
+                source = LowerCaseTokenizer(Version.LUCENE_CURRENT, reader)
+                return Analyzer.TokenStreamComponents(source,
+                                                      stopFilter(source))
+
+        writer = self.getWriter(analyzer=stopAnalyzer())
+        doc = Document()
+        doc.add(self.newField("field", "the stop words are here",
+                              TextField.TYPE_STORED))
+        writer.addDocument(doc)
+        writer.close()
+
+        searcher = self.getSearcher()
+
+        query = PhraseQuery()
+        query.add(Term("field", "words"))
+        query.add(Term("field", "here"))
+        scoreDocs = searcher.search(query, None, 50).scoreDocs
+        self.assertEqual(1, len(scoreDocs))
   
     def testPhraseQueryInConjunctionScorer(self):
 
-        directory = RAMDirectory()
         writer = self.getWriter()
     
         doc = Document()
-        doc.add(Field("source", "marketing info",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("source", "marketing info",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
     
         doc = Document()
-        doc.add(Field("contents", "foobar",
-                      TextField.TYPE_STORED))
-        doc.add(Field("source", "marketing info",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("contents", "foobar",
+                              TextField.TYPE_STORED))
+        doc.add(self.newField("source", "marketing info",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
     
         writer.close()
         
-        reader = DirectoryReader.open(writer.getDirectory())
-        searcher = IndexSearcher(reader)
+        searcher = self.getSearcher()
     
         phraseQuery = PhraseQuery()
         phraseQuery.add(Term("source", "marketing"))
@@ -205,29 +228,26 @@ class PhraseQueryTestCase(TestCase):
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(1, topDocs.totalHits)
     
-        reader.close()
-    
-        writer = self.getWriter(directory)
+        writer = self.getWriter()
         
         doc = Document()
-        doc.add(Field("contents", "map entry woo",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("contents", "map entry woo",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(Field("contents", "woo map entry",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("contents", "woo map entry",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(Field("contents", "map foobarword entry woo",
-                      TextField.TYPE_STORED))
+        doc.add(self.newField("contents", "map foobarword entry woo",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         writer.close()
         
-        reader = DirectoryReader.open(writer.getDirectory())
-        searcher = IndexSearcher(reader)
+        searcher = self.getSearcher()
     
         termQuery = TermQuery(Term("contents", "woo"))
         phraseQuery = PhraseQuery()
@@ -250,8 +270,6 @@ class PhraseQueryTestCase(TestCase):
         booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(2, topDocs.totalHits)
-    
-        directory.close()
 
 
 if __name__ == "__main__":

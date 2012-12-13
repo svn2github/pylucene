@@ -43,10 +43,18 @@ class PyLuceneTestCase(TestCase):
         return IndexWriterConfig(self.TEST_VERSION, analyzer)
         
     def getWriter(self, directory=None, analyzer=None, open_mode=None):
-        config = self.getConfig(analyzer or LimitTokenCountAnalyzer(WhitespaceAnalyzer(self.TEST_VERSION), 10000))
-        config.setOpenMode(open_mode or IndexWriterConfig.OpenMode.CREATE)
+        if analyzer is None:
+            analyzer = LimitTokenCountAnalyzer(WhitespaceAnalyzer(self.TEST_VERSION), 10000)
+        config = self.getConfig(analyzer)
 
-        return IndexWriter(directory or self.directory, config)
+        if open_mode is None:
+            open_mode = IndexWriterConfig.OpenMode.CREATE
+        config.setOpenMode(open_mode)
+
+        if directory is None:
+            directory = self.directory
+
+        return IndexWriter(directory, config)
         
     def getSearcher(self, directory=None, reader=None):
         if reader is not None:
