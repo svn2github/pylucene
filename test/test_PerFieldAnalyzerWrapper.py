@@ -13,21 +13,30 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from java.io import StringReader
+from java.util import HashMap
+from org.apache.lucene.analysis.core import SimpleAnalyzer, WhitespaceAnalyzer
+from org.apache.lucene.analysis.miscellaneous import PerFieldAnalyzerWrapper
+from org.apache.lucene.analysis.tokenattributes import CharTermAttribute
+from org.apache.lucene.util import Version
 
 
-class PerFieldAnalyzerTestCase(TestCase):
+class PerFieldAnalyzerTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
 
     def testPerField(self):
 
-        text = "Qwerty"
-        analyzer = PerFieldAnalyzerWrapper(WhitespaceAnalyzer())
-        analyzer.addAnalyzer("special", SimpleAnalyzer())
+        perField = HashMap()
+        perField.put("special", SimpleAnalyzer(Version.LUCENE_CURRENT))
+        analyzer = PerFieldAnalyzerWrapper(WhitespaceAnalyzer(Version.LUCENE_CURRENT), perField)
 
+        text = "Qwerty"
         tokenStream = analyzer.tokenStream("field", StringReader(text))
+        tokenStream.reset()
         termAtt = tokenStream.getAttribute(CharTermAttribute.class_)
 
         self.assert_(tokenStream.incrementToken())
@@ -35,6 +44,7 @@ class PerFieldAnalyzerTestCase(TestCase):
                          "WhitespaceAnalyzer does not lowercase")
 
         tokenStream = analyzer.tokenStream("special", StringReader(text))
+        tokenStream.reset()
         termAtt = tokenStream.getAttribute(CharTermAttribute.class_)
         self.assert_(tokenStream.incrementToken())
         self.assertEqual("qwerty", termAtt.toString(),
