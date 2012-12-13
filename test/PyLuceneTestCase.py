@@ -38,10 +38,12 @@ class PyLuceneTestCase(TestCase):
 
     def tearDown(self):
         self.directory.close()
+
+    def getConfig(self, analyzer=None):
+        return IndexWriterConfig(self.TEST_VERSION, analyzer)
         
     def getWriter(self, directory=None, analyzer=None, open_mode=None):
-        config = IndexWriterConfig(self.TEST_VERSION,
-                                   analyzer or LimitTokenCountAnalyzer(WhitespaceAnalyzer(Version.LUCENE_CURRENT), 10000))
+        config = self.getConfig(analyzer or LimitTokenCountAnalyzer(WhitespaceAnalyzer(self.TEST_VERSION), 10000))
         config.setOpenMode(open_mode or IndexWriterConfig.OpenMode.CREATE)
 
         return IndexWriter(directory or self.directory, config)
