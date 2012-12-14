@@ -343,6 +343,7 @@ def jcc(args):
 
     classNames = set()
     listedClassNames = set()
+    listedMethodNames = {}
     packages = set()
     jars = []
     classpath = [_jcc.CLASSPATH]
@@ -504,6 +505,9 @@ def jcc(args):
             else:
                 raise ValueError, "Invalid argument: %s" %(arg)
         else:
+            if ':' in arg:
+                arg, method = arg.split(':', 1)
+                listedMethodNames.setdefault(arg, set()).add(method)
             classNames.add(arg)
             listedClassNames.add(arg)
         i += 1
@@ -634,7 +638,8 @@ def jcc(args):
                 (superCls, constructors, methods, protectedMethods,
                  methodNames, fields, instanceFields, declares) = \
                     header(env, out_h, cls, typeset, packages, excludes,
-                           generics, _dll_export)
+                           generics, listedMethodNames.get(cls.getName(), ()),
+                           _dll_export)
 
                 if not allInOne:
                     out_cpp = file(fileName + '.cpp', 'w')
@@ -693,7 +698,8 @@ def jcc(args):
                         extra_setup_args)
 
 
-def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
+def header(env, out, cls, typeset, packages, excludes, generics,
+           listedMethodNames, _dll_export):
 
     names = cls.getName().split('.')
     superCls = cls.getSuperclass()
@@ -771,7 +777,8 @@ def header(env, out, cls, typeset, packages, excludes, generics, _dll_export):
     protectedMethods = []
     for method in cls.getDeclaredMethods():
         modifiers = method.getModifiers()
-        if Modifier.isPublic(modifiers):
+        if (Modifier.isPublic(modifiers) or
+            method.getName() in listedMethodNames):
             if generics:
                 returnType = method.getGenericReturnType()
             else:
