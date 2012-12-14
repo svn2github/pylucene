@@ -13,68 +13,87 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+from MultiSpansWrapper import MultiSpansWrapper
+from lucene import JArray
+
+from java.io import StringReader
+from org.apache.lucene.analysis import Analyzer
+from org.apache.lucene.analysis.core import \
+    LowerCaseTokenizer, WhitespaceTokenizer
+from org.apache.lucene.analysis.tokenattributes import \
+    CharTermAttribute, OffsetAttribute, PayloadAttribute, \
+    PositionIncrementAttribute
+    
+from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.index import MultiFields, Term
+from org.apache.lucene.queryparser.classic import QueryParser
+from org.apache.lucene.search import MultiPhraseQuery, PhraseQuery
+from org.apache.lucene.search.payloads import PayloadSpanUtil
+from org.apache.lucene.search.spans import SpanNearQuery, SpanTermQuery
+from org.apache.lucene.util import BytesRef, Version
+from org.apache.pylucene.analysis import \
+    PythonAnalyzer, PythonFilteringTokenFilter, PythonTokenFilter, \
+    PythonTokenizer
 
 
-class PositionIncrementTestCase(TestCase):
+class PositionIncrementTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
-
     def testSetPosition(self):
 
+        class _tokenizer(PythonTokenizer):
+            def __init__(_self, reader):
+                super(_tokenizer, _self).__init__(reader)
+
+                _self.TOKENS = ["1", "2", "3", "4", "5"]
+                _self.INCREMENTS = [1, 2, 1, 0, 1]
+                _self.i = 0
+                _self.posIncrAtt = _self.addAttribute(PositionIncrementAttribute.class_)
+                _self.termAtt = _self.addAttribute(CharTermAttribute.class_)
+                _self.offsetAtt = _self.addAttribute(OffsetAttribute.class_)
+
+            def incrementToken(_self):
+                if _self.i == len(_self.TOKENS):
+                    return False
+
+                _self.clearAttributes()
+                _self.termAtt.append(_self.TOKENS[_self.i])
+                _self.offsetAtt.setOffset(_self.i, _self.i)
+                _self.posIncrAtt.setPositionIncrement(_self.INCREMENTS[_self.i])
+                _self.i += 1
+
+                return True
+
+            def end(_self):
+                pass
+            def reset(_self):
+                pass
+            def close(_self):
+                pass
+
         class _analyzer(PythonAnalyzer):
-            def tokenStream(_self, fieldName, reader):
-                class _tokenStream(PythonTokenStream):
-                    def __init__(self_):
-                        super(_tokenStream, self_).__init__()
-                        self_.TOKENS = ["1", "2", "3", "4", "5"]
-                        self_.INCREMENTS = [1, 2, 1, 0, 1]
-                        self_.i = 0
-                        self_.posIncrAtt = self_.addAttribute(PositionIncrementAttribute.class_)
-                        self_.termAtt = self_.addAttribute(CharTermAttribute.class_)
-                        self_.offsetAtt = self_.addAttribute(OffsetAttribute.class_)
-                    def incrementToken(self_):
-                        if self_.i == len(self_.TOKENS):
-                            return False
-                        self_.termAtt.setEmpty()
-                        self_.termAtt.append(self_.TOKENS[self_.i])
-                        self_.offsetAtt.setOffset(self_.i, self_.i)
-                        self_.posIncrAtt.setPositionIncrement(self_.INCREMENTS[self_.i])
-                        self_.i += 1
-                        return True
-                    def end(self_):
-                        pass
-                    def reset(self_):
-                        pass
-                    def close(self_):
-                        pass
-                return _tokenStream()
+            def createComponents(_self, fieldName, reader):
+                return Analyzer.TokenStreamComponents(_tokenizer(reader))
 
-        analyzer = _analyzer()
+        writer = self.getWriter(analyzer=_analyzer())
 
-        store = RAMDirectory()
-        writer = IndexWriter(store, analyzer, True, 
-                             IndexWriter.MaxFieldLength.LIMITED)
         d = Document()
-        d.add(Field("field", "bogus",
-                    Field.Store.YES, Field.Index.ANALYZED))
+        d.add(self.newField("field", "bogus", TextField.TYPE_STORED))
+
         writer.addDocument(d)
         writer.commit()
         writer.close()
 
-        searcher = IndexSearcher(store, True)
-
-        pos = MultiFields.getTermPositionsEnum(searcher.getIndexReader(),
-                                               MultiFields.getDeletedDocs(searcher.getIndexReader()),
-                                               "field", BytesRef("1"))
+        searcher = self.getSearcher()
+        reader = searcher.getIndexReader()
+        pos = MultiFields.getTermPositionsEnum(reader, MultiFields.getLiveDocs(reader), "field", BytesRef("1"))
         pos.nextDoc()
         # first token should be at position 0
         self.assertEqual(0, pos.nextPosition())
     
-        pos = MultiFields.getTermPositionsEnum(searcher.getIndexReader(),
-                                               MultiFields.getDeletedDocs(searcher.getIndexReader()),
-                                               "field", BytesRef("2"))
+        pos = MultiFields.getTermPositionsEnum(reader, MultiFields.getLiveDocs(reader), "field", BytesRef("2"))
         pos.nextDoc()
         # second token should be at position 2
         self.assertEqual(2, pos.nextPosition())
@@ -163,6 +182,7 @@ class PositionIncrementTestCase(TestCase):
         # should not find "1 2" because there is a gap of 1 in the index
         qp = QueryParser(Version.LUCENE_CURRENT, "field",
                          StopWhitespaceAnalyzer(False))
+
         q = PhraseQuery.cast_(qp.parse("\"1 2\""))
         hits = searcher.search(q, None, 1000).scoreDocs
         self.assertEqual(0, len(hits))
@@ -198,19 +218,18 @@ class PositionIncrementTestCase(TestCase):
 
     def testPayloadsPos0(self):
 
-        dir = RAMDirectory()
-        writer = IndexWriter(dir, TestPayloadAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(analyzer=TestPayloadAnalyzer())
 
         doc = Document()
-        doc.add(Field("content",
-                      StringReader("a a b c d e a f g h i j a b k k")))
+        doc.add(self.newField("content",
+                              "a a b c d e a f g h i j a b k k",
+                              TextField.TYPE_STORED))
         writer.addDocument(doc)
+        reader = writer.getReader()
+        writer.close()
 
-        r = writer.getReader()
-
-        tp = MultiFields.getTermPositionsEnum(r,
-                                              MultiFields.getDeletedDocs(r),
+        tp = MultiFields.getTermPositionsEnum(reader,
+                                              MultiFields.getLiveDocs(reader),
                                               "content", BytesRef("a"))
 
         count = 0
@@ -227,7 +246,7 @@ class PositionIncrementTestCase(TestCase):
         # only one doc has "a"
         self.assert_(tp.nextDoc() == tp.NO_MORE_DOCS)
 
-        searcher = IndexSearcher(SlowMultiReaderWrapper.wrap(r))
+        searcher = self.getSearcher(reader=reader)
     
         stq1 = SpanTermQuery(Term("content", "a"))
         stq2 = SpanTermQuery(Term("content", "k"))
@@ -237,7 +256,7 @@ class PositionIncrementTestCase(TestCase):
         count = 0
         sawZero = False
 
-        pspans = snq.getSpans(searcher.getIndexReader())
+        pspans = MultiSpansWrapper.wrap(searcher.getTopReaderContext(), snq)
         while pspans.next():
             payloads = pspans.getPayload()
             sawZero |= pspans.start() == 0
@@ -250,7 +269,7 @@ class PositionIncrementTestCase(TestCase):
         self.assertEqual(5, count)
         self.assert_(sawZero)
 
-        spans = snq.getSpans(searcher.getIndexReader())
+        spans = MultiSpansWrapper.wrap(searcher.getTopReaderContext(), snq)
         count = 0
         sawZero = False
         while spans.next():
@@ -261,7 +280,7 @@ class PositionIncrementTestCase(TestCase):
         self.assert_(sawZero)
 		
         sawZero = False
-        psu = PayloadSpanUtil(searcher.getIndexReader())
+        psu = PayloadSpanUtil(searcher.getTopReaderContext())
         pls = psu.getPayloadsForQuery(snq)
         count = pls.size()
         it = pls.iterator()
@@ -272,9 +291,6 @@ class PositionIncrementTestCase(TestCase):
 
         self.assertEqual(5, count)
         self.assert_(sawZero)
-        writer.close()
-        searcher.getIndexReader().close()
-        dir.close()
 
 
 class StopWhitespaceAnalyzer(PythonAnalyzer):
@@ -283,23 +299,25 @@ class StopWhitespaceAnalyzer(PythonAnalyzer):
         super(StopWhitespaceAnalyzer, self).__init__()
 
         self.enablePositionIncrements = enablePositionIncrements
-        self.a = WhitespaceAnalyzer()
 
-    def tokenStream(self, fieldName, reader):
+    def createComponents(self, fieldName, reader):
 
-        ts = self.a.tokenStream(fieldName, reader)
-        set = HashSet()
-        set.add("stop")
+        class _stopFilter(PythonFilteringTokenFilter):
+            def __init__(_self, tokenStream):
+                super(_stopFilter, _self).__init__(self.enablePositionIncrements, tokenStream)
+                _self.termAtt = _self.addAttribute(CharTermAttribute.class_);
+            def accept(_self):
+                return _self.termAtt.toString() != "stop"
 
-        return StopFilter(self.enablePositionIncrements, ts, set)
+        source = WhitespaceTokenizer(Version.LUCENE_CURRENT, reader)
+        return Analyzer.TokenStreamComponents(source, _stopFilter(source))
 
 
 class TestPayloadAnalyzer(PythonAnalyzer):
 
-    def tokenStream(self, fieldName, reader):
-
-        result = LowerCaseTokenizer(reader)
-        return PayloadFilter(result, fieldName)
+    def createComponents(self, fieldName, reader):
+        source = LowerCaseTokenizer(Version.LUCENE_CURRENT, reader)
+        return Analyzer.TokenStreamComponents(source, PayloadFilter(source, fieldName))
 
 
 class PayloadFilter(PythonTokenFilter):
@@ -319,9 +337,9 @@ class PayloadFilter(PythonTokenFilter):
 
         if self.input.incrementToken():
             bytes = JArray('byte')("pos: %d" %(self.pos))
-            self.payloadAttr.setPayload(Payload(bytes))
+            self.payloadAttr.setPayload(BytesRef(bytes))
 
-            if self.i % 2 == 1:
+            if self.pos == 0 or self.i % 2 == 1:
                 posIncr = 1
             else:
                 posIncr = 0

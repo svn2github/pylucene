@@ -291,8 +291,10 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
            --package java.util java.util.Arrays \
+                               java.util.Collections \
                                java.util.HashMap \
                                java.util.HashSet \
+                               java.util.TreeSet \
                                java.lang.IllegalStateException \
                                java.lang.IndexOutOfBoundsException \
                                java.util.NoSuchElementException \
@@ -309,6 +311,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
            --sequence java.util.AbstractList 'size:()I' 'get:(I)Ljava/lang/Object;' \
+           org.apache.lucene.index.IndexWriter:getReader \
            --version $(LUCENE_VER) \
            --module python/collections.py \
            --module python/ICUNormalizer2Filter.py \

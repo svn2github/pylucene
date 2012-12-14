@@ -62,7 +62,9 @@ class PyLuceneTestCase(TestCase):
         return IndexSearcher(self.getReader(directory=directory))
     
     def getReader(self, directory=None):
-        return DirectoryReader.open(directory or self.directory)
+        if directory is None:
+            directory = self.directory
+        return DirectoryReader.open(directory)
 
     def newField(self, name, value, type):
         return Field(name, value, type)
