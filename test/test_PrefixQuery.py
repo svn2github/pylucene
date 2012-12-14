@@ -13,25 +13,27 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.document import Document, StringField
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import PrefixQuery
 
 
-class PrefixQueryTestCase(TestCase):
+class PrefixQueryTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
 
     def testPrefixQuery(self):
 
-        directory = RAMDirectory()
+        writer = self.getWriter()
 
         categories = ["/Computers", "/Computers/Mac", "/Computers/Windows"]
-        writer = IndexWriter(directory, WhitespaceAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
         for category in categories:
             doc = Document()
-            doc.add(Field("category", category,
-                          Field.Store.YES, Field.Index.NOT_ANALYZED))
+            doc.add(self.newField("category", category,
+                                  StringField.TYPE_STORED))
             writer.addDocument(doc)
 
         writer.close()
