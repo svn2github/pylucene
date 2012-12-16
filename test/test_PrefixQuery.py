@@ -15,7 +15,7 @@
 from unittest import TestCase, main
 from PyLuceneTestCase import PyLuceneTestCase
 
-from org.apache.lucene.document import Document, StringField
+from org.apache.lucene.document import Document, Field, StringField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import PrefixQuery
 
@@ -32,8 +32,7 @@ class PrefixQueryTestCase(PyLuceneTestCase):
         categories = ["/Computers", "/Computers/Mac", "/Computers/Windows"]
         for category in categories:
             doc = Document()
-            doc.add(self.newField("category", category,
-                                  StringField.TYPE_STORED))
+            doc.add(Field("category", category, StringField.TYPE_STORED))
             writer.addDocument(doc)
 
         writer.close()

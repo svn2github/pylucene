@@ -16,7 +16,7 @@ from unittest import TestCase, main
 from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import BooleanClause, BooleanQuery, TermQuery
 from org.apache.lucene.util import Version
@@ -47,12 +47,11 @@ class BooleanOrTestCase(PyLuceneTestCase):
         # add the doc to a ram index
         writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
         d = Document()
-        d.add(self.newField(self.FIELD_T,
-                            "Optimize not deleting all files",
-                            TextField.TYPE_STORED))
-        d.add(self.newField(self.FIELD_C,
-                            "Deleted When I run an optimize in our production environment.",
-                            TextField.TYPE_STORED))
+        d.add(Field(self.FIELD_T, "Optimize not deleting all files",
+                    TextField.TYPE_STORED))
+        d.add(Field(self.FIELD_C,
+                    "Deleted When I run an optimize in our production environment.",
+                    TextField.TYPE_STORED))
 
         writer.addDocument(d)
         writer.close()

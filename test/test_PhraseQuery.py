@@ -18,7 +18,7 @@ from PyLuceneTestCase import PyLuceneTestCase
 from org.apache.lucene.analysis import Analyzer
 from org.apache.lucene.analysis.core import LowerCaseTokenizer, StopAnalyzer
 from org.apache.lucene.analysis.tokenattributes import CharTermAttribute
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import \
     BooleanClause, BooleanQuery, PhraseQuery, TermQuery
@@ -36,8 +36,7 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         super(PhraseQueryTestCase, self).setUp()
 
         doc = Document()
-        doc.add(self.newField("field", "one two three four five",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "one two three four five", TextField.TYPE_STORED))
         writer = self.getWriter()
         writer.addDocument(doc)
         writer.close()
@@ -143,8 +142,7 @@ class PhraseQueryTestCase(PyLuceneTestCase):
 
         writer = self.getWriter(analyzer=StopAnalyzer(Version.LUCENE_CURRENT))
         doc = Document()
-        doc.add(self.newField("field", "the stop words are here",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "the stop words are here", TextField.TYPE_STORED))
         writer.addDocument(doc)
         writer.close()
 
@@ -182,8 +180,7 @@ class PhraseQueryTestCase(PyLuceneTestCase):
 
         writer = self.getWriter(analyzer=stopAnalyzer())
         doc = Document()
-        doc.add(self.newField("field", "the stop words are here",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "the stop words are here", TextField.TYPE_STORED))
         writer.addDocument(doc)
         writer.close()
 
@@ -200,15 +197,12 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         writer = self.getWriter()
     
         doc = Document()
-        doc.add(self.newField("source", "marketing info",
-                              TextField.TYPE_STORED))
+        doc.add(Field("source", "marketing info", TextField.TYPE_STORED))
         writer.addDocument(doc)
     
         doc = Document()
-        doc.add(self.newField("contents", "foobar",
-                              TextField.TYPE_STORED))
-        doc.add(self.newField("source", "marketing info",
-                              TextField.TYPE_STORED))
+        doc.add(Field("contents", "foobar", TextField.TYPE_STORED))
+        doc.add(Field("source", "marketing info", TextField.TYPE_STORED))
         writer.addDocument(doc)
     
         writer.close()
@@ -231,18 +225,15 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         writer = self.getWriter()
         
         doc = Document()
-        doc.add(self.newField("contents", "map entry woo",
-                              TextField.TYPE_STORED))
+        doc.add(Field("contents", "map entry woo", TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(self.newField("contents", "woo map entry",
-                              TextField.TYPE_STORED))
+        doc.add(Field("contents", "woo map entry", TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(self.newField("contents", "map foobarword entry woo",
-                              TextField.TYPE_STORED))
+        doc.add(Field("contents", "map foobarword entry woo", TextField.TYPE_STORED))
         writer.addDocument(doc)
 
         writer.close()

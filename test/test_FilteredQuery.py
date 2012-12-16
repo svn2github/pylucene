@@ -17,7 +17,7 @@ from PyLuceneTestCase import PyLuceneTestCase
 
 from java.util import BitSet
 from org.apache.lucene.analysis.core import WhitespaceAnalyzer
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import \
     FilteredQuery, Sort, SortField, TermRangeQuery, TermQuery
@@ -36,34 +36,26 @@ class FilteredQueryTestCase(PyLuceneTestCase):
         writer = self.getWriter(analyzer=WhitespaceAnalyzer(Version.LUCENE_CURRENT))
 
         doc = Document()
-        doc.add(self.newField("field", "one two three four five",
-                              TextField.TYPE_STORED))
-        doc.add(self.newField("sorter", "b",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "one two three four five", TextField.TYPE_STORED))
+        doc.add(Field("sorter", "b", TextField.TYPE_STORED))
                       
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(self.newField("field", "one two three four",
-                              TextField.TYPE_STORED))
-        doc.add(self.newField("sorter", "d",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "one two three four", TextField.TYPE_STORED))
+        doc.add(Field("sorter", "d", TextField.TYPE_STORED))
 
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(self.newField("field", "one two three y",
-                              TextField.TYPE_STORED))
-        doc.add(self.newField("sorter", "a",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "one two three y", TextField.TYPE_STORED))
+        doc.add(Field("sorter", "a", TextField.TYPE_STORED))
 
         writer.addDocument(doc)
 
         doc = Document()
-        doc.add(self.newField("field", "one two x",
-                              TextField.TYPE_STORED))
-        doc.add(self.newField("sorter", "c",
-                              TextField.TYPE_STORED))
+        doc.add(Field("field", "one two x", TextField.TYPE_STORED))
+        doc.add(Field("sorter", "c", TextField.TYPE_STORED))
                       
         writer.addDocument(doc)
 

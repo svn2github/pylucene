@@ -16,7 +16,7 @@ from unittest import TestCase, main
 from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.core import SimpleAnalyzer
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.util import Version
 
@@ -31,7 +31,7 @@ class NotTestCase(PyLuceneTestCase):
         writer = self.getWriter(analyzer=SimpleAnalyzer(Version.LUCENE_CURRENT))
 
         d1 = Document()
-        d1.add(self.newField("field", "a b", TextField.TYPE_STORED))
+        d1.add(Field("field", "a b", TextField.TYPE_STORED))
 
         writer.addDocument(d1)
         writer.commit()

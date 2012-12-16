@@ -17,7 +17,7 @@ from PyLuceneTestCase import PyLuceneTestCase
 
 from java.io import StringReader
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.search.highlight import \
     Highlighter, QueryScorer, SimpleFragmenter
@@ -139,7 +139,7 @@ class HighlighterTestCase(PyLuceneTestCase):
     def addDoc(self, writer, text):
 
         d = Document()
-        f = self.newField(self.FIELD_NAME, text, TextField.TYPE_STORED)
+        f = Field(self.FIELD_NAME, text, TextField.TYPE_STORED)
 
         d.add(f)
         writer.addDocument(d)

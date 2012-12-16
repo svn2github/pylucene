@@ -16,7 +16,7 @@ from unittest import TestCase, main
 from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.core import SimpleAnalyzer
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import TermQuery
 from org.apache.pylucene.search import PythonCollector
@@ -32,8 +32,8 @@ class DocBoostTestCase(PyLuceneTestCase):
 
         writer = self.getWriter(analyzer=SimpleAnalyzer(Version.LUCENE_CURRENT))
     
-        f1 = self.newField("field", "word", TextField.TYPE_STORED)
-        f2 = self.newField("field", "word", TextField.TYPE_STORED)
+        f1 = Field("field", "word", TextField.TYPE_STORED)
+        f2 = Field("field", "word", TextField.TYPE_STORED)
         f2.setBoost(2.0)
     
         d1 = Document()

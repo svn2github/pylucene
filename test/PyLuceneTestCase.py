@@ -65,6 +65,3 @@ class PyLuceneTestCase(TestCase):
         if directory is None:
             directory = self.directory
         return DirectoryReader.open(directory)
-
-    def newField(self, name, value, type):
-        return Field(name, value, type)

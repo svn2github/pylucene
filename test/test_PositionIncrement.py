@@ -25,7 +25,7 @@ from org.apache.lucene.analysis.tokenattributes import \
     CharTermAttribute, OffsetAttribute, PayloadAttribute, \
     PositionIncrementAttribute
     
-from org.apache.lucene.document import Document, TextField
+from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import MultiFields, Term
 from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.search import MultiPhraseQuery, PhraseQuery
@@ -80,7 +80,7 @@ class PositionIncrementTestCase(PyLuceneTestCase):
         writer = self.getWriter(analyzer=_analyzer())
 
         d = Document()
-        d.add(self.newField("field", "bogus", TextField.TYPE_STORED))
+        d.add(Field("field", "bogus", TextField.TYPE_STORED))
 
         writer.addDocument(d)
         writer.commit()
@@ -221,9 +221,8 @@ class PositionIncrementTestCase(PyLuceneTestCase):
         writer = self.getWriter(analyzer=TestPayloadAnalyzer())
 
         doc = Document()
-        doc.add(self.newField("content",
-                              "a a b c d e a f g h i j a b k k",
-                              TextField.TYPE_STORED))
+        doc.add(Field("content", "a a b c d e a f g h i j a b k k",
+                      TextField.TYPE_STORED))
         writer.addDocument(doc)
         reader = writer.getReader()
         writer.close()
