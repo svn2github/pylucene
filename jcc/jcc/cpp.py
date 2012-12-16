@@ -787,6 +787,9 @@ def header(env, out, cls, typeset, packages, excludes, generics,
                          generics):
                 continue
             sig = "%s:%s" %(method.getName(), signature(method, True))
+            # Apparently, overridden clone() methods are still returned via
+            # getDeclaredMethods(), so keep the one with the more precise
+            # return type, equal to cls.
             if sig in methods and returnType != cls:
                 continue
             if generics:
@@ -1133,6 +1136,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             this = 'cls'
             midns = ''
             const = ''
+            sig = signature(method)
         else:
             isStatic = False
             if superMethod is not None:
@@ -1140,13 +1144,14 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
                 this = 'this$, (jclass) %s::class$->this$' %(absname(cppnames(superNames)))
                 declaringClass = superMethod.getDeclaringClass()
                 midns = '%s::' %(typename(declaringClass, cls, False))
+                sig = signature(superMethod)
             else:
                 qualifier = ''
                 this = 'this$'
                 midns = ''
+                sig = signature(method)
             const = ' const'
 
-        sig = signature(method)
         decls, args = argnames(params, cls)
 
         line(out)
