@@ -16,10 +16,13 @@ import os, sys, unittest, shutil
 from threading import RLock
 import test_PyLucene 
 
-from lucene import \
+from lucene import JavaError, JArray
+
+from java.lang import String
+from java.io import IOException
+from org.apache.pylucene.store import \
     PythonLock, PythonLockFactory, \
-    PythonIndexInput, PythonIndexOutput, PythonDirectory, \
-    JavaError, IOException, JArray, String
+    PythonIndexInput, PythonIndexOutput, PythonDirectory
 
 """
 The Directory Implementation here is for testing purposes only, not meant
@@ -98,7 +101,7 @@ class PythonFileStreamInput(PythonIndexInput):
 
     def __init__(self, name, fh, size, clone=False):
         if not clone:
-            super(PythonFileStreamInput, self).__init__()
+            super(PythonFileStreamInput, self).__init__(name, size)
         self.name = name
         self.fh = fh
         self._length = size
@@ -169,7 +172,7 @@ class PythonFileDirectory(PythonDirectory):
             stream.close()
         del self._streams[:]
 
-    def createOutput(self, name):
+    def createOutput(self, name, context):
         file_path = os.path.join(self.path, name)
         fh = open(file_path, "wb")
         stream = PythonFileStreamOutput(name, fh)
@@ -238,7 +241,10 @@ class PythonDirectoryTests(unittest.TestCase, test_PyLucene.Test_PyLuceneBase):
     def closeStore(self, store, *args):
         for arg in args:
             if arg is not None:
-                arg.close()
+                try:
+                    arg.close()
+                except Exception, e:
+                    import pdb; pdb.set_trace()
         store.close()
 
     def test_IncrementalLoop(self):
