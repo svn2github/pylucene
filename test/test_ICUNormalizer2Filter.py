@@ -24,8 +24,9 @@ except ImportError, e:
 from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
-from org.apache.lucene.util import Version
+from org.apache.lucene.analysis import Analyzer
 from org.apache.lucene.analysis.core import WhitespaceTokenizer
+from org.apache.lucene.util import Version
 from org.apache.pylucene.analysis import PythonAnalyzer
 
 
@@ -35,11 +36,12 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
 
         from lucene.ICUNormalizer2Filter import ICUNormalizer2Filter
 
-        class analyzer(PythonAnalyzer):
-            def tokenStream(_self, fieldName, reader):
-                return ICUNormalizer2Filter(WhitespaceTokenizer(Version.LUCENE_CURRENT, reader))
+        class _analyzer(PythonAnalyzer):
+            def createComponents(_self, fieldName, reader):
+                source = WhitespaceTokenizer(Version.LUCENE_CURRENT, reader)
+                return Analyzer.TokenStreamComponents(source, ICUNormalizer2Filter(source))
 
-        a = analyzer()
+        a = _analyzer()
 
         # case folding
         self._assertAnalyzesTo(a, "This is a test",

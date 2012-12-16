@@ -24,6 +24,7 @@ except ImportError, e:
 from unittest import main
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
+from org.apache.lucene.analysis import Analyzer
 from org.apache.lucene.util import Version
 from org.apache.lucene.analysis.core import WhitespaceTokenizer
 from org.apache.pylucene.analysis import PythonAnalyzer
@@ -36,8 +37,9 @@ class TestICUFoldingFilter(BaseTokenStreamTestCase):
         from lucene.ICUFoldingFilter import ICUFoldingFilter
 
         class _analyzer(PythonAnalyzer):
-            def tokenStream(_self, fieldName, reader):
-                return ICUFoldingFilter(WhitespaceTokenizer(Version.LUCENE_CURRENT, reader))
+            def createComponents(_self, fieldName, reader):
+                source = WhitespaceTokenizer(Version.LUCENE_CURRENT, reader)
+                return Analyzer.TokenStreamComponents(source, ICUFoldingFilter(source))
 
         a = _analyzer()
 
