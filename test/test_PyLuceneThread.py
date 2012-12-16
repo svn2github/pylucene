@@ -14,35 +14,37 @@
 
 import time, threading
 from unittest import TestCase, main
-from lucene import *
+from lucene import getVMEnv
+from PyLuceneTestCase import PyLuceneTestCase
+
+from java.lang import Thread
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.document import Document, Field, TextField
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import PhraseQuery, TermQuery
+from org.apache.lucene.util import Version
 
 
-class PyLuceneThreadTestCase(TestCase):
+class PyLuceneThreadTestCase(PyLuceneTestCase):
     """
     Test using threads in PyLucene with python threads
     """
 
     def setUp(self):
+        super(PyLuceneThreadTestCase, self).setUp()
 
         self.classLoader = Thread.currentThread().getContextClassLoader()
 
-        self.directory = RAMDirectory()
-        writer = IndexWriter(self.directory,
-                             StandardAnalyzer(Version.LUCENE_CURRENT), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
 
         doc1 = Document()
         doc2 = Document()
         doc3 = Document()
         doc4 = Document()
-        doc1.add(Field("field", "one",
-                       Field.Store.YES, Field.Index.ANALYZED))
-        doc2.add(Field("field", "two",
-                       Field.Store.YES, Field.Index.ANALYZED))
-        doc3.add(Field("field", "three",
-                       Field.Store.YES, Field.Index.ANALYZED))
-        doc4.add(Field("field", "one",
-                       Field.Store.YES, Field.Index.ANALYZED))
+        doc1.add(Field("field", "one", TextField.TYPE_STORED))
+        doc2.add(Field("field", "two", TextField.TYPE_STORED))
+        doc3.add(Field("field", "three", TextField.TYPE_STORED))
+        doc4.add(Field("field", "one", TextField.TYPE_STORED))
 
         writer.addDocument(doc1)
         writer.addDocument(doc2)
@@ -55,17 +57,10 @@ class PyLuceneThreadTestCase(TestCase):
         self.lock = threading.Lock()
         self.totalQueries = 0
 
-
-    def tearDown(self):
-
-        self.directory.close()
-
-
     def testWithMainThread(self):
         """ warm up test for runSearch in main thread """
 
         self.runSearch(2000, True)
-
 
     def testWithPyLuceneThread(self):
         """ Run 5 threads with 2000 queries each """
@@ -85,7 +80,6 @@ class PyLuceneThreadTestCase(TestCase):
 
         # and all queries have ran successfully
         self.assertEqual(10000, self.totalQueries)
-
 
     def runSearch(self, runCount, mainThread=False):
         """ search for runCount number of times """
