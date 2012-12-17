@@ -12,46 +12,54 @@
 #   limitations under the License.
 # ====================================================================
 
-import unittest
-from lucene import *
+import unittest, lucene
+from PyLuceneTestCase import PyLuceneTestCase
 
-class Test_Bug1842(unittest.TestCase):
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.document import Document, Field, FieldType, StringField
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import TermQuery
+from org.apache.lucene.util import BytesRefIterator, Version
+
+
+class Test_Bug1842(PyLuceneTestCase):
 
     def setUp(self):
+        super(Test_Bug1842, self).setUp()
 
         self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
-        self.d1 = RAMDirectory()
         
-        w1 = IndexWriter(self.d1, self.analyzer, True,
-                         IndexWriter.MaxFieldLength.LIMITED)
+        w1 = self.getWriter(analyzer=self.analyzer)
         doc1 = Document()
-        doc1.add(Field("all", "blah blah blah Gesundheit",
-                       Field.Store.NO, Field.Index.ANALYZED,
-                       Field.TermVector.YES))
-        doc1.add(Field('id', '1',
-                       Field.Store.YES, Field.Index.NOT_ANALYZED))
-        w1.addDocument(doc1)
-        w1.optimize()
-        w1.close()
 
-    def tearDown(self):
-        pass
+        ftype = FieldType()
+        ftype.setStored(False)
+        ftype.setIndexed(True)
+        ftype.setStoreTermVectors(True)
+        doc1.add(Field("all", "blah blah blah Gesundheit", ftype))
+        doc1.add(Field('id', '1', StringField.TYPE_NOT_STORED))
+
+        w1.addDocument(doc1)
+        w1.close()
 
     def test_bug1842(self):
 
-        reader = IndexReader.open(self.d1, True)
-        searcher = IndexSearcher(self.d1, True)
+        reader = self.getReader()
+        searcher = self.getSearcher()
         q = TermQuery(Term("id", '1'))
         topDocs = searcher.search(q, 50)
-        freqvec = reader.getTermFreqVector(topDocs.scoreDocs[0].doc, "all")
-        terms = [term.utf8ToString() for term in freqvec.getTerms()]
+
+        termvec = reader.getTermVector(topDocs.scoreDocs[0].doc, "all")
+        terms = []
+        freqs = []
+        termsEnum = termvec.iterator(None)
+        for term in BytesRefIterator.cast_(termsEnum):
+            terms.append(term.utf8ToString())
+            freqs.append(termsEnum.totalTermFreq())
         terms.sort()
         self.assert_(terms == ['blah', 'gesundheit'])
-
-        freqs = freqvec.getTermFrequencies()
         self.assert_(freqs == [3, 1])
 
 if __name__ == '__main__':
-    import lucene
     lucene.initVM()
     unittest.main()

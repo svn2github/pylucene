@@ -12,47 +12,47 @@
 #   limitations under the License.
 # ====================================================================
 
-import unittest
-from lucene import *
+import unittest, lucene
+from PyLuceneTestCase import PyLuceneTestCase
 
-class Test_Bug1763(unittest.TestCase):
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.document import Document, Field, StoredField, TextField
+from org.apache.lucene.queryparser.classic import QueryParser
+from org.apache.lucene.store import RAMDirectory
+from org.apache.lucene.util import Version
+
+
+class Test_Bug1763(PyLuceneTestCase):
 
     def setUp(self):
+        super(Test_Bug1763, self).setUp()
 
         self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         self.d1 = RAMDirectory()
         self.d2 = RAMDirectory()
         
-        w1, w2 = [IndexWriter(d, self.analyzer, True,
-                              IndexWriter.MaxFieldLength.LIMITED)
+        w1, w2 = [self.getWriter(directory=d, analyzer=self.analyzer)
                   for d in [self.d1, self.d2]]
         doc1 = Document()
         doc2 = Document()
         doc1.add(Field("all", "blah blah double blah Gesundheit",
-                       Field.Store.NO, Field.Index.ANALYZED))
-        doc1.add(Field('id', '1', Field.Store.YES, Field.Index.NO))
+                       TextField.TYPE_NOT_STORED))
+        doc1.add(Field('id', '1', StoredField.TYPE))
         doc2.add(Field("all", "a quick brown test ran over the lazy data",
-                       Field.Store.NO, Field.Index.ANALYZED))
-        doc2.add(Field('id', '2',
-                       Field.Store.YES, Field.Index.NO))
+                       TextField.TYPE_NOT_STORED))
+        doc2.add(Field('id', '2', StoredField.TYPE))
         w1.addDocument(doc1)
         w2.addDocument(doc2)
         for w in [w1, w2]:
-            w.optimize()
             w.close()
-
-    def tearDown(self):
-        pass
 
     def test_bug1763(self):
             
-        w1 = IndexWriter(self.d1, self.analyzer, True,
-                         IndexWriter.MaxFieldLength.LIMITED)
-        w1.addIndexes([IndexReader.open(self.d2, True)])
-        w1.optimize()
+        w1 = self.getWriter(directory=self.d1, analyzer=self.analyzer)
+        w1.addIndexes([self.getReader(directory=self.d2)])
         w1.close()
 
-        searcher = IndexSearcher(self.d1, True)
+        searcher = self.getSearcher(self.d1)
         q = QueryParser(Version.LUCENE_CURRENT, 'all',
                         self.analyzer).parse('brown')
         topDocs = searcher.search(q, 50)
@@ -60,6 +60,5 @@ class Test_Bug1763(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    import lucene
     lucene.initVM()
     unittest.main()

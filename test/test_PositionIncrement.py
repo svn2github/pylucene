@@ -24,7 +24,6 @@ from org.apache.lucene.analysis.core import \
 from org.apache.lucene.analysis.tokenattributes import \
     CharTermAttribute, OffsetAttribute, PayloadAttribute, \
     PositionIncrementAttribute
-    
 from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import MultiFields, Term
 from org.apache.lucene.queryparser.classic import QueryParser
