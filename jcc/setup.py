@@ -149,7 +149,7 @@ if platform == 'linux2':
     LFLAGS['linux2'] = LFLAGS['linux2/%s' %(machine)]
 
 JAVAC = {
-    'darwin': ['javac', '-target', '1.5'],
+    'darwin': ['javac', '-source', '1.5', '-target', '1.5'],
     'ipod': ['jikes', '-cp', '/usr/share/classpath/glibj.zip'],
     'linux2': ['javac'],
     'sunos5': ['javac'],
