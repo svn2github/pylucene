@@ -13,7 +13,7 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.queryParser.classic;
+package org.apache.pylucene.queryparser.classic;
 
 import java.util.List;
 
