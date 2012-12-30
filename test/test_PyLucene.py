@@ -273,9 +273,8 @@ class Test_PyLuceneBase(object):
         try:
             reader = DirectoryReader.open(store)
             term_enum = MultiFields.getTerms(reader, "docid").iterator(None)
-            docids = []
-            for term in BytesRefIterator.cast_(term_enum):
-                docids.append(term.utf8ToString())
+            docids = [term.utf8ToString()
+                      for term in BytesRefIterator.cast_(term_enum)]
             self.assertEqual(len(docids), 2)
         finally:
             self.closeStore(store, reader)

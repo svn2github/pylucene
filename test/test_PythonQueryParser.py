@@ -13,7 +13,14 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import BooleanClause, TermQuery
+from org.apache.lucene.util import Version
+from org.apache.pylucene.queryparser.classic import \
+    PythonQueryParser, PythonMultiFieldQueryParser
 
 
 class BooleanTestMixin(object):
@@ -28,7 +35,7 @@ class BooleanTestMixin(object):
                                                              disableCoord)
 
 
-class PythonQueryParserTestCase(TestCase):
+class PythonQueryParserTestCase(PyLuceneTestCase):
 
     def testOverrideBooleanQuery(self):
 
@@ -38,11 +45,12 @@ class PythonQueryParserTestCase(TestCase):
         
         qp = TestQueryParser(Version.LUCENE_CURRENT, 'all',
                              StandardAnalyzer(Version.LUCENE_CURRENT))
+
         q = qp.parse("foo bar")
         self.assertEquals(str(q), "all:foo all:bar all:extra_clause")
 
 
-class PythonMultiFieldQueryParserTestCase(TestCase):
+class PythonMultiFieldQueryParserTestCase(PyLuceneTestCase):
 
     def testOverrideBooleanQuery(self):
 
@@ -59,8 +67,8 @@ class PythonMultiFieldQueryParserTestCase(TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-    initVM()
+    import sys, lucene
+    lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
