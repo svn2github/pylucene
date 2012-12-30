@@ -12,7 +12,7 @@
 #   limitations under the License.
 # ====================================================================
 
-import unittest, lucene
+import sys, lucene, unittest
 from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.standard import StandardAnalyzer

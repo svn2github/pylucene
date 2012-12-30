@@ -13,7 +13,7 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
+import sys, lucene, unittest
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from java.io import StringReader
@@ -116,17 +116,16 @@ class ThaiAnalyzerTestCase(BaseTokenStreamTestCase):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if ThaiWordFilter.DBBI_AVAILABLE:
         if '-loop' in sys.argv:
             sys.argv.remove('-loop')
             while True:
                 try:
-                    main()
+                    unittest.main()
                 except:
                     pass
         else:
-            main()
+            unittest.main()
     else:
         print >>sys.stderr, "Thai not supported by this JVM, tests skipped"

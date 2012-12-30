@@ -12,10 +12,8 @@
 #   limitations under the License.
 # ====================================================================
 
+import sys, lucene, unittest
 import os, shutil
-import lucene   # so that 'org' and 'java' are found
-
-from unittest import TestCase, main
 
 from java.io import File, StringReader
 from org.apache.lucene.analysis.core import WhitespaceAnalyzer
@@ -303,7 +301,7 @@ class Test_PyLuceneBase(object):
             store = self.closeStore(store, reader)
 
         
-class Test_PyLuceneWithFSStore(TestCase, Test_PyLuceneBase):
+class Test_PyLuceneWithFSStore(unittest.TestCase, Test_PyLuceneBase):
 
     STORE_DIR = "testrepo"
 
@@ -339,14 +337,13 @@ class Test_PyLuceneWithMMapStore(Test_PyLuceneWithFSStore):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-        main()
+        unittest.main()

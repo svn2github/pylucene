@@ -12,8 +12,8 @@
 #   limitations under the License.
 # ====================================================================
 
+import sys, lucene, unittest
 import time, threading
-from unittest import TestCase, main
 from lucene import getVMEnv
 from PyLuceneTestCase import PyLuceneTestCase
 
@@ -109,14 +109,13 @@ class PyLuceneThreadTestCase(PyLuceneTestCase):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-         main()
+         unittest.main()

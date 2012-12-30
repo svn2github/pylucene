@@ -21,7 +21,7 @@ try:
 except ImportError, e:
     pass
 
-from unittest import main
+import sys, lucene, unittest
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from java.io import StringReader
@@ -77,7 +77,6 @@ class TestICUTransformFilter(BaseTokenStreamTestCase):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     try:
         import icu
     except ImportError:
@@ -88,8 +87,8 @@ if __name__ == "__main__":
             sys.argv.remove('-loop')
             while True:
                 try:
-                    main()
+                    unittest.main()
                 except:
                     pass
         else:
-             main()
+             unittest.main()

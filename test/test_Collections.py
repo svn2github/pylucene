@@ -12,7 +12,7 @@
 #   limitations under the License.
 # ====================================================================
 
-import unittest, lucene
+import sys, lucene, unittest
 from lucene.collections import JavaSet, JavaList
 
 from java.lang import Class, Boolean, Integer, Long, Double, String

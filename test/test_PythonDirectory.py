@@ -12,10 +12,10 @@
 #   limitations under the License.
 # ====================================================================
 
-import os, sys, unittest, shutil
-from threading import RLock
+import sys, lucene, unittest
+import os, shutil
 import test_PyLucene 
-
+from threading import RLock
 from lucene import JavaError, JArray
 
 from java.lang import String
@@ -256,7 +256,6 @@ class PythonDirectoryTests(unittest.TestCase, test_PyLucene.Test_PyLuceneBase):
                        
 
 if __name__ == "__main__":
-    import sys, lucene
     env = lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')

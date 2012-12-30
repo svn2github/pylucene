@@ -12,7 +12,7 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
+import sys, lucene, unittest
 from PyLuceneTestCase import PyLuceneTestCase
 
 from java.io import StringReader
@@ -146,14 +146,13 @@ class HighlighterTestCase(PyLuceneTestCase):
         
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-         main()
+         unittest.main()

@@ -14,13 +14,13 @@
 
 # test PyLucene binary field
 
-from unittest import TestCase, main
+import sys, lucene, unittest
 from lucene import JArray
 
 from org.apache.lucene.document import StoredField
 
 
-class BinaryTestCase(TestCase):
+class BinaryTestCase(unittest.TestCase):
 
     def binary(self, b):
 
@@ -38,14 +38,13 @@ class BinaryTestCase(TestCase):
 
 
 if __name__ == '__main__':
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-        main()
+        unittest.main()

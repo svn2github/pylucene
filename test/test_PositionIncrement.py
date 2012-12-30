@@ -12,10 +12,10 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
+import sys, lucene, unittest
+from lucene import JArray
 from PyLuceneTestCase import PyLuceneTestCase
 from MultiSpansWrapper import MultiSpansWrapper
-from lucene import JArray
 
 from java.io import StringReader
 from org.apache.lucene.analysis import Analyzer
@@ -351,14 +351,13 @@ class PayloadFilter(PythonTokenFilter):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-         main()
+         unittest.main()
