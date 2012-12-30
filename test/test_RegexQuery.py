@@ -13,15 +13,22 @@
 # ====================================================================
 
 from unittest import TestCase, main
-from lucene import *
 from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis.core import SimpleAnalyzer
+from org.apache.lucene.document import Document, Field, TextField
+from org.apache.lucene.index import Term
+from org.apache.lucene.sandbox.queries.regex import RegexQuery
+from org.apache.lucene.search.spans import \
+    SpanMultiTermQueryWrapper, SpanNearQuery
 
 
 class TestRegexQuery(PyLuceneTestCase):
     FN = "field"
 
     def setUp(self):
-        PyLuceneTestCase.setUp(self)
+        super(TestRegexQuery, self).setUp()
+
         writer = self.getWriter(analyzer=SimpleAnalyzer(self.TEST_VERSION))
         doc = Document()
         doc.add(Field(self.FN, "the quick brown fox jumps over the lazy dog", TextField.TYPE_NOT_STORED))
@@ -33,6 +40,7 @@ class TestRegexQuery(PyLuceneTestCase):
     def tearDown(self):
 
         del self.searcher
+        super(TestRegexQuery, self).tearDown()
 
     def newTerm(self, value):
   
