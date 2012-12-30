@@ -12,23 +12,27 @@
 #   limitations under the License.
 # ====================================================================
 
-import sys, unittest
-from lucene import *
-
-
 # Originally intended to demonstrate a memory leak.  See
 # http://lists.osafoundation.org/pipermail/pylucene-dev/2008-October/002937.html
 # and followup
 
-class QueryRewriteTest(unittest.TestCase):
+import sys, lucene, unittest
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import TermQuery
+from org.apache.lucene.util import Version
+
+
+class QueryRewriteTest(PyLuceneTestCase):
 
     def setUp(self):
+        super(QueryRewriteTest, self).setUp()
 
-        store = RAMDirectory()
-        writer = IndexWriter(store, StandardAnalyzer(Version.LUCENE_CURRENT),
-                             True, IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
         writer.close()
-        self.reader = IndexSearcher(store, True).getIndexReader()
+        self.reader = self.getReader()
         self.term = Term('all', 'foo')
         
     def testQuery(self):
@@ -40,7 +44,7 @@ class QueryRewriteTest(unittest.TestCase):
     
 
 if __name__ == "__main__":
-    env = initVM()
+    env = lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
