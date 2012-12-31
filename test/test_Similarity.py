@@ -12,17 +12,29 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
-from lucene import *
+import sys, lucene, unittest
+from PyLuceneTestCase import PyLuceneTestCase
+
+from org.apache.lucene.analysis.core import SimpleAnalyzer
+from org.apache.lucene.document import Document, Field, TextField
+from org.apache.lucene.index import Term
+from org.apache.lucene.search import \
+    BooleanClause, BooleanQuery, Explanation, PhraseQuery, TermQuery
+from org.apache.lucene.util import Version
+from org.apache.pylucene.search import PythonCollector
+from org.apache.pylucene.search.similarities import PythonDefaultSimilarity
 
 
-class SimpleSimilarity(PythonSimilarity):
-
-    def computeNorm(self, field, state):
-        return 1.0
+class SimpleSimilarity(PythonDefaultSimilarity):
 
     def queryNorm(self, sumOfSquaredWeights):
         return 1.0
+
+    def coord(self, overlap, maxOverlap):
+        return 1.0
+
+    def lengthNorm(self, state):
+        return state.getBoost()
 
     def tf(self, freq):
         return freq
@@ -30,44 +42,35 @@ class SimpleSimilarity(PythonSimilarity):
     def sloppyFreq(self, distance):
         return 2.0
 
-    def idfTerms(self, terms, searcher):
-        return 1.0
-
     def idf(self, docFreq, numDocs):
         return 1.0
 
-    def coord(self, overlap, maxOverlap):
-        return 1.0
-
-    def scorePayload(self, docId, fieldName, start, end, payload,
-                     offset, length):
-        return 1.0
+    def idfExplain(self, collectionStats, termStats):
+        return Explanation(1.0, "inexplicable")
 
 
-class SimilarityTestCase(TestCase):
+class SimilarityTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
 
     def testSimilarity(self):
 
-        store = RAMDirectory()
-        writer = IndexWriter(store, SimpleAnalyzer(), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
-        writer.setSimilarity(SimpleSimilarity())
+        writer = self.getWriter(analyzer=SimpleAnalyzer(Version.LUCENE_CURRENT),
+                                similarity=SimpleSimilarity())
     
         d1 = Document()
-        d1.add(Field("field", "a c", Field.Store.YES, Field.Index.ANALYZED))
+        d1.add(Field("field", "a c", TextField.TYPE_STORED))
 
         d2 = Document()
-        d2.add(Field("field", "a b c", Field.Store.YES, Field.Index.ANALYZED))
+        d2.add(Field("field", "a b c", TextField.TYPE_STORED))
     
         writer.addDocument(d1)
         writer.addDocument(d2)
         writer.commit()
         writer.close()
 
-        searcher = IndexSearcher(store, True)
+        searcher = self.getSearcher()
         searcher.setSimilarity(SimpleSimilarity())
 
         a = Term("field", "a")
@@ -84,7 +87,6 @@ class SimilarityTestCase(TestCase):
 
         searcher.search(TermQuery(b), collector1())
 
-
         bq = BooleanQuery()
         bq.add(TermQuery(a), BooleanClause.Occur.SHOULD)
         bq.add(TermQuery(b), BooleanClause.Occur.SHOULD)
@@ -92,13 +94,12 @@ class SimilarityTestCase(TestCase):
         class collector2(PythonCollector):
             def collect(_self, doc, score):
                 self.assertEqual(doc + _self.base + 1, score)
-            def setNextReader(_self, reader, docBase):
-                _self.base = docBase
+            def setNextReader(_self, context):
+                _self.base = context.docBase
             def acceptsDocsOutOfOrder(_self):
                 return True
 
         searcher.search(bq, collector2())
-
 
         pq = PhraseQuery()
         pq.add(a)
@@ -107,20 +108,19 @@ class SimilarityTestCase(TestCase):
         class collector3(PythonCollector):
             def collect(_self, doc, score):
                 self.assertEqual(1.0, score)
-            def setNextReader(_self, reader, docBase):
+            def setNextReader(_self, context):
                 pass
             def acceptsDocsOutOfOrder(_self):
                 return True
 
         searcher.search(pq, collector3())
 
-
         pq.setSlop(2)
 
         class collector4(PythonCollector):
             def collect(_self, doc, score):
                 self.assertEqual(2.0, score)
-            def setNextReader(_self, reader, docBase):
+            def setNextReader(_self, context):
                 pass
             def acceptsDocsOutOfOrder(_self):
                 return True
@@ -129,14 +129,13 @@ class SimilarityTestCase(TestCase):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-         main()
+         unittest.main()

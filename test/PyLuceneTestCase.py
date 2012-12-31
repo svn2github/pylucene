@@ -42,7 +42,8 @@ class PyLuceneTestCase(TestCase):
     def getConfig(self, analyzer=None):
         return IndexWriterConfig(self.TEST_VERSION, analyzer)
         
-    def getWriter(self, directory=None, analyzer=None, open_mode=None):
+    def getWriter(self, directory=None, analyzer=None, open_mode=None,
+                  similarity=None):
         if analyzer is None:
             analyzer = LimitTokenCountAnalyzer(WhitespaceAnalyzer(self.TEST_VERSION), 10000)
         config = self.getConfig(analyzer)
@@ -50,6 +51,8 @@ class PyLuceneTestCase(TestCase):
         if open_mode is None:
             open_mode = IndexWriterConfig.OpenMode.CREATE
         config.setOpenMode(open_mode)
+        if similarity is not None:
+            config.setSimilarity(similarity)
 
         if directory is None:
             directory = self.directory
