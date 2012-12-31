@@ -12,11 +12,16 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
-from lucene import *
+import sys, lucene, unittest
+
+from java.io import StringReader
+from org.apache.lucene.analysis.core import StopAnalyzer, StopFilter
+from org.apache.lucene.analysis.tokenattributes import \
+    CharTermAttribute, PositionIncrementAttribute
+from org.apache.lucene.util import Version
 
 
-class StopAnalyzerTestCase(TestCase):
+class StopAnalyzerTestCase(unittest.TestCase):
     """
     Unit tests ported from Java Lucene
     """
@@ -32,6 +37,7 @@ class StopAnalyzerTestCase(TestCase):
         reader = StringReader("This is a test of the english stop analyzer")
         stream = self.stop.tokenStream("test", reader)
         self.assert_(stream is not None)
+        stream.reset()
 
         termAtt = stream.getAttribute(CharTermAttribute.class_)
     
@@ -41,36 +47,33 @@ class StopAnalyzerTestCase(TestCase):
     def testStopList(self):
 
         stopWords = ["good", "test", "analyzer"]
-        stopWordsSet = HashSet()
-        for stopWord in stopWords:
-            stopWordsSet.add(stopWord)
+        stopWordsSet = StopFilter.makeStopSet(Version.LUCENE_CURRENT,
+                                              stopWords)
 
-        newStop = StopAnalyzer(Version.LUCENE_24, stopWordsSet)
+        newStop = StopAnalyzer(Version.LUCENE_40, stopWordsSet)
         reader = StringReader("This is a good test of the english stop analyzer")
         stream = newStop.tokenStream("test", reader)
         self.assert_(stream is not None)
+        stream.reset()
 
         termAtt = stream.getAttribute(CharTermAttribute.class_)
-        posIncrAtt = stream.addAttribute(PositionIncrementAttribute.class_)
     
         while stream.incrementToken():
             text = termAtt.toString()
             self.assert_(text not in stopWordsSet)
-            # by default stop tokenizer does not apply increments.
-            self.assertEqual(1, posIncrAtt.getPositionIncrement())
 
     def testStopListPositions(self):
         
         stopWords = ["good", "test", "analyzer"]
-        stopWordsSet = HashSet()
-        for stopWord in stopWords:
-            stopWordsSet.add(stopWord)
+        stopWordsSet = StopFilter.makeStopSet(Version.LUCENE_CURRENT,
+                                              stopWords)
 
         newStop = StopAnalyzer(Version.LUCENE_CURRENT, stopWordsSet)
         reader = StringReader("This is a good test of the english stop analyzer with positions")
         expectedIncr = [ 1,   1, 1,          3, 1,  1,      1,            2,   1]
         stream = newStop.tokenStream("test", reader)
         self.assert_(stream is not None)
+        stream.reset()
 
         i = 0
         termAtt = stream.getAttribute(CharTermAttribute.class_)
@@ -85,14 +88,13 @@ class StopAnalyzerTestCase(TestCase):
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-         main()
+         unittest.main()
