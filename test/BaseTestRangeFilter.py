@@ -12,13 +12,18 @@
 #   limitations under the License.
 # ====================================================================
 
+import lucene  # so as to get 'org'
+
 from random import seed, randint
-from unittest import TestCase
+from PyLuceneTestCase import PyLuceneTestCase
 
-from lucene import *
+from org.apache.lucene.analysis.core import SimpleAnalyzer
+from org.apache.lucene.document import Document, Field, StringField
+from org.apache.lucene.store import RAMDirectory
+from org.apache.lucene.util import Version
 
 
-class BaseTestRangeFilter(TestCase):
+class BaseTestRangeFilter(PyLuceneTestCase):
 
     def __init__(self, *args):
 
@@ -63,14 +68,13 @@ class BaseTestRangeFilter(TestCase):
 
     def build(self, index):
 
-        writer = IndexWriter(index.index, SimpleAnalyzer(), True, 
-                             IndexWriter.MaxFieldLength.LIMITED)
+        writer = self.getWriter(directory=index.index,
+                                analyzer=SimpleAnalyzer(Version.LUCENE_CURRENT))
 
         seed(101)
         for d in xrange(self.minId, self.maxId + 1):
             doc = Document()
-            doc.add(Field("id", self.pad(d), Field.Store.YES,
-                          Field.Index.NOT_ANALYZED));
+            doc.add(Field("id", self.pad(d), StringField.TYPE_STORED))
             if index.allowNegativeRandomInts:
                 r = randint(~self.MAX_INT, self.MAX_INT)
             else:
@@ -82,10 +86,8 @@ class BaseTestRangeFilter(TestCase):
             if r < index.minR:
                 index.minR = r
 
-            doc.add(Field("rand", self.pad(r), Field.Store.YES,
-                          Field.Index.NOT_ANALYZED))
-            doc.add(Field("body", "body", Field.Store.YES,
-                          Field.Index.NOT_ANALYZED));
+            doc.add(Field("rand", self.pad(r), StringField.TYPE_STORED))
+            doc.add(Field("body", "body", StringField.TYPE_STORED))
             writer.addDocument(doc)
             
         writer.commit()
@@ -103,4 +105,3 @@ class BaseTestRangeFilter(TestCase):
             label = "%s:%s vs %s:%s" %(a, aa, b, bb)
             self.assertEqual(len(aa), len(bb), "length of %s" %label)
             self.assert_(aa < bb, "compare less than %s" %label)
-
