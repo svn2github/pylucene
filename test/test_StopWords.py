@@ -12,41 +12,43 @@
 #   limitations under the License.
 # ====================================================================
 
-from unittest import TestCase, main
-from lucene import *
+import sys, lucene, unittest
+
+from java.io import StringReader
+from org.apache.lucene.analysis.core import StopFilter
+from org.apache.lucene.analysis.standard import StandardTokenizer
+from org.apache.lucene.util import Version
+
 
 # run with -loop to test fix for string local ref leak reported
 # by Aaron Lav.
 
-class StopWordsTestCase(TestCase):
+class StopWordsTestCase(unittest.TestCase):
 
     def setUp(self):
 
         stopWords = ['the', 'and', 's']
-        self.stop_set = HashSet()
-        for stopWord in stopWords:
-            self.stop_set.add(stopWord)
-
+        self.stop_set = StopFilter.makeStopSet(Version.LUCENE_CURRENT,
+                                               stopWords)
         self.reader = StringReader('foo')
 
     def testStopWords(self):
 
         try:
             result = StandardTokenizer(Version.LUCENE_CURRENT, self.reader)
-            result = StopFilter(True, result, self.stop_set)
+            result = StopFilter(Version.LUCENE_CURRENT, result, self.stop_set)
         except Exception, e:
             self.fail(str(e))
 
 
 if __name__ == "__main__":
-    import sys, lucene
     lucene.initVM()
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:
             try:
-                main()
+                unittest.main()
             except:
                 pass
     else:
-         main()
+         unittest.main()
