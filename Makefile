@@ -365,16 +365,16 @@ install-test:
 samples/LuceneInAction/index:
 	cd samples/LuceneInAction; PYTHONPATH=$(BUILD_TEST) $(PYTHON) index.py
 
-test: install-test samples/LuceneInAction/index
+test: install-test #samples/LuceneInAction/index
 	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerDemo.py
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerUtils.py
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/BooksLikeThis.py
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/Explainer.py samples/LuceneInAction/index programming
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/HighlightIt.py
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SortingExample.py
-	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SynonymAnalyzerViewer.py
+#	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerDemo.py
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerUtils.py
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/BooksLikeThis.py
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/Explainer.py samples/LuceneInAction/index programming
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/HighlightIt.py
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SortingExample.py
+#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SynonymAnalyzerViewer.py
 
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
