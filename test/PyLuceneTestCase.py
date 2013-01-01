@@ -43,7 +43,7 @@ class PyLuceneTestCase(TestCase):
         return IndexWriterConfig(self.TEST_VERSION, analyzer)
         
     def getWriter(self, directory=None, analyzer=None, open_mode=None,
-                  similarity=None):
+                  similarity=None, maxBufferedDocs=None, mergePolicy=None):
         if analyzer is None:
             analyzer = LimitTokenCountAnalyzer(WhitespaceAnalyzer(self.TEST_VERSION), 10000)
         config = self.getConfig(analyzer)
@@ -53,6 +53,10 @@ class PyLuceneTestCase(TestCase):
         config.setOpenMode(open_mode)
         if similarity is not None:
             config.setSimilarity(similarity)
+        if maxBufferedDocs is not None:
+            config.setMaxBufferedDocs(maxBufferedDocs)
+        if mergePolicy is not None:
+            config.setMergePolicy(mergePolicy)
 
         if directory is None:
             directory = self.directory

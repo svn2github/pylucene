@@ -301,6 +301,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
                      java.text.SimpleDateFormat \
                      java.text.DecimalFormat \
                      java.text.Collator \
+           --package java.util.concurrent java.util.concurrent.Executors \
            --package java.util.regex \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
