@@ -3,6 +3,7 @@ Version 3.6.1 -> 4.0
  - using Lucene 4.0 sources from Lucene's branch_4x
  - switched build to --use_full_names, Python wrappers now follow Java packages
  - removed all --rename and most --exclude entries from jcc command line
+ - migrated all unit tests to Lucene 4.0 API
  - 
 
 Version 3.6.0 -> 3.6.1
