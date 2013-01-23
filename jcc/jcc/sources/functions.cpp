@@ -382,7 +382,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           {
               jclass cls = NULL;
 
-              switch (types[pos]) {
+              switch (tc) {
                 case 'j':
                   cls = (jclass) va_arg(list, Class *)->this$;
                   break;
@@ -793,7 +793,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
           {
               jclass cls = NULL;
 
-              switch (types[pos]) {
+              switch (tc) {
                 case 'j':
                   cls = (jclass) va_arg(check, Class *)->this$;
                   break;
@@ -809,7 +809,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   JArray<jobject> *array = va_arg(list, JArray<jobject> *);
 
 #ifdef _java_generics
-                  if (types[pos] == 'K')
+                  if (tc == 'K')
                   {
                       PyTypeObject ***tp = va_arg(list, PyTypeObject ***);
 
@@ -835,7 +835,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                       arg = ((t_fp *) arg)->object;
 
 #ifdef _java_generics
-                  if (types[pos] == 'K')
+                  if (tc == 'K')
                   {
                       PyTypeObject ***tp = va_arg(list, PyTypeObject ***);
                       PyTypeObject **(*parameters_)(void *) = 
@@ -1103,7 +1103,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               {
                   Object *obj = va_arg(list, Object *);
 
-                  if (types[pos] == 'O')
+                  if (tc == 'O')
                   {
                       PyTypeObject *type = va_arg(check, PyTypeObject *);
 
