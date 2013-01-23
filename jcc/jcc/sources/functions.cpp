@@ -360,12 +360,17 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
     for (unsigned int a = 0; a < count; a++, pos++) {
         PyObject *arg = args[a];
+        char tc = types[pos];
 
-        switch (types[pos]) {
+        if (array > 1 && tc != '[')
+          tc = 'o';
+
+        switch (tc) {
           case '[':
           {
-              if (++array > 1)
-                  return -1;
+              if (++array > 1 &&
+                  !PyObject_TypeCheck(arg, PY_TYPE(JArrayObject)))
+                return -1;
 
               a -= 1;
               break;
@@ -754,7 +759,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
             return -1;
         }
 
-        if (types[pos] != '[')
+        if (tc != '[')
             array = 0;
     }
 
@@ -768,14 +773,17 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
     for (unsigned int a = 0; a < count; a++, pos++) {
         PyObject *arg = args[a];
-        
-        switch (types[pos]) {
+        char tc = types[pos];
+
+        if (array > 1 && tc != '[')
+            tc = 'o';
+
+        switch (tc) {
           case '[':
           {
-              if (++array > 1)
-                  return -1;
-
+              array += 1;
               a -= 1;
+
               break;
           }
 
@@ -1136,7 +1144,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
             return -1;
         }
 
-        if (types[pos] != '[')
+        if (tc != '[')
             array = 0;
     }
 

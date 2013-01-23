@@ -1,6 +1,11 @@
+Version 2.15 ->
+--------------------
+ - improved parseArgs() to let nested arrays pass through
+ - 
+
 Version 2.14 -> 2.15
 --------------------
- - improved JCC build on Linux by mokey patching setuptools (Caleb Burns)
+ - improved JCC build on Linux by monkey patching setuptools (Caleb Burns)
  - fixed bug with wrapping arrays coming out of generic iterators
  - added support for wrapping non-public methods by listing them as class:method
  - fixed bug with wrapping wrong clone() method in python extensions classes
