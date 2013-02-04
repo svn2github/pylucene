@@ -1594,8 +1594,7 @@ def module(out, allInOne, classes, imports, cppdir, moduleName,
 def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
             version, prefix, root, install_dir, home_dir, use_distutils,
             shared, compiler, modules, wininst, find_jvm_dll, arch, generics,
-            resources, imports, egg_info, extra_setup_args):
-
+            resources, imports, use_full_names, egg_info, extra_setup_args):
     try:
         if use_distutils:
             raise ImportError
@@ -1721,6 +1720,8 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     for import_ in imports:
         line(out, 0, 'from %s._%s import *', import_.__name__, import_.__name__)
     line(out, 0, 'from %s import *', extname)
+    if use_full_names:
+        line(out, 0, 'from java.io import PrintWriter, StringWriter')
     out.close()
 
     includes = [os.path.join(output, extname),

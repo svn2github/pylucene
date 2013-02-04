@@ -537,8 +537,8 @@ def jcc(args):
                     install, dist, debug, jars, version,
                     prefix, root, install_dir, home_dir, use_distutils,
                     shared, compiler, modules, wininst, find_jvm_dll,
-                    arch, generics, resources, imports, egg_info,
-                    extra_setup_args)
+                    arch, generics, resources, imports, use_full_names,
+                    egg_info, extra_setup_args)
     else:
         if imports:
             def walk((include, importset), dirname, names):
@@ -694,8 +694,8 @@ def jcc(args):
                         install, dist, debug, jars, version,
                         prefix, root, install_dir, home_dir, use_distutils,
                         shared, compiler, modules, wininst, find_jvm_dll,
-                        arch, generics, resources, imports, egg_info,
-                        extra_setup_args)
+                        arch, generics, resources, imports, use_full_names,
+                        egg_info, extra_setup_args)
 
 
 def header(env, out, cls, typeset, packages, excludes, generics,
