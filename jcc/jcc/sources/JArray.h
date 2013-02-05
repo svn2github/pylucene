@@ -37,7 +37,11 @@ extern PyTypeObject *PY_TYPE(JArrayInt);
 extern PyTypeObject *PY_TYPE(JArrayLong);
 extern PyTypeObject *PY_TYPE(JArrayShort);
 
-#endif
+#else
+
+typedef int Py_ssize_t;
+
+#endif /* PYTHON */
 
 #include "JCCEnv.h"
 #include "java/lang/Object.h"

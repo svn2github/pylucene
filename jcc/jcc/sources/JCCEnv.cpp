@@ -13,6 +13,8 @@
  */
 
 #include <map>
+
+#include <stdlib.h>
 #include <string.h>
 #include <jni.h>
 
@@ -259,7 +261,11 @@ jclass JCCEnv::findClass(const char *className) const
         JNIEnv *vm_env = get_vm_env();
 
         if (vm_env)
+        {
             cls = vm_env->FindClass(className);
+            if (cls == NULL)
+                reportException();
+        }
 #ifdef PYTHON
         else
         {
@@ -817,10 +823,10 @@ void JCCEnv::setClassPath(const char *classPath)
     jmethodID mu = vm_env->GetMethodID(_fil, "toURL", "()Ljava/net/URL;");
     jmethodID ma = vm_env->GetMethodID(_ucl, "addURL", "(Ljava/net/URL;)V");
 #if defined(_MSC_VER) || defined(__WIN32)
-    char *pathsep = ";";
+    const char *pathsep = ";";
     char *path = _strdup(classPath);
 #else
-    char *pathsep = ":";
+    const char *pathsep = ":";
     char *path = strdup(classPath);
 #endif
 
@@ -847,9 +853,9 @@ char *JCCEnv::getClassPath()
     jmethodID gu = vm_env->GetMethodID(_ucl, "getURLs", "()[Ljava/net/URL;");
     jmethodID gp = vm_env->GetMethodID(_url, "getPath", "()Ljava/lang/String;");
 #if defined(_MSC_VER) || defined(__WIN32)
-    char *pathsep = ";";
+    const char *pathsep = ";";
 #else
-    char *pathsep = ":";
+    const char *pathsep = ":";
 #endif
     jobjectArray array = (jobjectArray)
         vm_env->CallObjectMethod(classLoader, gu);
