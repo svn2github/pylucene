@@ -29,13 +29,25 @@ usage = """
 
 import os, sys, lucene
 
-from lucene import FSDirectory, SimpleFSDirectory, Document, Field,\
-    IndexWriter, IndexSearcher, IndexReader, IndexWriterConfig, \
-    WhitespaceAnalyzer, StandardAnalyzer, \
-    MatchAllDocsQuery, Sort, SortField, DecimalFormat, System, File, \
-    TopFieldCollector, QueryParser, Version, BooleanQuery, BooleanClause, \
-    DirectoryTaxonomyWriter, DirectoryTaxonomyReader, \
+from java.io import File
+from java.lang import System
+from java.text import DecimalFormat
+
+from org.apache.lucene.analysis.core import WhitespaceAnalyzer
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.document import Document, Field
+from org.apache.lucene.facet.taxonomy.directory import \
+    DirectoryTaxonomyWriter, DirectoryTaxonomyReader
+from org.apache.lucene.facet.taxonomy import \
     CategoryDocumentBuilder, CategoryPath
+from org.apache.lucene.index import \
+    IndexWriter, IndexSearcher, IndexReader, IndexWriterConfig
+from org.apache.lucene.queryparser.classic import QueryParser
+from org.apache.lucene.search import \
+    MatchAllDocsQuery, Sort, SortField, BooleanQuery, BooleanClause, \
+    TopFieldCollector
+from org.apache.lucene.store import FSDirectory, SimpleFSDirectory
+from org.apache.lucene.util import Version
 
 
 # -----------------------------------------------------------------------------
