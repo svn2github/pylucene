@@ -15,9 +15,9 @@
 # site-packages directory.
 #
 
-VERSION=4.0-0
+VERSION=4.1-0
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=4.0
+LUCENE_VER=4.1
 LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/branches/branch_4x
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
