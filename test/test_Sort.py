@@ -25,10 +25,10 @@ from org.apache.lucene.analysis.core import SimpleAnalyzer
 from org.apache.lucene.codecs import Codec
 from org.apache.lucene.document import \
     Document, Field, FieldType, StringField, StoredField, TextField, \
-    PackedLongDocValuesField, FloatDocValuesField, SortedBytesDocValuesField, \
-    StraightBytesDocValuesField, DerefBytesDocValuesField, DoubleDocValuesField
+    NumericDocValuesField, SortedDocValuesField, BinaryDocValuesField, \
+    FloatDocValuesField
 from org.apache.lucene.index import \
-    DocValues, LogDocMergePolicy, MultiReader, Term
+    FieldInfo, LogDocMergePolicy, MultiReader, Term
 from org.apache.lucene.search import \
     BooleanQuery, BooleanClause, FieldCache, IndexSearcher, MatchAllDocsQuery, Sort, \
     SortField, TermQuery, TopFieldCollector
@@ -113,13 +113,13 @@ class SortTestCase(PyLuceneTestCase):
 
         if self.dvStringSorted:
             # Index sorted
-            stringDVType = (DocValues.Type.BYTES_FIXED_SORTED, DocValues.Type.BYTES_VAR_SORTED)[self.getRandomNumber(0, 1)]
+            stringDVType = FieldInfo.DocValuesType.SORTED
         else:
             # Index non-sorted
             if self.getRandomBoolean(): # Fixed
-                stringDVType = (DocValues.Type.BYTES_FIXED_DEREF, DocValues.Type.BYTES_FIXED_STRAIGHT)[self.getRandomNumber(0, 1)]
+                stringDVType = FieldInfo.DocValuesType.BINARY
             else: # Var
-                stringDVType = (DocValues.Type.BYTES_VAR_DEREF, DocValues.Type.BYTES_VAR_STRAIGHT)[self.getRandomNumber(0, 1)]
+                stringDVType = FieldInfo.DocValuesType.SORTED
 
         ft1 = FieldType()
         ft1.setStored(True)
@@ -134,27 +134,19 @@ class SortTestCase(PyLuceneTestCase):
                 if self.data[i][2] is not None:
                     doc.add(StringField("int", self.data[i][2], Field.Store.NO))
                     if self.supportsDocValues:
-                        doc.add(PackedLongDocValuesField("int", Long.parseLong(self.data[i][2])))
+                        doc.add(NumericDocValuesField("int_dv", Long.parseLong(self.data[i][2])))
                 if self.data[i][3] is not None:
                     doc.add(StringField("float", self.data[i][3], Field.Store.NO))
                     if self.supportsDocValues:
-                        doc.add(FloatDocValuesField("float", Float.parseFloat(self.data[i][3])))
+                        doc.add(FloatDocValuesField("float_dv", Float.parseFloat(self.data[i][3])))
 
                 if self.data[i][4] is not None:
                     doc.add(StringField("string", self.data[i][4], Field.Store.NO))
                     if self.supportsDocValues:
-                        if stringDVType == DocValues.Type.BYTES_FIXED_SORTED:
-                            doc.add(SortedBytesDocValuesField("string", BytesRef(self.data[i][4]), True))
-                        elif stringDVType == DocValues.Type.BYTES_VAR_SORTED:
-                            doc.add(SortedBytesDocValuesField("string", BytesRef(self.data[i][4]), False))
-                        elif stringDVType == DocValues.Type.BYTES_FIXED_STRAIGHT:
-                            doc.add(StraightBytesDocValuesField("string", BytesRef(self.data[i][4]), True))
-                        elif stringDVType == DocValues.Type.BYTES_VAR_STRAIGHT:
-                            doc.add(StraightBytesDocValuesField("string", BytesRef(self.data[i][4]), False))
-                        elif stringDVType == DocValues.Type.BYTES_FIXED_DEREF:
-                            doc.add(DerefBytesDocValuesField("string", BytesRef(self.data[i][4]), True))
-                        elif stringDVType == DocValues.Type.BYTES_VAR_DEREF:
-                            doc.add(DerefBytesDocValuesField("string", BytesRef(self.data[i][4]), False))
+                        if stringDVType == FieldInfo.DocValuesType.SORTED:
+                            doc.add(SortedDocValuesField("string_dv", BytesRef(self.data[i][4])))
+                        elif stringDVType == FieldInfo.DocValuesType.BINARY:
+                            doc.add(BinaryDocValuesField("string_dv", BytesRef(self.data[i][4])))
                         else:
                             raise ValueError("unknown type " + stringDVType)
 
@@ -167,7 +159,7 @@ class SortTestCase(PyLuceneTestCase):
                 if self.data[i][8] is not None:
                     doc.add(StringField("double", self.data[i][8], Field.Store.NO))
                     if self.supportsDocValues:
-                        doc.add(DoubleDocValuesField("double", Double.parseDouble(self.data[i][8])))
+                        doc.add(NumericDocValuesField("double_dv", Double.doubleToRawLongBits(Double.parseDouble(self.data[i][8]))))
                 if self.data[i][9] is not None:
                     doc.add(StringField("short", self.data[i][9], Field.Store.NO))
                 if self.data[i][10] is not None:
@@ -212,12 +204,18 @@ class SortTestCase(PyLuceneTestCase):
             doc.add(Field("tracer", num, onlyStored))
             doc.add(StringField("string", num, Field.Store.NO))
             if self.supportsDocValues:
-                doc.add(SortedBytesDocValuesField("string", BytesRef(num)))
+                if self.dvStringSorted:
+                    doc.add(SortedDocValuesField("string_dv", BytesRef(num)))
+                else:
+                    doc.add(BinaryDocValuesField("string_dv", BytesRef(num)))
 
             num2 = self.getRandomCharString(self.getRandomNumber(1, 4), 48, 50)
             doc.add(StringField("string2", num2, Field.Store.NO))
             if self.supportsDocValues:
-                doc.add(SortedBytesDocValuesField("string2", BytesRef(num2)))
+                if self.dvStringSorted:
+                    doc.add(SortedDocValuesField("string2_dv", BytesRef(num2)))
+                else:
+                    doc.add(BinaryDocValuesField("string2_dv", BytesRef(num2)))
             doc.add(Field("tracer2", num2, onlyStored))
             for f2 in doc.getFields():
                 if f2.fieldType().indexed() and not f2.fieldType().omitNorms():
@@ -227,14 +225,18 @@ class SortTestCase(PyLuceneTestCase):
             doc.add(Field("fixed_tracer", numFixed, onlyStored))
             doc.add(StringField("string_fixed", numFixed, Field.Store.NO))
             if self.supportsDocValues:
-                doc.add(SortedBytesDocValuesField("string_fixed", BytesRef(numFixed),
-                                                  True))
+                if self.dvStringSorted:
+                    doc.add(SortedDocValuesField("string_fixed_dv", BytesRef(numFixed)))
+                else:
+                    doc.add(BinaryDocValuesField("string_fixed_dv", BytesRef(numFixed)))
 
             num2Fixed = self.getRandomCharString(fixedLen2, 48, 52)
             doc.add(StringField("string2_fixed", num2Fixed, Field.Store.NO))
             if self.supportsDocValues:
-                doc.add(SortedBytesDocValuesField("string2_fixed", BytesRef(num2Fixed),
-                                                  True))
+                if self.dvStringSorted:
+                    doc.add(SortedDocValuesField("string2_fixed_dv", BytesRef(num2Fixed)))
+                else:
+                    doc.add(BinaryDocValuesField("string2_fixed_dv", BytesRef(num2Fixed)))
             doc.add(Field("tracer2_fixed", num2Fixed, onlyStored))
             for f2 in doc.getFields():
                 if f2.fieldType().indexed() and not f2.fieldType().omitNorms():
@@ -328,17 +330,33 @@ class SortTestCase(PyLuceneTestCase):
                       SortField.FIELD_DOC])
         self._assertMatches(self.full, self.queryX, sort, "AIGEC")
         self._assertMatches(self.full, self.queryY, sort, "DJHFB")
+
+        if self.supportsDocValues:
+            sort.setSort([SortField("int_dv", SortField.Type.INT),
+                          SortField.FIELD_DOC])
+            self._assertMatches(self.full, self.queryX, sort, "IGAEC")
+            self._assertMatches(self.full, self.queryY, sort, "DHFJB")
+
+            sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                          SortField.FIELD_DOC])
+            self._assertMatches(self.full, self.queryX, sort, "GCIEA")
+            self._assertMatches(self.full, self.queryY, sort, "DHJFB")
+      
+            sort.setSort([SortField("double_dv", SortField.Type.DOUBLE),
+                          SortField.FIELD_DOC])
+            self._assertMatches(self.full, self.queryX, sort, "AGICE")
+            self._assertMatches(self.full, self.queryY, sort, "DJHBF")
+
+            sort.setSort([SortField("string_dv", self._getDVStringSortType()),
+                          SortField.FIELD_DOC])
+            self._assertMatches(self.full, self.queryX, sort, "AIGEC")
+            self._assertMatches(self.full, self.queryY, sort, "DJHFB")
   
-    def _useDocValues(self, field):
+    def _getDVStringSortType(self, allowSorted=True):
 
-        field.setUseIndexValues(True)
-        return field
-
-    def _getDVStringSortType(self):
-
-        if self.dvStringSorted:
+        if self.dvStringSorted and allowSorted:
             # If you index as sorted source you can still sort by value instead:
-            return (SortField.Type.STRING_VAL, SortField.Type.STRING_VAL)[self.getRandomNumber(0, 1)]
+            return (SortField.Type.STRING, SortField.Type.STRING_VAL)[self.getRandomNumber(0, 1)]
         else:
             return SortField.Type.STRING_VAL
 
@@ -356,7 +374,7 @@ class SortTestCase(PyLuceneTestCase):
         lastDocId = 0
         fail = False
 
-        if sort.getSort()[0].getField().endswith("_fixed"):
+        if "_fixed" in sort.getSort()[0].getField():
             fieldSuffix = "_fixed"
         else:
             fieldSuffix = ""
@@ -417,14 +435,14 @@ class SortTestCase(PyLuceneTestCase):
 
         # Doc values field, var length
         self.assertTrue(self.supportsDocValues, "cannot work with preflex codec")
-        sort.setSort([self._useDocValues(SortField("string", self._getDVStringSortType())),
-                      self._useDocValues(SortField("string2", self._getDVStringSortType(), True)),
+        sort.setSort([SortField("string_dv", self._getDVStringSortType()),
+                      SortField("string2_dv", self._getDVStringSortType(), True),
                       SortField.FIELD_DOC])
         self._verifyStringSort(sort)
 
         # Doc values field, fixed length
-        sort.setSort([self._useDocValues(SortField("string_fixed", self._getDVStringSortType())),
-                      self._useDocValues(SortField("string2_fixed", self._getDVStringSortType(), True)),
+        sort.setSort([SortField("string_fixed_dv", self._getDVStringSortType()),
+                      SortField("string2_fixed_dv", self._getDVStringSortType(), True),
                       SortField.FIELD_DOC])
         self._verifyStringSort(sort)
 
@@ -444,26 +462,38 @@ class SortTestCase(PyLuceneTestCase):
         class intParser(PythonIntParser):
             def parseInt(_self, val):
                 return (val.bytes[val.offset] - ord('A')) * 123456
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
 
         class floatParser(PythonFloatParser):
             def parseFloat(_self, val):
                 return math.sqrt(val.bytes[val.offset])
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
 
         class longParser(PythonLongParser):
             def parseLong(_self, val):
                 return (val.bytes[val.offset] - ord('A')) * 1234567890L
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
 
         class doubleParser(PythonDoubleParser):
             def parseDouble(_self, val):
                 return math.pow(val.bytes[val.offset], val.bytes[val.offset] - ord('A'))
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
 
         class byteParser(PythonByteParser):
             def parseByte(_self, val):
                 return chr(val.bytes[val.offset] - ord('A'))
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
 
         class shortParser(PythonShortParser):
             def parseShort(_self, val):
                 return val.bytes[val.offset] - ord('A')
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
 
         sort = Sort()
 
@@ -517,7 +547,12 @@ class SortTestCase(PyLuceneTestCase):
         sort.setSort(SortField.FIELD_DOC)
         self._assertMatches(empty, self.queryX, sort, "")
 
-        sort.setSort([SortField("int", SortField.Type.INT), SortField.FIELD_DOC])
+        sort.setSort([SortField("int", SortField.Type.INT),
+                      SortField.FIELD_DOC])
+        self._assertMatches(empty, self.queryX, sort, "")
+
+        sort.setSort([SortField("int_dv", SortField.Type.INT),
+                      SortField.FIELD_DOC])
         self._assertMatches(empty, self.queryX, sort, "")
 
         sort.setSort([SortField("string", SortField.Type.STRING, True),
@@ -528,6 +563,22 @@ class SortTestCase(PyLuceneTestCase):
                       SortField("string", SortField.Type.STRING)])
         self._assertMatches(empty, self.queryX, sort, "")
 
+        sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                      SortField("string", SortField.Type.STRING)])
+        self._assertMatches(empty, self.queryX, sort, "")
+
+        sort.setSort([SortField("string_dv", self._getDVStringSortType(False),
+                                True),
+                      SortField.FIELD_DOC])
+        self._assertMatches(empty, self.queryX, sort, "")
+
+        sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                      SortField("string_dv", self._getDVStringSortType(False))])
+        self._assertMatches(empty, self.queryX, sort, "")
+    
+        sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                      SortField("string_dv", self._getDVStringSortType(False))])
+        self._assertMatches(empty, self.queryX, sort, "")
 
     def testNewCustomFieldParserSort(self):
         """
@@ -564,6 +615,19 @@ class SortTestCase(PyLuceneTestCase):
         sort.setSort(SortField("string", SortField.Type.STRING, True))
         self._assertMatches(self.full, self.queryX, sort, "CEGIA")
         self._assertMatches(self.full, self.queryY, sort, "BFHJD")
+
+        if self.supportsDocValues:
+            sort.setSort(SortField("int_dv", SortField.Type.INT, True))
+            self._assertMatches(self.full, self.queryX, sort, "CAEGI")
+            self._assertMatches(self.full, self.queryY, sort, "BJFHD")
+      
+            sort.setSort(SortField("float_dv", SortField.Type.FLOAT, True))
+            self._assertMatches(self.full, self.queryX, sort, "AECIG")
+            self._assertMatches(self.full, self.queryY, sort, "BFJHD")
+    
+            sort.setSort(SortField("string_dv", self._getDVStringSortType(), True))
+            self._assertMatches(self.full, self.queryX, sort, "CEGIA")
+            self._assertMatches(self.full, self.queryY, sort, "BFHJD")
 
     def testEmptyFieldSort(self):
         """
@@ -646,6 +710,19 @@ class SortTestCase(PyLuceneTestCase):
         sort.setSort([SortField("float", SortField.Type.FLOAT),
                       SortField("string", SortField.Type.STRING)])
         self._assertMatches(self.full, self.queryX, sort, "GICEA")
+
+        if self.supportsDocValues:
+            sort.setSort([SortField("int_dv", SortField.Type.INT),
+                          SortField("float_dv", SortField.Type.FLOAT)])
+            self._assertMatches(self.full, self.queryX, sort, "IGEAC")
+
+            sort.setSort([SortField("int_dv", SortField.Type.INT, True),
+                          SortField(None, SortField.Type.DOC, True)])
+            self._assertMatches(self.full, self.queryX, sort, "CEAGI")
+
+            sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                          SortField("string_dv", self._getDVStringSortType())])
+            self._assertMatches(self.full, self.queryX, sort, "GICEA")
 
     def testParallelMultiSort(self):
         """
@@ -896,6 +973,57 @@ class SortTestCase(PyLuceneTestCase):
         sort.setSort(SortField("string", SortField.Type.STRING, True))
         self._assertMatches(multi, self.queryF, sort, "IJZ")
 
+        if self.supportsDocValues:
+            sort.setSort(SortField("int_dv", SortField.Type.INT))
+            expected = isFull and "IDHFGJABEC" or "IDHFGJAEBC"
+            self._assertMatches(multi, self.queryA, sort, expected)
+
+            sort.setSort([SortField("int_dv", SortField.Type.INT),
+                          SortField.FIELD_DOC])
+            expected = isFull and "IDHFGJABEC" or "IDHFGJAEBC"
+            self._assertMatches(multi, self.queryA, sort, expected)
+
+            sort.setSort(SortField("int_dv", SortField.Type.INT))
+            expected = isFull and "IDHFGJABEC" or "IDHFGJAEBC"
+            self._assertMatches(multi, self.queryA, sort, expected)
+    
+            sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                          SortField.FIELD_DOC])
+            self._assertMatches(multi, self.queryA, sort, "GDHJCIEFAB")
+
+            sort.setSort(SortField("float_dv", SortField.Type.FLOAT))
+            self._assertMatches(multi, self.queryA, sort, "GDHJCIEFAB")
+
+            sort.setSort(SortField("int_dv", SortField.Type.INT, True))
+            expected = isFull and "CABEJGFHDI" or "CAEBJGFHDI"
+            self._assertMatches(multi, self.queryA, sort, expected)
+
+            sort.setSort([SortField("int_dv", SortField.Type.INT),
+                          SortField("float_dv", SortField.Type.FLOAT)])
+            self._assertMatches(multi, self.queryA, sort, "IDHFGJEABC")
+
+            sort.setSort(SortField("int_dv", SortField.Type.INT))
+            self._assertMatches(multi, self.queryF, sort, "IZJ")
+
+            sort.setSort(SortField("int_dv", SortField.Type.INT, True))
+            self._assertMatches(multi, self.queryF, sort, "JZI")
+
+            sort.setSort(SortField("string_dv", self._getDVStringSortType()))
+            self._assertMatches(multi, self.queryA, sort, "DJAIHGFEBC")
+
+            sort.setSort(SortField("string_dv", self._getDVStringSortType(), True))
+            self._assertMatches(multi, self.queryA, sort, "CBEFGHIAJD")
+
+            sort.setSort([SortField("float_dv", SortField.Type.FLOAT),
+                          SortField("string_dv", self._getDVStringSortType())])
+            self._assertMatches(multi, self.queryA, sort, "GDHJICEFAB")
+
+            sort.setSort(SortField("string_dv", self._getDVStringSortType()))
+            self._assertMatches(multi, self.queryF, sort, "ZJI")
+
+            sort.setSort(SortField("string_dv", self._getDVStringSortType(), True))
+            self._assertMatches(multi, self.queryF, sort, "IJZ")
+
         # up to this point, all of the searches should have "sane" 
         # FieldCache behavior, and should have reused hte cache in several
         # cases 
@@ -962,13 +1090,13 @@ class MyFieldComparator(PythonFieldComparator):
         self.slotValues = [0] * numHits
 
     def copy(self, slot, doc):
-        self.slotValues[slot] = self.docValues[doc]
+        self.slotValues[slot] = self.docValues.get(doc)
 
     def compare(self, slot1, slot2):
         return self.slotValues[slot1] - self.slotValues[slot2]
 
     def compareBottom(self, doc):
-        return self.bottomValue - self.docValues[doc]
+        return self.bottomValue - self.docValues.get(doc)
 
     def setBottom(self, bottom):
         self.bottomValue = self.slotValues[bottom]
@@ -978,6 +1106,8 @@ class MyFieldComparator(PythonFieldComparator):
         class intParser(PythonIntParser):
             def parseInt(_self, val):
                 return (val.bytes[val.offset] - ord('A')) * 123456
+            def termsEnum(_self, terms):
+                return terms.iterator(None)
                 
         self.docValues = FieldCache.DEFAULT.getInts(context.reader(), "parser",
                                                     intParser(), False)
@@ -989,7 +1119,7 @@ class MyFieldComparator(PythonFieldComparator):
 
     def compareDocToValue(self, doc, valueObj):
         value = valueObj.intValue()
-        docValue = self.docValues[doc]
+        docValue = self.docValues.get(doc)
 
         # values are small enough that overflow won't happen
         return docValue - value

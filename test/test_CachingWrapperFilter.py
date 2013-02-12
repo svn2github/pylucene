@@ -16,7 +16,8 @@ import sys, lucene, unittest
 from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.index import SlowCompositeReaderWrapper
+from org.apache.lucene.index import \
+    AtomicReaderContext, SlowCompositeReaderWrapper
 from org.apache.lucene.search import CachingWrapperFilter
 from org.apache.lucene.util import Version, FixedBitSet
 from org.apache.pylucene.search import PythonFilter
@@ -31,7 +32,7 @@ class CachingWrapperFilterTestCase(PyLuceneTestCase):
         writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
         writer.close()
         reader = SlowCompositeReaderWrapper.wrap(self.getReader())
-        context = reader.getContext()
+        context = AtomicReaderContext.cast_(reader.getContext())
 
         class mockFilter(PythonFilter):
             def __init__(self):
