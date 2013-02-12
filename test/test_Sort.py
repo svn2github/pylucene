@@ -82,6 +82,13 @@ class SortTestCase(PyLuceneTestCase):
 
         self.dirs = []
         self.dvStringSorted = self.getRandomBoolean()
+
+        # run the randomization at setup so that threads share it and we don't
+        # hit cache incompatibilities
+        self.notSorted = self.getRandomBoolean()
+        # If you index as sorted source you can still sort by value instead:
+        self.sortByValue = self.getRandomBoolean()
+
         self.full = self._getFullIndex()
         self.searchX = self._getXIndex()
         self.searchY = self._getYIndex()
@@ -92,6 +99,7 @@ class SortTestCase(PyLuceneTestCase):
         self.queryF = TermQuery(Term("contents", "f"))
         self.queryG = TermQuery(Term("contents", "g"))
         self.queryM = TermQuery(Term("contents", "m"))
+        self.sort = Sort()
 
     def tearDown(self):
 
@@ -114,12 +122,12 @@ class SortTestCase(PyLuceneTestCase):
         if self.dvStringSorted:
             # Index sorted
             stringDVType = FieldInfo.DocValuesType.SORTED
-        else:
+        elif self.notSorted:
             # Index non-sorted
-            if self.getRandomBoolean(): # Fixed
-                stringDVType = FieldInfo.DocValuesType.BINARY
-            else: # Var
-                stringDVType = FieldInfo.DocValuesType.SORTED
+            stringDVType = FieldInfo.DocValuesType.BINARY
+        else:
+            # sorted anyway
+            stringDVType = FieldInfo.DocValuesType.SORTED
 
         ft1 = FieldType()
         ft1.setStored(True)
@@ -283,7 +291,7 @@ class SortTestCase(PyLuceneTestCase):
         test the sorts by score and document number
         """
 
-        sort = Sort()
+        sort = self.sort
         self._assertMatches(self.full, self.queryX, sort, "ACEGI")
         self._assertMatches(self.full, self.queryY, sort, "BDFHJ")
 
@@ -295,7 +303,7 @@ class SortTestCase(PyLuceneTestCase):
         """
         test sorts where the type of field is specified
         """
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort([SortField("int", SortField.Type.INT), SortField.FIELD_DOC])
         self._assertMatches(self.full, self.queryX, sort, "IGAEC")
@@ -355,8 +363,10 @@ class SortTestCase(PyLuceneTestCase):
     def _getDVStringSortType(self, allowSorted=True):
 
         if self.dvStringSorted and allowSorted:
-            # If you index as sorted source you can still sort by value instead:
-            return (SortField.Type.STRING, SortField.Type.STRING_VAL)[self.getRandomNumber(0, 1)]
+            if self.sortByValue:
+                return SortField.Type.STRING_VAL
+            else:
+                return SortField.Type.STRING
         else:
             return SortField.Type.STRING_VAL
 
@@ -419,7 +429,7 @@ class SortTestCase(PyLuceneTestCase):
         reverse sort
         """
 
-        sort = Sort()
+        sort = self.sort
 
         # Normal string field, var length
         sort.setSort([SortField("string", SortField.Type.STRING),
@@ -495,7 +505,7 @@ class SortTestCase(PyLuceneTestCase):
             def termsEnum(_self, terms):
                 return terms.iterator(None)
 
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort([SortField("parser", intParser()),
                       SortField.FIELD_DOC])
@@ -539,7 +549,7 @@ class SortTestCase(PyLuceneTestCase):
         test sorts when there's nothing in the index
         """
 
-        sort = Sort()
+        sort = self.sort
         empty = self._getEmptyIndex()
 
         self._assertMatches(empty, self.queryX, sort, "")
@@ -584,7 +594,7 @@ class SortTestCase(PyLuceneTestCase):
         """
         Test sorting w/ custom FieldComparator
         """
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort([SortField("parser", MyFieldComparatorSource())])
         self._assertMatches(self.full, self.queryA, sort, "JIHGFEDCBA")
@@ -593,7 +603,7 @@ class SortTestCase(PyLuceneTestCase):
         """
         test sorts in reverse
         """
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort([SortField(None, SortField.Type.SCORE, True),
                       SortField.FIELD_DOC])
@@ -634,7 +644,7 @@ class SortTestCase(PyLuceneTestCase):
         test sorting when the sort field is empty(undefined) for some of the
         documents
         """
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort(SortField("string", SortField.Type.STRING))
         self._assertMatches(self.full, self.queryF, sort, "ZJI")
@@ -697,7 +707,7 @@ class SortTestCase(PyLuceneTestCase):
         """
         test sorts using a series of fields
         """
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort([SortField("int", SortField.Type.INT),
                       SortField("float", SortField.Type.FLOAT)])
@@ -913,7 +923,7 @@ class SortTestCase(PyLuceneTestCase):
         """
         runs a variety of sorts useful for multisearchers
         """
-        sort = Sort()
+        sort = self.sort
 
         sort.setSort(SortField.FIELD_DOC)
         expected = isFull and "ABCDEFGHIJ" or "ACEGIBDFHJ"
@@ -1079,6 +1089,8 @@ class SortTestCase(PyLuceneTestCase):
         entries = FieldCache.DEFAULT.getCacheEntries()
 
         insanity = FieldCacheSanityChecker.checkSanity(entries)
+        if insanity:
+            print [x for x in insanity]
         self.assertEqual(0, len(insanity),
                          msg + ": Insane FieldCache usage(s) found")
 
