@@ -32,22 +32,28 @@ import os, sys, lucene
 from java.io import File
 from java.lang import System
 from java.text import DecimalFormat
+from java.util import Arrays
 
+from org.apache.lucene.util import Version
 from org.apache.lucene.analysis.core import WhitespaceAnalyzer
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.document import Document, Field
+from org.apache.lucene.search import Query, TermQuery, Sort, \
+    TopScoreDocCollector, MultiCollector, IndexSearcher,SortField, \
+    TopFieldCollector, MatchAllDocsQuery, BooleanQuery, BooleanClause
+from org.apache.lucene.queryparser.classic import QueryParser
+from org.apache.lucene.store import FSDirectory, SimpleFSDirectory
+from org.apache.lucene.index import IndexWriter, IndexReader, \
+    IndexWriterConfig, DirectoryReader, Term
+from org.apache.lucene.document import Document, Field, TextField
+from org.apache.lucene.facet.index import FacetFields
+from org.apache.lucene.facet.taxonomy import CategoryPath
 from org.apache.lucene.facet.taxonomy.directory import \
     DirectoryTaxonomyWriter, DirectoryTaxonomyReader
-from org.apache.lucene.facet.taxonomy import \
-    CategoryDocumentBuilder, CategoryPath
-from org.apache.lucene.index import \
-    IndexWriter, IndexSearcher, IndexReader, IndexWriterConfig
-from org.apache.lucene.queryparser.classic import QueryParser
-from org.apache.lucene.search import \
-    MatchAllDocsQuery, Sort, SortField, BooleanQuery, BooleanClause, \
-    TopFieldCollector
-from org.apache.lucene.store import FSDirectory, SimpleFSDirectory
-from org.apache.lucene.util import Version
+from org.apache.lucene.facet.params import FacetIndexingParams, \
+    FacetSearchParams
+from org.apache.lucene.facet.search import FacetRequest, \
+    FacetResult, FacetResultNode, CountFacetRequest, \
+    DrillDownQuery, FacetsCollector
 
 
 # -----------------------------------------------------------------------------
@@ -75,17 +81,6 @@ categories = [
     [["root","a","f1"], ["root","a","f3"]]  # doc nr.1
 ]
 
-
-def createCategoryPath(strList):
-    """create CategoryPath and initialize with categories
-     from given string list (python helper method)
-     """
-    cp = CategoryPath()
-    for s in strList:
-        cp.add(s)
-    return cp
-
-
 # -----------------------------------------------------------------------------
 # port of org.apache.lucene.facet.example.simple from java to python
 # Sample indexer creates an index, and adds to it sample documents and facets.
@@ -98,42 +93,41 @@ class SimpleIndexer(object):
         taxoDir Directory in which the taxonomy index should be created.
         """
         # create and open an index writer
-        ver = lucene.Version.LUCENE_35
-        config = IndexWriterConfig(ver, WhitespaceAnalyzer(ver))
+        from org.apache.lucene.util import Version
+        config = IndexWriterConfig(Version.LUCENE_41,
+                                   WhitespaceAnalyzer(Version.LUCENE_41))
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE)
         iw = IndexWriter(indexDir, config)
         # create and open a taxonomy writer
         taxo = DirectoryTaxonomyWriter(taxoDir, IndexWriterConfig.OpenMode.CREATE)
+        # FacetFields is a utility class for adding facet fields to a document:
+        facet_fields = FacetFields(taxo)
+
         # loop over sample documents
         nDocsAdded = 0
         nFacetsAdded = 0
         for docNum in range(len(docTexts)):
             # obtain the sample facets for current document
             facets = categories[docNum]
-            facetList = [ createCategoryPath(f) for f in facets]
+            facetList = [CategoryPath(f) for f in facets]
             # NOTE: setCategoryPaths() requires an Iterable, so need to convert the
             #       Python list in order to to pass a proper argument to setCategoryPaths.
-            #       We use java.util.Arrays (via JCC) to create a Java List.
-            # see http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Arrays.html#asList(T...)
-            facetList = lucene.Arrays.asList(facetList)
+            #       We use java.util.Arrays (via JCC) to create a Java List:
+            facetList = Arrays.asList(facetList)
+
             # NOTE: we could use lucene.collections here as well in order to convert our
             # Python list to a Java based list using the JavaList class (JavaList implements
             # java.util.List around a Python list instance it wraps):
             #  from lucene.collections import JavaList
             #  facetList = JavaList(facetList)
 
-            # we do not alter indexing parameters
-            # a category document builder will add the categories to a document once build() is called
-            categoryDocBuilder = CategoryDocumentBuilder(taxo).setCategoryPaths(facetList)
-
             # create a plain Lucene document and add some regular Lucene fields to it
             doc = Document()
-            doc.add(Field(TITLE, docTitles[docNum], Field.Store.YES, Field.Index.ANALYZED))
-            doc.add(Field(TEXT, docTexts[docNum], Field.Store.NO, Field.Index.ANALYZED))
-
-            # invoke the category document builder for adding categories to the document and,
-            # as required, to the taxonomy index
-            categoryDocBuilder.build(doc)
+            doc.add(TextField(TITLE, docTitles[docNum], Field.Store.YES))
+            doc.add(TextField(TEXT, docTexts[docNum], Field.Store.NO))
+            # use the FacetFields utility class for adding facet fields (i.e. the categories)
+            # to the document (and, as required, to the taxonomy index)
+            facet_fields.addFields(doc, facetList)
             # finally add the document to the index
             iw.addDocument(doc)
             nDocsAdded +=1
@@ -159,14 +153,6 @@ class SimpleIndexer(object):
 # port of org.apache.lucene.facet.example.simple from java to python
 # SimpleSearcer searches index with facets.
 
-from lucene import (Query, Term, TermQuery, TopScoreDocCollector,
-                    MultiCollector,
-                    DefaultFacetIndexingParams, FacetIndexingParams,
-                    DrillDown, FacetsCollector, CountFacetRequest,
-                    FacetRequest, FacetSearchParams,FacetResult,
-                    FacetResultNode)
-
-
 class SimpleSearcher(object):
 
     def searchWithFacets(cls, indexReader, taxoReader):
@@ -174,7 +160,7 @@ class SimpleSearcher(object):
         Search an index with facets.
         returns a List<FacetResult>
         """
-        facetRequest = CountFacetRequest(createCategoryPath(["root","a"]), 10)
+        facetRequest = CountFacetRequest(CategoryPath(["root","a"]), 10)
         return cls.searchWithRequest(indexReader, taxoReader, None, facetRequest)
 
     def searchWithRequest(cls, indexReader, taxoReader, indexingParams, facetRequest):
@@ -197,15 +183,20 @@ class SimpleSearcher(object):
         # collect matching documents into a collector
         topDocsCollector = TopScoreDocCollector.create(10, True)
         if not indexingParams:
-            indexingParams = DefaultFacetIndexingParams()
+            # This is a singleton equivalent to new FacetIndexingParams()
+            indexingParams = FacetIndexingParams.ALL_PARENTS
 
         # Faceted search parameters indicate which facets are we interested in
-        facetSearchParams = FacetSearchParams(indexingParams)
-        # Add the facet request of interest to the search params
-        facetSearchParams.addFacetRequest(facetRequest)
-        facetsCollector = FacetsCollector(facetSearchParams, indexReader, taxoReader)
+        facetRequests = [facetRequest,]
+        facetRequests = Arrays.asList(facetRequests)
+        # Add the facet request of interest to the search params:
+        facetSearchParams = FacetSearchParams(indexingParams, facetRequests)
+        # and create a FacetsCollector to use in our facetted search:
+        facetsCollector = FacetsCollector.create(facetSearchParams, indexReader, taxoReader)
         # perform documents search and facets accumulation
         searcher.search(query, MultiCollector.wrap([topDocsCollector, facetsCollector]))
+        print "\nFound %d Documents for query=%s" % (topDocsCollector.totalHits,
+                                                     query.toString().encode('utf-8'))
         # Obtain facets results and print them
         res = facetsCollector.getFacetResults()
         i = 0
@@ -217,37 +208,38 @@ class SimpleSearcher(object):
         return res
 
 
-    def searchWithDrillDown(cls, indexReader, taxoReader):
+    def searchWithDrillDown(cls, indexReader, taxoReader, indexingParams=None):
         """
         Search an index with facets drill-down.
         returns a List<FacetResult>
         """
         # base query the user is interested in
         baseQuery = TermQuery(Term(TEXT, "white"))
+        if not indexingParams:
+            # This is a singleton equivalent to new FacetIndexingParams()
+            indexingParams = FacetIndexingParams.ALL_PARENTS
+
         # facet of interest
-        facetRequest = CountFacetRequest(createCategoryPath(["root","a"]), 10)
+        facetRequest = CountFacetRequest(CategoryPath(["root","a"]), 10)
         # initial search - all docs matching the base query will contribute to the accumulation
         res1 = cls.searchWithRequest(indexReader, taxoReader, None, facetRequest)
         # a single result (because there was a single request)
         fres = res1.get(0)
         # assume the user is interested in the second sub-result
         # (just take the second sub-result returned by the iterator - we know there are 3 results!)
-        subResults = fres.getFacetResultNode().getSubResults()
-        # NOTE: .getSubResults() yields an "Iterable<? extends FacetResultNode>:"
-        #  the elements of this iterator are of type Object and need to be casted to
-        #  FacetResultNode by calling FacetResultNode.cast_(obj) first
-        resIterator = subResults.iterator()
-        resIterator.next() # skip first result
-        resultNode = resIterator.next()
-        resultNode = FacetResultNode.cast_(resultNode)
-        categoryOfInterest = resultNode.getLabel()
-        # drill-down preparation: turn the base query into a drill-down query for the category of interest
-        query2 = DrillDown.query(baseQuery, [categoryOfInterest,])
+        subResults = fres.getFacetResultNode().subResults
+        resultNode = FacetResultNode.cast_(subResults.get(1)) # 2nd subresult
+        categoryOfInterest = resultNode.label
+        # turn the base query into a drill-down query for the category of interest
+        # first create a new  DrillDownQuery over the given base query.
+        query2 = DrillDownQuery(indexingParams, baseQuery)
+        # next the categories of interest are added to the DrillDownQuery
+        query2.add([categoryOfInterest,])
         # that's it - search with the new query and we're done!
         # only documents both matching the base query AND containing the
         # category of interest will contribute to the new accumulation
         return cls.searchWithRequestAndQuery(query2, indexReader, taxoReader,
-                                             None, facetRequest)
+                                             indexingParams, facetRequest)
 
 
     searchWithFacets = classmethod(searchWithFacets)
@@ -276,7 +268,7 @@ class FacetExample(object):
     def runSimple(self):
         # open readers
         taxo = DirectoryTaxonomyReader(self.taxoDir)
-        indexReader = IndexReader.open(self.indexDir, True)
+        indexReader = DirectoryReader.open(self.indexDir)
         # returns List<FacetResult>
         facetRes = SimpleSearcher.searchWithFacets(indexReader, taxo)
         # close readers
@@ -288,7 +280,7 @@ class FacetExample(object):
     def runDrillDown(self):
         # open readers
         taxo = DirectoryTaxonomyReader(self.taxoDir)
-        indexReader = IndexReader.open(self.indexDir, True)
+        indexReader = DirectoryReader.open(self.indexDir)
         facetRes = SimpleSearcher.searchWithDrillDown(indexReader, taxo)
         # close readers
         taxo.close()
@@ -322,7 +314,6 @@ class FacetExample(object):
             example.runDrillDown()
 
     main = classmethod(main)
-
 
 
 if __name__ == '__main__':
