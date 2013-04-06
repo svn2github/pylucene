@@ -27,6 +27,9 @@ usage = """
     'drilldown' => run faceted search with drilldown
 """
 
+INDEX_DIR = "FacetExample.Index"
+TAXONOMY_DIR = "FacetExample.Taxonomy"
+
 import os, sys, lucene
 
 from java.io import File
@@ -258,8 +261,10 @@ class FacetExample(object):
         # in RAM or on Disc
         #indexDir = RAMDirectory()
         #taxoDir = RAMDirectory()
-        self.indexDir = FSDirectory.open(File(os.path.join(self.directory,'Index')))
-        self.taxoDir = FSDirectory.open(File(os.path.join(self.directory,'Taxonomy')))
+        self.indexDir = FSDirectory.open(File(os.path.join(self.directory,
+                                                           INDEX_DIR)))
+        self.taxoDir = FSDirectory.open(File(os.path.join(self.directory,
+                                                          TAXONOMY_DIR)))
 
     def createIndex(self):
         # index the sample documents

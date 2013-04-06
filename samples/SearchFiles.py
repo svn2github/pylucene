@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import lucene
+INDEX_DIR = "IndexFiles.index"
+
+import sys, os, lucene
 
 from java.io import File
 from org.apache.lucene.analysis.standard import StandardAnalyzer
@@ -40,10 +42,10 @@ def run(searcher, analyzer):
 
 
 if __name__ == '__main__':
-    STORE_DIR = "index"
     lucene.initVM()
     print 'lucene', lucene.VERSION
-    directory = SimpleFSDirectory(File(STORE_DIR))
+    base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    directory = SimpleFSDirectory(File(os.path.join(base_dir, INDEX_DIR)))
     searcher = IndexSearcher(DirectoryReader.open(directory))
     analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
     run(searcher, analyzer)

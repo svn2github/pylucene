@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+INDEX_DIR = "IndexFiles.index"
+
 import sys, os, lucene, threading, time
 from datetime import datetime
 
@@ -97,7 +99,9 @@ if __name__ == '__main__':
     print 'lucene', lucene.VERSION
     start = datetime.now()
     try:
-        IndexFiles(sys.argv[1], "index", StandardAnalyzer(Version.LUCENE_CURRENT))
+        base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        IndexFiles(sys.argv[1], os.path.join(base_dir, INDEX_DIR),
+                   StandardAnalyzer(Version.LUCENE_CURRENT))
         end = datetime.now()
         print end - start
     except Exception, e:
