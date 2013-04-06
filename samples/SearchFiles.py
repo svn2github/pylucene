@@ -1,8 +1,14 @@
 #!/usr/bin/env python
-from lucene import \
-    QueryParser, IndexSearcher, StandardAnalyzer, SimpleFSDirectory, File, \
-    VERSION, initVM, Version
 
+import lucene
+
+from java.io import File
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.index import DirectoryReader
+from org.apache.lucene.queryparser.classic import QueryParser
+from org.apache.lucene.store import SimpleFSDirectory
+from org.apache.lucene.search import IndexSearcher
+from org.apache.lucene.util import Version
 
 """
 This script is loosely based on the Lucene (java implementation) demo class 
@@ -35,10 +41,10 @@ def run(searcher, analyzer):
 
 if __name__ == '__main__':
     STORE_DIR = "index"
-    initVM()
-    print 'lucene', VERSION
+    lucene.initVM()
+    print 'lucene', lucene.VERSION
     directory = SimpleFSDirectory(File(STORE_DIR))
-    searcher = self.getSearcher()
+    searcher = IndexSearcher(DirectoryReader.open(directory))
     analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
     run(searcher, analyzer)
     del searcher
