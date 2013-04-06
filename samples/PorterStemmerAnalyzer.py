@@ -26,31 +26,39 @@
 # on the python instance it wraps. The PythonAnalyzer instance is the
 # Analyzer extension bridge to PorterStemmerAnalyzer.
 
-import sys, os
+import sys, os, lucene
 from datetime import datetime
-from lucene import *
 from IndexFiles import IndexFiles
+
+from org.apache.lucene.analysis.core import \
+    LowerCaseFilter, StopFilter, StopAnalyzer
+from org.apache.lucene.analysis.en import PorterStemFilter
+from org.apache.lucene.analysis.standard import \
+    StandardTokenizer, StandardFilter
+from org.apache.lucene.util import Version
+from org.apache.pylucene.analysis import PythonAnalyzer
 
 
 class PorterStemmerAnalyzer(PythonAnalyzer):
 
-    def tokenStream(self, fieldName, reader):
+    def createComponents(self, fieldName, reader):
 
-        result = StandardTokenizer(Version.LUCENE_CURRENT, reader)
-        result = StandardFilter(result)
-        result = LowerCaseFilter(result)
-        result = PorterStemFilter(result)
-        result = StopFilter(True, result, StopAnalyzer.ENGLISH_STOP_WORDS_SET)
+        source = StandardTokenizer(Version.LUCENE_CURRENT, reader)
+        filter = StandardFilter(Version.LUCENE_CURRENT, source)
+        filter = LowerCaseFilter(Version.LUCENE_CURRENT, filter)
+        filter = PorterStemFilter(filter)
+        filter = StopFilter(Version.LUCENE_CURRENT, filter,
+                            StopAnalyzer.ENGLISH_STOP_WORDS_SET)
 
-        return result
+        return self.TokenStreamComponents(source, filter)
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print IndexFiles.__doc__
         sys.exit(1)
-    initVM()
-    print 'lucene', VERSION
+    lucene.initVM()
+    print 'lucene', lucene.VERSION
     start = datetime.now()
     try:
         IndexFiles(sys.argv[1], "index", PorterStemmerAnalyzer())
