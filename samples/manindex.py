@@ -18,10 +18,16 @@
 #   python manindex.py pages
 # ====================================================================
 
-import os, re, sys
+import os, re, sys, lucene
 from subprocess import *
-from lucene import IndexWriter, StandardAnalyzer, Document, Field
-from lucene import SimpleFSDirectory, File, initVM, Version
+
+from java.io import File
+from org.apache.lucene.analysis.miscellaneous import LimitTokenCountAnalyzer
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.index import IndexWriter, IndexWriterConfig
+from org.apache.lucene.document import Document, Field, StringField, TextField
+from org.apache.lucene.store import SimpleFSDirectory
+from org.apache.lucene.util import Version
 
 def indexDirectory(dir):
 
@@ -31,7 +37,7 @@ def indexDirectory(dir):
             indexFile(dir, name)
 
 
-def indexFile(dir,filename):
+def indexFile(dir, filename):
 
     path = os.path.join(dir, filename)
     print "  File: ", filename
@@ -62,18 +68,13 @@ def indexFile(dir,filename):
     description = matches and matches.group(1) or ''
 
     doc = Document()
-    doc.add(Field("command", command,
-                  Field.Store.YES, Field.Index.NOT_ANALYZED))
-    doc.add(Field("section", section,
-                  Field.Store.YES, Field.Index.NOT_ANALYZED))
-    doc.add(Field("name", name.strip(),
-                  Field.Store.YES, Field.Index.ANALYZED))
-    doc.add(Field("synopsis", synopsis.strip(),
-                  Field.Store.YES, Field.Index.ANALYZED))
+    doc.add(Field("command", command, StringField.TYPE_STORED))
+    doc.add(Field("section", section, StringField.TYPE_STORED))
+    doc.add(Field("name", name.strip(), TextField.TYPE_STORED))
+    doc.add(Field("synopsis", synopsis.strip(), TextField.TYPE_STORED))
     doc.add(Field("keywords", ' '.join((command, name, synopsis, description)),
-                  Field.Store.NO, Field.Index.ANALYZED))
-    doc.add(Field("filename", os.path.abspath(path),
-                  Field.Store.YES, Field.Index.NOT_ANALYZED))
+                  TextField.TYPE_NOT_STORED))
+    doc.add(Field("filename", os.path.abspath(path), StringField.TYPE_STORED))
 
     writer.addDocument(doc)
 
@@ -84,11 +85,13 @@ if __name__ == '__main__':
         print "Usage: python manindex.py <index dir>"
 
     else:
-        initVM()
-        indexDir = sys.argv[1]
-        writer = IndexWriter(SimpleFSDirectory(File(indexDir)),
-                             StandardAnalyzer(Version.LUCENE_CURRENT), True,
-                             IndexWriter.MaxFieldLength.LIMITED)
+        lucene.initVM()
+        directory = SimpleFSDirectory(File(sys.argv[1]))
+        analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+        analyzer = LimitTokenCountAnalyzer(analyzer, 10000)
+        config = IndexWriterConfig(Version.LUCENE_CURRENT, analyzer)
+        writer = IndexWriter(directory, config)
+
         manpath = os.environ.get('MANPATH', '/usr/share/man').split(os.pathsep)
         for dir in manpath:
             print "Crawling", dir
