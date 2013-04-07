@@ -14,24 +14,29 @@
 
 # This sample illustrates how to use a thread with PyLucene
 
-import sys, os, threading
+INDEX_DIR = "ThreadIndexFiles.index"
+
+import sys, os, threading, lucene
 
 from datetime import datetime
-from lucene import StandardAnalyzer, VERSION, initVM, Version
 from IndexFiles import IndexFiles
+
+from org.apache.lucene.analysis.standard import StandardAnalyzer
+from org.apache.lucene.util import Version
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print IndexFiles.__doc__
         sys.exit(1)
-    env=initVM()
-    print 'lucene', VERSION
+    env=lucene.initVM()
+    print 'lucene', lucene.VERSION
 
     def fn():
+        base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
         env.attachCurrentThread()
         start = datetime.now()
-        IndexFiles(sys.argv[1], "index",
+        IndexFiles(sys.argv[1], os.path.join(base_dir, INDEX_DIR),
                    StandardAnalyzer(Version.LUCENE_CURRENT))
         end = datetime.now()
         print end - start
