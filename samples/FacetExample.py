@@ -97,8 +97,8 @@ class SimpleIndexer(object):
         """
         # create and open an index writer
         from org.apache.lucene.util import Version
-        config = IndexWriterConfig(Version.LUCENE_41,
-                                   WhitespaceAnalyzer(Version.LUCENE_41))
+        config = IndexWriterConfig(Version.LUCENE_42,
+                                   WhitespaceAnalyzer(Version.LUCENE_42))
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE)
         iw = IndexWriter(indexDir, config)
         # create and open a taxonomy writer
@@ -186,8 +186,7 @@ class SimpleSearcher(object):
         # collect matching documents into a collector
         topDocsCollector = TopScoreDocCollector.create(10, True)
         if not indexingParams:
-            # This is a singleton equivalent to new FacetIndexingParams()
-            indexingParams = FacetIndexingParams.ALL_PARENTS
+            indexingParams = FacetIndexingParams.DEFAULT
 
         # Faceted search parameters indicate which facets are we interested in
         facetRequests = [facetRequest,]
@@ -219,8 +218,7 @@ class SimpleSearcher(object):
         # base query the user is interested in
         baseQuery = TermQuery(Term(TEXT, "white"))
         if not indexingParams:
-            # This is a singleton equivalent to new FacetIndexingParams()
-            indexingParams = FacetIndexingParams.ALL_PARENTS
+            indexingParams = FacetIndexingParams.DEFAULT
 
         # facet of interest
         facetRequest = CountFacetRequest(CategoryPath(["root","a"]), 10)
