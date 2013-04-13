@@ -15,10 +15,10 @@
 # site-packages directory.
 #
 
-VERSION=4.1-0
+VERSION=4.2.1-0
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=4.1
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/branches/branch_4x
+LUCENE_VER=4.2.1
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/tags/lucene_solr_4_2_1
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
@@ -345,7 +345,7 @@ clean:
 
 realclean:
 	if test ! -d $(LUCENE)/.svn; then rm -rf $(LUCENE) lucene; else rm -rf $(LUCENE)/build; fi
-	rm -rf build samples/LuceneInAction/index samples/LuceneInAction/indexes
+	rm -rf build
 
 OS=$(shell uname)
 BUILD_TEST:=$(PYLUCENE)/build/test
@@ -362,20 +362,8 @@ install-test:
 	mkdir -p $(BUILD_TEST)
 	PYTHONPATH=$(BUILD_TEST) $(GENERATE) --install $(DEBUG_OPT) --install-dir $(BUILD_TEST)
 
-samples/LuceneInAction/index:
-	cd samples/LuceneInAction; PYTHONPATH=$(BUILD_TEST) $(PYTHON) index.py
-
-test: install-test #samples/LuceneInAction/index
+test: install-test
 	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-#	ls samples/LuceneInAction/*Test.py | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerDemo.py
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/AnalyzerUtils.py
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/BooksLikeThis.py
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/Explainer.py samples/LuceneInAction/index programming
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/HighlightIt.py
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SortingExample.py
-#	PYTHONPATH=$(BUILD_TEST) $(PYTHON) samples/LuceneInAction/SynonymAnalyzerViewer.py
-
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
 

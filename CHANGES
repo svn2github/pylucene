@@ -1,11 +1,12 @@
-Version 3.6.2 ->
---------------------
- - using Lucene sources from Lucene's branch_4x
+Version 3.6.2 -> 4.2.1
+----------------------
+ - using Lucene 4.2.1 sources
  - switched build to --use_full_names, Python wrappers now follow Java packages
  - removed all --rename and most --exclude entries from jcc command line
  - migrated all unit tests to Lucene 4.x API
  - migrated FacetExample.py to latest 4.x facets API (Thomas Koch)
- - 
+ - removed Lucene in Action samples as they're incompatible with the 4.x API
+ - PyLucene built with JCC 2.16
 
 Version 3.6.1 -> 3.6.2
 ----------------------
