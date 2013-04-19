@@ -21,7 +21,7 @@ import java.util.List;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 
-public class PythonIndexDeletionPolicy implements IndexDeletionPolicy {
+public class PythonIndexDeletionPolicy extends IndexDeletionPolicy {
     private long pythonObject;
 
     public PythonIndexDeletionPolicy()

@@ -15,10 +15,10 @@
 # site-packages directory.
 #
 
-VERSION=4.2.1-0
+VERSION=4.3-0
 LUCENE_SVN_VER=HEAD
-LUCENE_VER=4.2.1
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/tags/lucene_solr_4_2_1
+LUCENE_VER=4.3
+LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/branches/branch_4x
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
@@ -204,6 +204,15 @@ $(LUCENE_SRC):
 sources: $(LUCENE_SRC)
 
 ivy:
+ifeq ($(ANT),)
+	$(error ANT is not defined, please edit Makefile as required at top)
+else ifeq ($(PYTHON),)
+	$(error PYTHON is not defined, please edit Makefile as required at top)
+else ifeq ($(JCC),)
+	$(error JCC is not defined, please edit Makefile as required at top)
+else ifeq ($(NUM_FILES),)
+	$(error NUM_FILES is not defined, please edit Makefile as required at top)
+endif
 	cd $(LUCENE); ($(ANT) ivy-fail || $(ANT) ivy-bootstrap)
 
 to-orig: sources
@@ -269,7 +278,10 @@ ifneq ($(ICUPKG),)
 
 ICURES= $(LUCENE)/analysis/icu/src/resources
 RESOURCES=--resources $(ICURES)
+
+ifneq ($(PYTHON),)
 ENDIANNESS:=$(shell $(PYTHON) -c "import struct; print struct.pack('h', 1) == '\000\001' and 'b' or 'l'")
+endif
 
 resources: $(ICURES)/org/apache/lucene/analysis/icu/utr30.dat
 
@@ -344,7 +356,7 @@ clean:
 	rm -rf $(LUCENE)/build build
 
 realclean:
-	if test ! -d $(LUCENE)/.svn; then rm -rf $(LUCENE) lucene; else rm -rf $(LUCENE)/build; fi
+	if test ! -d $(LUCENE_SRC)/.svn; then rm -rf $(LUCENE_SRC) lucene.egg-info; else rm -rf $(LUCENE)/build; fi
 	rm -rf build
 
 OS=$(shell uname)
@@ -369,11 +381,11 @@ ARCHIVE=pylucene-$(VERSION)-src.tar.gz
 
 distrib:
 	mkdir -p distrib
-	svn export . distrib/pylucene-$(VERSION)
+	svn export --force . distrib/pylucene-$(VERSION)
 	tar -cf - --exclude build $(LUCENE_SRC) | tar -C distrib/pylucene-$(VERSION) -xvf -
 	cd distrib; tar -cvzf $(ARCHIVE) pylucene-$(VERSION)
 	cd distrib; gpg2 --armor --output $(ARCHIVE).asc --detach-sig $(ARCHIVE)
-	cd distrib; openssl md5 < $(ARCHIVE) > $(ARCHIVE).md5
+	cd distrib; md5sum $(ARCHIVE) > $(ARCHIVE).md5
 
 stage:
 	cd distrib; scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \

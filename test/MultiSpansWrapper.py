@@ -12,7 +12,7 @@
 #   limitations under the License.
 # ====================================================================
 
-import lucene   # so that 'org' is found
+import sys, lucene   # so that 'org' is found
 
 from java.util import Collections, HashMap, TreeSet
 from org.apache.lucene.index import Term, TermContext, ReaderUtil
@@ -135,3 +135,6 @@ class MultiSpansWrapper(PythonSpans):
           return False
 
       return self.current.isPayloadAvailable()
+
+  def cost(self):
+      return sys.maxint

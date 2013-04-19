@@ -97,7 +97,7 @@ PRIMITIVES = { 'boolean': 'Z',
 RESERVED = set(['delete', 'and', 'or', 'not', 'xor', 'union', 'register',
                 'const', 'bool', 'operator', 'typeof', 'asm', 'mutable',
                 'inline', 'typedef', 'struct',
-                'NULL', 'DOMAIN', 'IGNORE'])
+                'NULL', 'DOMAIN', 'IGNORE', 'min', 'max', 'PREFIX'])
 
 RENAME_METHOD_SUFFIX = '_'
 RENAME_FIELD_SUFFIX = '__'

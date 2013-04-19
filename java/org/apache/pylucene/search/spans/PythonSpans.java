@@ -57,4 +57,5 @@ public class PythonSpans extends Spans {
         throws IOException;
     public native boolean isPayloadAvailable()
         throws IOException;
+    public native long cost();
 }
