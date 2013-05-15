@@ -213,7 +213,7 @@ else ifeq ($(JCC),)
 else ifeq ($(NUM_FILES),)
 	$(error NUM_FILES is not defined, please edit Makefile as required at top)
 endif
-	cd $(LUCENE); ($(ANT) ivy-fail || $(ANT) ivy-bootstrap)
+	cd $(LUCENE); ($(ANT) ivy-availability-check || $(ANT) ivy-bootstrap)
 
 to-orig: sources
 	mkdir -p $(LUCENE)-orig
