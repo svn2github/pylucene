@@ -45,6 +45,13 @@ LUCENE=$(LUCENE_SRC)/lucene
 # limit.
 #
 
+# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
+PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
+ANT=ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+NUM_FILES=8
+
 # Mac OS X 10.6 (64-bit Python 2.6, Java 1.6)
 #PREFIX_PYTHON=/usr
 #ANT=ant
@@ -156,6 +163,7 @@ JARS+=$(QUERIES_JAR)            # regex and other contrib queries
 JARS+=$(QUERYPARSER_JAR)        # query parser
 JARS+=$(SANDBOX_JAR)            # needed by query parser
 #JARS+=$(SMARTCN_JAR)            # smart chinese analyzer
+JARS+=$(STEMPEL_JAR)            # polish analyzer and stemmer
 #JARS+=$(SPATIAL_JAR)            # spatial lucene
 JARS+=$(GROUPING_JAR)           # grouping module
 JARS+=$(JOIN_JAR)               # join module
@@ -184,6 +192,7 @@ QUERIES_JAR=$(LUCENE)/build/queries/lucene-queries-$(LUCENE_VER).jar
 QUERYPARSER_JAR=$(LUCENE)/build/queryparser/lucene-queryparser-$(LUCENE_VER).jar
 SANDBOX_JAR=$(LUCENE)/build/sandbox/lucene-sandbox-$(LUCENE_VER).jar
 SMARTCN_JAR=$(LUCENE)/build/analysis/smartcn/lucene-analyzers-smartcn-$(LUCENE_VER).jar
+STEMPEL_JAR=$(LUCENE)/build/analysis/stempel/lucene-analyzers-stempel-$(LUCENE_VER).jar
 SPATIAL_JAR=$(LUCENE)/build/spatial/lucene-spatial-$(LUCENE_VER).jar
 GROUPING_JAR=$(LUCENE)/build/grouping/lucene-grouping-$(LUCENE_VER).jar
 JOIN_JAR=$(LUCENE)/build/join/lucene-join-$(LUCENE_VER).jar
@@ -254,6 +263,9 @@ $(EXTENSIONS_JAR): $(LUCENE_JAR)
 $(SMARTCN_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/analysis/smartcn; $(ANT) -Dversion=$(LUCENE_VER)
 
+$(STEMPEL_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/analysis/stempel; $(ANT) -Dversion=$(LUCENE_VER)
+
 $(SPATIAL_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/spatial; $(ANT) -Dversion=$(LUCENE_VER)
 
@@ -318,6 +330,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.io java.io.StringReader \
                              java.io.InputStreamReader \
                              java.io.FileInputStream \
+                             java.io.DataInputStream \
            --exclude org.apache.lucene.sandbox.queries.regex.JakartaRegexpCapabilities \
            --exclude org.apache.regexp.RegexpTunnel \
            --python lucene \
@@ -392,8 +405,7 @@ stage:
                            people.apache.org:public_html/staging_area
 
 release:
-	cd distrib; scp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 \
-                           people.apache.org:/www/www.apache.org/dist/lucene/pylucene
+	cd distrib; cp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 ../../dist/pylucene/
 
 print-%:
 	@echo $* = $($*)
