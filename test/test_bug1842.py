@@ -61,5 +61,5 @@ class Test_Bug1842(PyLuceneTestCase):
         self.assert_(freqs == [3, 1])
 
 if __name__ == '__main__':
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     unittest.main()

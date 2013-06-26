@@ -50,5 +50,5 @@ class Test_Bug1564(PyLuceneTestCase):
 
 
 if __name__ == '__main__':
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     unittest.main()

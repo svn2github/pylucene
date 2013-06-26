@@ -49,7 +49,7 @@ class PrefixQueryTestCase(PyLuceneTestCase):
 
 
 if __name__ == "__main__":
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

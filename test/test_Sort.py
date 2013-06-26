@@ -1148,7 +1148,7 @@ class MyFieldComparatorSource(PythonFieldComparatorSource):
 
 
 if __name__ == "__main__":
-    env = lucene.initVM()
+    env = lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

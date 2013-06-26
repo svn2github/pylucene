@@ -83,7 +83,7 @@ if __name__ == "__main__":
         pass
     else:
         if icu.ICU_VERSION >= '49':
-            lucene.initVM()
+            lucene.initVM(vmargs=['-Djava.awt.headless=true'])
             if '-loop' in sys.argv:
                 sys.argv.remove('-loop')
                 while True:

@@ -154,43 +154,6 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         query.add(Term("field", "words"))
         scoreDocs = searcher.search(query, None, 50).scoreDocs
         self.assertEqual(1, len(scoreDocs))
-
-        # StopAnalyzer leaves "holes", so this does not match.
-        query = PhraseQuery()
-        query.add(Term("field", "words"))
-        query.add(Term("field", "here"))
-        scoreDocs = searcher.search(query, None, 50).scoreDocs
-        self.assertEqual(0, len(scoreDocs))
-  
-        # Not leaving "holes" with a PythonFilteringTokenFilter setup to not
-        # enable position increments, this does match.
-
-        class stopFilter(PythonFilteringTokenFilter):
-            def __init__(_self, tokenStream):
-                super(stopFilter, _self).__init__(False, tokenStream)
-                _self.termAtt = _self.addAttribute(CharTermAttribute.class_);
-            def accept(_self):
-                return _self.termAtt.toString() not in ("not", "are")
-
-        class stopAnalyzer(PythonAnalyzer):
-            def createComponents(_self, fieldName, reader):
-                source = LowerCaseTokenizer(Version.LUCENE_CURRENT, reader)
-                return Analyzer.TokenStreamComponents(source,
-                                                      stopFilter(source))
-
-        writer = self.getWriter(analyzer=stopAnalyzer())
-        doc = Document()
-        doc.add(Field("field", "the stop words are here", TextField.TYPE_STORED))
-        writer.addDocument(doc)
-        writer.close()
-
-        searcher = self.getSearcher()
-
-        query = PhraseQuery()
-        query.add(Term("field", "words"))
-        query.add(Term("field", "here"))
-        scoreDocs = searcher.search(query, None, 50).scoreDocs
-        self.assertEqual(1, len(scoreDocs))
   
     def testPhraseQueryInConjunctionScorer(self):
 
@@ -264,7 +227,7 @@ class PhraseQueryTestCase(PyLuceneTestCase):
 
 
 if __name__ == "__main__":
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

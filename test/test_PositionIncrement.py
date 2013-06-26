@@ -178,43 +178,6 @@ class PositionIncrementTestCase(PyLuceneTestCase):
         hits = searcher.search(q, None, 1000).scoreDocs
         self.assertEqual(0, len(hits))
 
-        # should not find "1 2" because there is a gap of 1 in the index
-        qp = QueryParser(Version.LUCENE_CURRENT, "field",
-                         StopWhitespaceAnalyzer(False))
-
-        q = PhraseQuery.cast_(qp.parse("\"1 2\""))
-        hits = searcher.search(q, None, 1000).scoreDocs
-        self.assertEqual(0, len(hits))
-
-        # omitted stop word cannot help because stop filter swallows the
-        # increments.
-        q = PhraseQuery.cast_(qp.parse("\"1 stop 2\""))
-        hits = searcher.search(q, None, 1000).scoreDocs
-        self.assertEqual(0, len(hits))
-
-        # query parser alone won't help, because stop filter swallows the
-        # increments.
-        qp.setEnablePositionIncrements(True)
-        q = PhraseQuery.cast_(qp.parse("\"1 stop 2\""))
-        hits = searcher.search(q, None, 1000).scoreDocs
-        self.assertEqual(0, len(hits))
-
-        # stop filter alone won't help, because query parser swallows the
-        # increments.
-        qp.setEnablePositionIncrements(False)
-        q = PhraseQuery.cast_(qp.parse("\"1 stop 2\""))
-        hits = searcher.search(q, None, 1000).scoreDocs
-        self.assertEqual(0, len(hits))
-      
-        # when both qp qnd stopFilter propagate increments, we should find
-        # the doc.
-        qp = QueryParser(Version.LUCENE_CURRENT, "field",
-                         StopWhitespaceAnalyzer(True))
-        qp.setEnablePositionIncrements(True)
-        q = PhraseQuery.cast_(qp.parse("\"1 stop 2\""))
-        hits = searcher.search(q, None, 1000).scoreDocs
-        self.assertEqual(1, len(hits))
-
     def testPayloadsPos0(self):
 
         writer = self.getWriter(analyzer=TestPayloadAnalyzer())
@@ -302,7 +265,7 @@ class StopWhitespaceAnalyzer(PythonAnalyzer):
 
         class _stopFilter(PythonFilteringTokenFilter):
             def __init__(_self, tokenStream):
-                super(_stopFilter, _self).__init__(self.enablePositionIncrements, tokenStream)
+                super(_stopFilter, _self).__init__(Version.LUCENE_CURRENT, tokenStream)
                 _self.termAtt = _self.addAttribute(CharTermAttribute.class_);
             def accept(_self):
                 return _self.termAtt.toString() != "stop"
@@ -351,7 +314,7 @@ class PayloadFilter(PythonTokenFilter):
 
 
 if __name__ == "__main__":
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     if '-loop' in sys.argv:
         sys.argv.remove('-loop')
         while True:

@@ -1,5 +1,15 @@
-Version 3.6.2 ->
---------------------
+Version 4.3.1 ->
+----------------------
+ - enabled wrapping of polish analyzer and stemmer
+ - 
+
+Version 4.3.0 -> 4.3.1
+----------------------
+ - added vmargs=['-Djava.awt.headless=true'] to all unit test initVM() calls
+ - using Lucene 4.3.1 sources
+
+Version 3.6.2 -> 4.3.0
+----------------------
  - switched build to --use_full_names, Python wrappers now follow Java packages
  - removed all --rename and most --exclude entries from jcc command line
  - removed Lucene in Action samples as they're incompatible with the 4.x API
