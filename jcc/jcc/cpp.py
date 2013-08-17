@@ -776,6 +776,8 @@ def header(env, out, cls, typeset, packages, excludes, generics,
     methods = {}
     protectedMethods = []
     for method in cls.getDeclaredMethods():
+        if method.isSynthetic():
+            continue
         modifiers = method.getModifiers()
         if (Modifier.isPublic(modifiers) or
             method.getName() in listedMethodNames):

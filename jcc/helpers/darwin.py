@@ -12,22 +12,43 @@
 
 import sys, os
 
-global JAVAHOME
+global JAVAHOME, JAVAFRAMEWORKS
 JAVAHOME = None
+JAVAFRAMEWORKS = None
 
 if sys.platform == "darwin":
 
     # figure out where the JDK lives
+    from subprocess import Popen, PIPE
+
+    try:
+        args = ['/usr/libexec/java_home']
+        process = Popen(args, stdout=PIPE, stderr=PIPE)
+    except Exception, e:
+        print >>sys.stderr, "%s: %s" %(e, args)
+    else:
+        process.wait()
+        if process.returncode == 0:
+            _path = process.stdout.read().strip()
+            if os.path.exists(os.path.join(_path, "include", "jni.h")):
+                JAVAHOME = _path
+                print >>sys.stderr, 'found JAVAHOME =', JAVAHOME
+        else:
+            print >>sys.stderr, process.stderr.read()
+
+    # figure out where the JDK Frameworks lives
     import platform, re
     _os_version = re.match("[0-9]+\.[0-9]+", platform.mac_ver()[0]).group(0)
 
     # this is where Apple says we should look for headers
     _path = "/System/Library/Frameworks/JavaVM.framework"
     if os.path.exists(os.path.join(_path, "Headers", "jni.h")):
-        JAVAHOME = _path
+        JAVAFRAMEWORKS = _path
+        print >>sys.stderr, 'found JAVAFRAMEWORKS =', JAVAFRAMEWORKS
     else:
         # but their updates don't always match their documentation, 
         # so look up the same path in the OS's /Developer tree
         _path = "/Developer/SDKs/MacOSX%s.sdk%s" %(_os_version, _path)
         if os.path.exists(os.path.join(_path, "Headers", "jni.h")):
-            JAVAHOME = _path
+            JAVAFRAMEWORKS = _path
+            print >>sys.stderr, 'found JAVAFRAMEWORKS =', JAVAFRAMEWORKS

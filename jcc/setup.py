@@ -37,19 +37,22 @@ else:
 
 if platform in ("win32", "mingw32"):
     try:
+        JAVAFRAMEWORKS = None
         from helpers.windows import JAVAHOME
     except ImportError:
         JAVAHOME = None
 elif platform in ("darwin",):
     try:
-        from helpers.darwin import JAVAHOME
+        from helpers.darwin import JAVAHOME, JAVAFRAMEWORKS
     except ImportError:
         JAVAHOME = None
+        JAVAFRAMEWORKS = None
 else:
     JAVAHOME = None
+    JAVAFRAMEWORKS = None
 
 JDK = {
-    'darwin': JAVAHOME,
+    'darwin': JAVAHOME or JAVAFRAMEWORKS,
     'ipod': '/usr/include/gcc',
     'linux2': '/usr/lib/jvm/java-7-openjdk-amd64',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
@@ -81,7 +84,9 @@ running setup.py.
 
 
 INCLUDES = {
-    'darwin': ['%(darwin)s/Headers' %(JDK)],
+    'darwin/frameworks': ['%(darwin)s/Headers' %(JDK)],
+    'darwin/home': ['%(darwin)s/include' %(JDK),
+                    '%(darwin)s/include/darwin' %(JDK)],
     'ipod': ['%(ipod)s/darwin/default' %(JDK)],
     'linux2': ['%(linux2)s/include' %(JDK),
                '%(linux2)s/include/linux' %(JDK)],
@@ -118,7 +123,11 @@ DEBUG_CFLAGS = {
 }
 
 LFLAGS = {
-    'darwin': ['-framework', 'JavaVM'],
+    'darwin/frameworks': ['-framework', 'JavaVM'],
+    'darwin/home': ['-L%(darwin)s/jre/lib' %(JDK), '-ljava',
+                    '-L%(darwin)s/jre/lib/server' %(JDK), '-ljvm',
+                    '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib' %(JDK),
+                    '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib/server' %(JDK)],
     'ipod': ['-ljvm', '-lpython%s.%s' %(sys.version_info[0:2]),
              '-L/usr/lib/gcc/arm-apple-darwin9/4.0.1'],
     'linux2/i386': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',
@@ -147,6 +156,13 @@ IMPLIB_LFLAGS = {
 
 if platform == 'linux2':
     LFLAGS['linux2'] = LFLAGS['linux2/%s' %(machine)]
+elif platform == 'darwin':
+    if JAVAHOME is not None:
+        INCLUDES['darwin'] = INCLUDES['darwin/home']
+        LFLAGS['darwin'] = LFLAGS['darwin/home']
+    elif JAVAFRAMEWORKS is not None:
+        INCLUDES['darwin'] = INCLUDES['darwin/frameworks']
+        LFLAGS['darwin'] = LFLAGS['darwin/frameworks']
 
 JAVAC = {
     'darwin': ['javac', '-source', '1.5', '-target', '1.5'],

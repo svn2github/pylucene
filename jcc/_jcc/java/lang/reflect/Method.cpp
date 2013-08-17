@@ -36,6 +36,8 @@ namespace java {
                 mid_getParameterTypes,
                 mid_getExceptionTypes,
                 mid_getDeclaringClass,
+                mid_isSynthetic,
+                mid_isBridge,
 #ifdef _java_generics
                 mid_getTypeParameters,
                 mid_getGenericExceptionTypes,
@@ -76,6 +78,12 @@ namespace java {
                     _mids[mid_getDeclaringClass] =
                         env->getMethodID(cls, "getDeclaringClass",
                                          "()Ljava/lang/Class;");
+                    _mids[mid_isSynthetic] =
+                        env->getMethodID(cls, "isSynthetic",
+                                         "()Z");
+                    _mids[mid_isBridge] =
+                        env->getMethodID(cls, "isBridge",
+                                         "()Z");
 #ifdef _java_generics
                     _mids[mid_getTypeParameters] =
                         env->getMethodID(cls, "getTypeParameters",
@@ -133,6 +141,16 @@ namespace java {
                 return Class(env->callObjectMethod(this$, _mids[mid_getDeclaringClass]));
             }
 
+            bool Method::isSynthetic() const
+            {
+                return env->callBooleanMethod(this$, _mids[mid_isSynthetic]);
+            }
+
+            bool Method::isBridge() const
+            {
+                return env->callBooleanMethod(this$, _mids[mid_isBridge]);
+            }
+
 #ifdef _java_generics
             JArray<TypeVariable> Method::getTypeParameters() const
             {
@@ -175,6 +193,8 @@ namespace java {
             static PyObject *t_Method_getParameterTypes(t_Method *self);
             static PyObject *t_Method_getExceptionTypes(t_Method *self);
             static PyObject *t_Method_getDeclaringClass(t_Method *self);
+            static PyObject *t_Method_isSynthetic(t_Method *self);
+            static PyObject *t_Method_isBridge(t_Method *self);
 #ifdef _java_generics
             static PyObject *t_Method_getTypeParameters(t_Method *self);
             static PyObject *t_Method_getGenericExceptionTypes(t_Method *self);
@@ -191,6 +211,8 @@ namespace java {
                 DECLARE_METHOD(t_Method, getParameterTypes, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getExceptionTypes, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getDeclaringClass, METH_NOARGS),
+                DECLARE_METHOD(t_Method, isSynthetic, METH_NOARGS),
+                DECLARE_METHOD(t_Method, isBridge, METH_NOARGS),
 #ifdef _java_generics
                 DECLARE_METHOD(t_Method, getTypeParameters, METH_NOARGS),
                 DECLARE_METHOD(t_Method, getGenericExceptionTypes, METH_NOARGS),
@@ -263,6 +285,22 @@ namespace java {
 
                 OBJ_CALL(cls = self->object.getDeclaringClass());
                 return t_Class::wrap_Object(cls);
+            }
+
+            static PyObject *t_Method_isSynthetic(t_Method *self)
+            {
+                int isSynthetic;
+
+                OBJ_CALL(isSynthetic = self->object.isSynthetic());
+                Py_RETURN_BOOL(isSynthetic);
+            }
+
+            static PyObject *t_Method_isBridge(t_Method *self)
+            {
+                int isBridge;
+
+                OBJ_CALL(isBridge = self->object.isBridge());
+                Py_RETURN_BOOL(isBridge);
             }
 
 #ifdef _java_generics

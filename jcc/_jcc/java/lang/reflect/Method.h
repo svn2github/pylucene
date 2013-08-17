@@ -46,6 +46,8 @@ namespace java {
                 JArray<Class> getParameterTypes() const;
                 JArray<Class> getExceptionTypes() const;
                 Class getDeclaringClass() const;
+                bool isSynthetic() const;
+                bool isBridge() const;
 #ifdef _java_generics
                 JArray<TypeVariable> getTypeParameters() const;
                 JArray<Type> getGenericExceptionTypes() const;
