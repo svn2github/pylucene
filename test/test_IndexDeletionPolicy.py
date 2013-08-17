@@ -21,7 +21,6 @@ from org.apache.lucene.index import DirectoryReader, IndexWriterConfig
 from org.apache.pylucene.index import PythonIndexDeletionPolicy
 
 
-# Test reusableTokenStream, using ReusableAnalyzerBase:
 class MyDeletionPolicy(PythonIndexDeletionPolicy):
 
     onInitCalled = False
@@ -49,7 +48,7 @@ class IndexDeletionPolicyTestCase(PyLuceneTestCase):
         writer = self.getWriter()
 
         # no commits exist in the index yet
-        self.assertFalse(self.policy.onInitCalled)
+        self.assertTrue(self.policy.onInitCalled)
         # we haven't called commit yet
         self.assertFalse(self.policy.onCommitCalled)
 

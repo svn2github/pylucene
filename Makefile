@@ -191,6 +191,7 @@ GROUPING_JAR=$(LUCENE)/build/grouping/lucene-grouping-$(LUCENE_VER).jar
 JOIN_JAR=$(LUCENE)/build/join/lucene-join-$(LUCENE_VER).jar
 FACET_JAR=$(LUCENE)/build/facet/lucene-facet-$(LUCENE_VER).jar
 SUGGEST_JAR=$(LUCENE)/build/suggest/lucene-suggest-$(LUCENE_VER).jar
+MISC_JAR=$(LUCENE)/build/misc/lucene-misc-$(LUCENE_VER).jar
 
 ICUPKG:=$(shell which icupkg)
 
@@ -274,9 +275,12 @@ $(FACET_JAR): $(LUCENE_JAR)
 $(SUGGEST_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/suggest; $(ANT) -Dversion=$(LUCENE_VER)
 
+$(MISC_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/misc; $(ANT) -Dversion=$(LUCENE_VER)
+
 JCCFLAGS?=
 
-jars: $(JARS)
+jars: $(JARS) $(MISC_JAR)
 
 
 ifneq ($(ICUPKG),)
@@ -303,7 +307,7 @@ resources:
 
 endif
 
-GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
+GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) --include $(MISC_JAR) \
            $(JCCFLAGS) --use_full_names \
            --package java.lang java.lang.System \
                                java.lang.Runtime \

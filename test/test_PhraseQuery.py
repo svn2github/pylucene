@@ -113,7 +113,7 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         topDocs = self.searcher.search(self.query, 50)
         self.assertEqual(0, topDocs.totalHits, "not sloppy enough")
 
-    def testMulipleTerms(self):
+    def testMultipleTerms(self):
         """
         slop is the total number of positional moves allowed
         to line up a phrase

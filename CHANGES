@@ -1,12 +1,11 @@
-Version 4.3.1 ->
+Version 4.3.0 -> 4.4.0
 ----------------------
- - enabled wrapping of polish analyzer and stemmer
+ - added vmargs=['-Djava.awt.headless=true'] to all initVM() calls
+ - using Lucene 4.4.0 sources
+ - added of polish analyzer and stemmer
+ - added inclusion of misc.jar because of cross-dependencies
+ - PyLucene built with JCC 2.17
  - 
-
-Version 4.3.0 -> 4.3.1
-----------------------
- - added vmargs=['-Djava.awt.headless=true'] to all unit test initVM() calls
- - using Lucene 4.3.1 sources
 
 Version 3.6.2 -> 4.3.0
 ----------------------

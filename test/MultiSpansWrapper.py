@@ -40,8 +40,7 @@ class MultiSpansWrapper(PythonSpans):
       terms = TreeSet()
       query.extractTerms(terms)
       for term in terms:
-          termContexts.put(term, TermContext.build(topLevelReaderContext, term,
-                                                   True))
+          termContexts.put(term, TermContext.build(topLevelReaderContext, term))
 
       leaves = topLevelReaderContext.leaves()
       if leaves.size() == 1:
