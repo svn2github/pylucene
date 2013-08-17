@@ -36,7 +36,7 @@ from org.apache.lucene.store import SimpleFSDirectory
 from org.apache.lucene.util import Version
 
 if __name__ == '__main__':
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
 
 def usage():
     print sys.argv[0], "[--format=<format string>] [--index=<index dir>] [--stats] <query...>"

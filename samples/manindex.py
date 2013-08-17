@@ -85,7 +85,7 @@ if __name__ == '__main__':
         print "Usage: python manindex.py <index dir>"
 
     else:
-        lucene.initVM()
+        lucene.initVM(vmargs=['-Djava.awt.headless=true'])
         directory = SimpleFSDirectory(File(sys.argv[1]))
         analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
         analyzer = LimitTokenCountAnalyzer(analyzer, 10000)

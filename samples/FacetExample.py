@@ -320,5 +320,5 @@ class FacetExample(object):
 
 
 if __name__ == '__main__':
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     FacetExample.main(sys.argv)

@@ -95,7 +95,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print IndexFiles.__doc__
         sys.exit(1)
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     print 'lucene', lucene.VERSION
     start = datetime.now()
     try:

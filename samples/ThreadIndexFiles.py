@@ -29,7 +29,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print IndexFiles.__doc__
         sys.exit(1)
-    env=lucene.initVM()
+    env=lucene.initVM(vmargs=['-Djava.awt.headless=true'])
     print 'lucene', lucene.VERSION
 
     def fn():

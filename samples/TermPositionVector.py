@@ -10,7 +10,7 @@ from org.apache.lucene.index import \
     IndexWriterConfig, IndexWriter, DirectoryReader
 
 if __name__ == '__main__':
-    lucene.initVM()
+    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
 
 directory = RAMDirectory()
 iconfig = IndexWriterConfig(Version.LUCENE_CURRENT, LimitTokenCountAnalyzer(StandardAnalyzer(Version.LUCENE_CURRENT), 100))
