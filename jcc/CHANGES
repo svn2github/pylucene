@@ -2,7 +2,6 @@ Version 2.16 -> 2.17
 --------------------
  - added support for detecting and running with Oracle JDK 7 on Mac OS X
  - added skipping of synthetic methods
- - 
 
 Version 2.15 -> 2.16
 --------------------
