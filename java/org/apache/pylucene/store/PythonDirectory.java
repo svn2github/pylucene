@@ -23,16 +23,15 @@ import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.Lock;
 
 
 public class PythonDirectory extends Directory {
 
     private long pythonObject;
 
-    public PythonDirectory(LockFactory factory)
-        throws IOException
+    public PythonDirectory()
     {
-        setLockFactory(factory);
     }
 
     public void pythonExtension(long pythonObject)
@@ -61,7 +60,7 @@ public class PythonDirectory extends Directory {
 
     public native void close()
         throws IOException;
-    public native IndexOutput createOutput(String name, IOContext context) //new4.0
+    public native IndexOutput createOutput(String name, IOContext context)
         throws IOException;
     public native void deleteFile(String name)
         throws IOException;
@@ -73,11 +72,16 @@ public class PythonDirectory extends Directory {
         throws IOException;
     public native String[] listAll()
         throws IOException;
-    public native IndexInput openInput(String name, IOContext context) //new4.0
+    public native IndexInput openInput(String name, IOContext context)
         throws IOException;
     public native void touchFile(String name)
         throws IOException;
     public native void sync(String name) 
         throws IOException;
-
+    public native LockFactory getLockFactory();
+    public native void setLockFactory(LockFactory lockFactory)
+        throws IOException;
+    public native void clearLock(String name)
+        throws IOException;
+    public native Lock makeLock(String name);
 }

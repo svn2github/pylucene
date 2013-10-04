@@ -160,8 +160,9 @@ class PythonFileStreamOutput(PythonIndexOutput):
 class PythonFileDirectory(PythonDirectory):
 
     def __init__(self, path):
-        super(PythonFileDirectory, self).__init__(PythonDirLockFactory(path))
+        super(PythonFileDirectory, self).__init__()
 
+        self._lockFactory = PythonDirLockFactory(path)
         self.name = path
         assert os.path.isdir(path)
         self.path = path
@@ -213,6 +214,18 @@ class PythonFileDirectory(PythonDirectory):
     def touchFile(self, name):
         file_path = os.path.join(self.path, name)
         os.utime(file_path, None)
+
+    def setLockFactory(self, lockFactory):
+        pass
+
+    def getLockFactory(self):
+        return None
+
+    def clearLock(self, name):
+        self._lockFactory.clearLock(name)
+
+    def makeLock(self, name):
+        return self._lockFactory.makeLock(name)
 
 
 if DEBUG:
