@@ -1,6 +1,7 @@
 Version 2.17 ->
 --------------------
  - fixed bug PYLUCENE-26 (Martin Anon)
+ - added support for building setuptools >= 1.1.6
  - 
 
 Version 2.16 -> 2.17
