@@ -198,28 +198,22 @@ try:
     if with_setuptools >= with_setuptools_c7 and 'NO_SHARED' not in os.environ:
         if platform in ('ipod', 'win32'):
             enable_shared = True
-            from setuptools import Library
 
         elif platform == 'darwin':
             enable_shared = True
             if with_setuptools >= with_setuptools_116:
-                # fix Library building by monkey-patching in expected
-                # _config_vars into build_ext otherwise build_ext is using
-                # sysconfig's instead, wrongly.
+                # fix Library building by monkey-patching expected _config_vars
+                # into build_ext otherwise build_ext is using sysconfig's
+                # instead, wrongly
                 from setuptools.command import build_ext
                 from distutils.sysconfig import get_config_var
-                get_config_var("LDSHARED")
+                get_config_var("LDSHARED")  # ensure _config_vars is initialized
                 from distutils.sysconfig import _config_vars
                 build_ext._CONFIG_VARS = _config_vars
-                from setuptools.extension import Library
-            else:
-                from setuptools import Library
 
         elif platform == 'linux2':
             from helpers.linux import patch_setuptools
             enable_shared = patch_setuptools(with_setuptools)
-            if enabled_shared:
-                from setuptools import Library
 
         elif platform == 'mingw32':
             enable_shared = True
@@ -228,7 +222,12 @@ try:
             from helpers.mingw32 import JCCMinGW32CCompiler
             import distutils.cygwinccompiler
             distutils.cygwinccompiler.Mingw32CCompiler = JCCMinGW32CCompiler
-            from setuptools import Library
+
+        if enable_shared:
+            if with_setuptools >= with_setuptools_116:
+                from setuptools.extension import Library
+            else:
+                from setuptools import Library
 
 except ImportError:
     if sys.version_info < (2, 4):
