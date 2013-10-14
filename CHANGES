@@ -1,11 +1,15 @@
+Version 4.4.0 -> 4.5.0
+----------------------
+ - using Lucene 4.5.0 sources
+ - PyLucene built with JCC 2.18
+
 Version 4.3.0 -> 4.4.0
 ----------------------
  - added vmargs=['-Djava.awt.headless=true'] to all initVM() calls
  - using Lucene 4.4.0 sources
- - added of polish analyzer and stemmer
+ - added wrapping of polish analyzer and stemmer
  - added inclusion of misc.jar because of cross-dependencies
  - PyLucene built with JCC 2.17
- - 
 
 Version 3.6.2 -> 4.3.0
 ----------------------
