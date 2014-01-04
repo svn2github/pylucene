@@ -57,7 +57,8 @@ public class PythonMultiFieldQueryParser extends MultiFieldQueryParser {
     public native Query getPrefixQuery(String field, String termText);
     public native Query getRangeQuery(String field,
                                       String part1, String part2,
-                                      boolean inclusive);
+                                      boolean startInclusive,
+                                      boolean endInclusive);
     public native Query getWildcardQuery(String field, String termText);
 
     public native Query getFieldQuery_quoted(String field, String queryText,
