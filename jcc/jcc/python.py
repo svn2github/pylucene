@@ -74,14 +74,28 @@ def is_unboxed(clsName):
 
 
 def getTypeParameters(cls):
+    if cls is None:
+        return []
 
-    while True:
-        parameters = cls.getTypeParameters()
+    parameters = cls.getTypeParameters()
+    if parameters:
+        return parameters
+
+    superCls = cls.getGenericSuperclass()
+    if Class.instance_(superCls):
+        parameters = getTypeParameters(Class.cast_(superCls))
         if parameters:
             return parameters
-        cls = cls.getDeclaringClass()
-        if cls is None:
-            return []
+    elif ParameterizedType.instance_(superCls):
+        parameters = getActualTypeArguments(ParameterizedType.cast_(superCls))
+        if parameters:
+            return parameters
+
+    parameters = getTypeParameters(cls.getDeclaringClass())
+    if parameters:
+        return parameters
+
+    return []
 
 
 def getActualTypeArguments(pt):
@@ -209,6 +223,17 @@ def construct(out, indent, cls, inCase, constructor, names, generics):
     line(out, indent, 'INT_CALL(object = %s(%s));',
          cppname(names[-1]), ', '.join(['a%d' %(i) for i in xrange(count)]))
     line(out, indent, 'self->object = object;')
+
+    if generics:
+        clsParams = getTypeParameters(cls)
+        i = 0
+        for clsParam in clsParams:
+            if Class.instance_(clsParam):
+                clsNames = Class.cast_(clsParam).getName().split('.')
+                clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                line(out, indent, 'self->parameters[%d] = %s;', i, clsArg)
+            i += 1
+    
     if inCase:
         line(out, indent, 'break;')
 
@@ -1017,8 +1042,10 @@ def python(env, out_h, out, cls, superCls, names, superNames,
 
     if clsParams:
         clsArgs = []
+        i = 0
         for clsParam in clsParams:
-            clsArgs.append("PyTypeObject *%s" %(clsParam.getName()))
+            clsArgs.append("PyTypeObject *p%d" %(i))
+            i += 1
         line(out, indent, 
              "PyObject *t_%s::wrap_Object(const %s& object, %s)",
              cppname(names[-1]), names[-1], ', '.join(clsArgs))
@@ -1031,8 +1058,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
              names[-1], names[-1])
         i = 0;
         for clsParam in clsParams:
-            line(out, indent + 2, "self->parameters[%d] = %s;",
-                 i, clsParam.getName())
+            line(out, indent + 2, "self->parameters[%d] = p%d;",
+                 i, i)
             i += 1
         line(out, indent + 1, "}")
         line(out, indent + 1, "return obj;");
@@ -1051,8 +1078,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
              names[-1], names[-1])
         i = 0;
         for clsParam in clsParams:
-            line(out, indent + 2, "self->parameters[%d] = %s;",
-                 i, clsParam.getName())
+            line(out, indent + 2, "self->parameters[%d] = p%d;",
+                 i, i)
             i += 1
         line(out, indent + 1, "}")
         line(out, indent + 1, "return obj;");

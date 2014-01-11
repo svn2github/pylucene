@@ -738,6 +738,13 @@ def header(env, out, cls, typeset, packages, excludes, generics,
         superClsName = superCls.getName()
     elif superCls:
         superClsName = superCls.getName()
+        if generics:
+            superType = cls.getGenericSuperclass()
+            if ParameterizedType.instance_(superType):
+                pt = ParameterizedType.cast_(superType)
+                for ta in pt.getActualTypeArguments():
+                    addRequiredTypes(ta, typeset, True)
+                    known(ta, typeset, declares, packages, excludes, True)
     else:
         superClsName = 'JObject'
 
