@@ -259,6 +259,43 @@ def addRequiredTypes(cls, typeset, generics):
                 addRequiredTypes(cls, typeset, False)
 
 
+def getActualTypeArguments(pt):
+
+    while True:
+        arguments = pt.getActualTypeArguments()
+        if arguments:
+            return arguments
+        pt = pt.getOwnerType()
+        if pt is None or not ParameterizedType.instance_(pt):
+            return []
+        pt = ParameterizedType.cast_(pt)
+
+
+def getTypeParameters(cls):
+    if cls is None:
+        return []
+
+    parameters = cls.getTypeParameters()
+    if parameters:
+        return parameters
+
+    superCls = cls.getGenericSuperclass()
+    if Class.instance_(superCls):
+        parameters = getTypeParameters(Class.cast_(superCls))
+        if parameters:
+            return parameters
+    elif ParameterizedType.instance_(superCls):
+        parameters = getActualTypeArguments(ParameterizedType.cast_(superCls))
+        if parameters:
+            return parameters
+
+    parameters = getTypeParameters(cls.getDeclaringClass())
+    if parameters:
+        return parameters
+
+    return []
+
+
 def find_method(cls, name, params):
 
     declared = False
@@ -739,12 +776,10 @@ def header(env, out, cls, typeset, packages, excludes, generics,
     elif superCls:
         superClsName = superCls.getName()
         if generics:
-            superType = cls.getGenericSuperclass()
-            if ParameterizedType.instance_(superType):
-                pt = ParameterizedType.cast_(superType)
-                for ta in pt.getActualTypeArguments():
-                    addRequiredTypes(ta, typeset, True)
-                    known(ta, typeset, declares, packages, excludes, True)
+            for clsParam in getTypeParameters(cls):
+                if Class.instance_(clsParam):
+                    addRequiredTypes(clsParam, typeset, True)
+                    known(clsParam, typeset, declares, packages, excludes, True)
     else:
         superClsName = 'JObject'
 

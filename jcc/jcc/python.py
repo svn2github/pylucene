@@ -20,6 +20,7 @@ from cpp import RENAME_METHOD_SUFFIX, RENAME_FIELD_SUFFIX
 from cpp import cppname, cppnames, absname, typename, findClass
 from cpp import line, signature, find_method, split_pkg, sort
 from cpp import Modifier, Class, Method
+from cpp import getActualTypeArguments, getTypeParameters
 from config import INCLUDES, CFLAGS, DEBUG_CFLAGS, LFLAGS, IMPLIB_LFLAGS, \
     SHARED, VERSION as JCC_VER
 
@@ -71,43 +72,6 @@ def is_boxed(clsName):
 
 def is_unboxed(clsName):
     return BOXED.get(clsName, (False, False))[1]
-
-
-def getTypeParameters(cls):
-    if cls is None:
-        return []
-
-    parameters = cls.getTypeParameters()
-    if parameters:
-        return parameters
-
-    superCls = cls.getGenericSuperclass()
-    if Class.instance_(superCls):
-        parameters = getTypeParameters(Class.cast_(superCls))
-        if parameters:
-            return parameters
-    elif ParameterizedType.instance_(superCls):
-        parameters = getActualTypeArguments(ParameterizedType.cast_(superCls))
-        if parameters:
-            return parameters
-
-    parameters = getTypeParameters(cls.getDeclaringClass())
-    if parameters:
-        return parameters
-
-    return []
-
-
-def getActualTypeArguments(pt):
-
-    while True:
-        arguments = pt.getActualTypeArguments()
-        if arguments:
-            return arguments
-        pt = pt.getOwnerType()
-        if pt is None or not ParameterizedType.instance_(pt):
-            return []
-        pt = ParameterizedType.cast_(pt)
 
 
 def parseArgs(params, current, generics, genericParams=None):
