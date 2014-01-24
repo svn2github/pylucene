@@ -49,9 +49,14 @@ public class PythonFieldComparator<T> extends FieldComparator<T> {
     public native void pythonDecRef();
 
     public native int compare(int slot1, int slot2);
-    public native void setBottom(final int slot);
     public native int compareBottom(int doc)
         throws IOException;
+    public native int compareTop(int doc)
+        throws IOException;
+
+    public native void setBottom(final int slot);
+    public native void setTopValue(T value);
+
     public native void copy(int slot, int doc) 
         throws IOException;
 
