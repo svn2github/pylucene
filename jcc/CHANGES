@@ -1,7 +1,8 @@
 Version 2.18 ->
 ---------------
  - fixed bug with missing class parameters when fixed by declaration
- - improved runtime support for fixed class parameters
+ - improved runtime support for fixed class generic parameters
+ - improved runtime support for fixed class array generic parameters
  - 
 
 Version 2.17 -> 2.18

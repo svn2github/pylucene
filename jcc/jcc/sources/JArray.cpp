@@ -443,6 +443,11 @@ static PyObject *cast_(PyTypeObject *type, PyObject *args, PyObject *kwds)
 }
 
 template<typename T> 
+static PyObject *wrapfn_(const jobject &object) {
+    return JArray<T>(object).wrap();
+}
+
+template<typename T> 
 static PyObject *instance_(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyObject *arg, *clsObj;
@@ -525,6 +530,8 @@ public:
             Py_INCREF((PyObject *) &type_object);
             PyDict_SetItemString(type_object.tp_dict, "class_",
                                  make_descriptor(initializeClass<T>));
+            PyDict_SetItemString(type_object.tp_dict, "wrapfn_",
+                                 make_descriptor(wrapfn_<T>));
             
             PyModule_AddObject(module, name, (PyObject *) &type_object);
         }
@@ -791,6 +798,10 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
     }
 
     return JArray<jobject>(((t_JObject *) arg)->object.this$).wrap(wrapfn);
+}
+
+template<> PyObject *wrapfn_<jobject>(const jobject &object) {
+    return JArray<jobject>(object).wrap(NULL);
 }
 
 template<> PyObject *instance_<jobject>(PyTypeObject *type,

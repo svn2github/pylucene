@@ -193,8 +193,19 @@ def construct(out, indent, cls, inCase, constructor, names, generics):
         i = 0
         for clsParam in clsParams:
             if Class.instance_(clsParam):
-                clsNames = Class.cast_(clsParam).getName().split('.')
-                clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                cls = Class.cast_(clsParam)
+                if cls.isArray():
+                    cls = cls.getComponentType()
+                    if cls.isArray():
+                        clsNames = 'java.lang.Object'.split('.')
+                        clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                    elif cls.isPrimitive():
+                        clsArg = 'PY_TYPE(JArray%s)' %(cls.getName().capitalize())
+                    else:
+                        clsArg = 'PY_TYPE(JArrayObject)'
+                else:
+                    clsNames = cls.getName().split('.')
+                    clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                 line(out, indent, 'self->parameters[%d] = %s;', i, clsArg)
             i += 1
     
