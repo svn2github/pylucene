@@ -801,7 +801,19 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
 }
 
 template<> PyObject *wrapfn_<jobject>(const jobject &object) {
-    return JArray<jobject>(object).wrap(NULL);
+    PyObject *cobj = PyObject_GetAttrString(
+        (PyObject *) &PY_TYPE(Object), "wrapfn_");
+    PyObject *(*wrapfn)(const jobject&) = NULL;
+
+    if (cobj == NULL)
+        PyErr_Clear();
+    else
+    {
+        wrapfn = (PyObject *(*)(const jobject &)) PyCObject_AsVoidPtr(cobj);
+        Py_DECREF(cobj);
+    }
+
+    return JArray<jobject>(object).wrap(wrapfn);
 }
 
 template<> PyObject *instance_<jobject>(PyTypeObject *type,
