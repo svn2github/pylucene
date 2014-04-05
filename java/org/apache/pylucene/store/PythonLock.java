@@ -45,4 +45,5 @@ public class PythonLock extends Lock {
     public native boolean isLocked();
     public native boolean obtain();
     public native void release();
+    public native void close();
 }

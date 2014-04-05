@@ -45,6 +45,13 @@ LUCENE=$(LUCENE_SRC)/lucene
 # limit.
 #
 
+# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
+PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
+ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+NUM_FILES=8
+
 # Mac OS X 10.6 (64-bit Python 2.6, Java 1.6)
 #PREFIX_PYTHON=/usr
 #ANT=ant
@@ -406,7 +413,7 @@ distrib:
 	mkdir -p distrib
 	svn export --force . distrib/pylucene-$(VERSION)
 	tar -cf - --exclude build $(LUCENE_SRC) | tar -C distrib/pylucene-$(VERSION) -xvf -
-	cd distrib; tar -cvzf $(ARCHIVE) pylucene-$(VERSION)
+	cd distrib; tar --disable-copyfile -cvzf $(ARCHIVE) pylucene-$(VERSION)
 	cd distrib; gpg2 --armor --output $(ARCHIVE).asc --detach-sig $(ARCHIVE)
 	cd distrib; md5sum $(ARCHIVE) > $(ARCHIVE).md5
 

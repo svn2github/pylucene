@@ -72,6 +72,9 @@ class PythonDirLock(PythonLock):
     def release(self):
         return self.lock.release()
 
+    def close(self):
+        return self.lock.close()
+
 
 class PythonDirLockFactory(PythonLockFactory):
 
@@ -257,7 +260,7 @@ class PythonDirectoryTests(unittest.TestCase, test_PyLucene.Test_PyLuceneBase):
                 try:
                     arg.close()
                 except Exception, e:
-                    import pdb; pdb.set_trace()
+                    pass
         store.close()
 
     def test_IncrementalLoop(self):
