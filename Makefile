@@ -45,7 +45,7 @@ LUCENE=$(LUCENE_SRC)/lucene
 # limit.
 #
 
-# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
+# Mac OS X 10.9 (64-bit Python 2.7, Java 1.8)
 PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
 ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
 PYTHON=$(PREFIX_PYTHON)/bin/python
