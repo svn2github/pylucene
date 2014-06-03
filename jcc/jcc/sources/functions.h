@@ -276,6 +276,7 @@ PyObject *get_extension_next(PyObject *self);
 PyObject *get_extension_nextElement(PyObject *self);
 
 jobjectArray fromPySequence(jclass cls, PyObject *sequence);
+jobjectArray fromPySequence(jclass cls, PyObject **args, int length);
 PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError);
 void installType(PyTypeObject *type, PyObject *module, char *name,
