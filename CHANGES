@@ -14,6 +14,17 @@ Version 4.6.1 -> 4.7.2
  - using Lucene 4.7.2 sources
  - PyLucene built with JCC 2.19
 
+Version 4.7.2 -> 4.8.0
+----------------------
+ - using Lucene 4.8.0 sources
+ - PyLucene built with JCC 2.19
+ - Lucene now requires Java 7 at the minimum, Java 6 is no longer supported
+
+Version 4.6.1 -> 4.7.2
+----------------------
+ - using Lucene 4.7.2 sources
+ - PyLucene built with JCC 2.19
+
 Version 4.5.1 -> 4.6.1
 ----------------------
  - using Lucene 4.6.1 sources
