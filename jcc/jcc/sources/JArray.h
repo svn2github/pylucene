@@ -24,7 +24,7 @@ typedef int Py_ssize_t;
 #endif
 
 extern jobjectArray fromPySequence(jclass cls, PyObject *sequence);
-extern jobjectArray fromPySequence(jclass cls, PyObject **sequence, int length);
+extern jobjectArray fromPySequence(jclass cls, PyObject **args, int length);
 extern PyObject *PyErr_SetJavaError();
 
 extern PyTypeObject *PY_TYPE(JArrayObject);
@@ -68,7 +68,7 @@ public:
         length = this$ ? env->getArrayLength((jobjectArray) this$) : 0;
     }
 
-    JArray<T>(jclass cls, PyObject **sequence, int length) : java::lang::Object(fromPySequence(cls, sequence, length)) {
+    JArray<T>(jclass cls, PyObject **args, int length) : java::lang::Object(fromPySequence(cls, args, length)) {
         length = this$ ? env->getArrayLength((jobjectArray) this$) : 0;
     }
 
@@ -127,7 +127,7 @@ template<> class JArray<jobject> : public java::lang::Object {
         length = this$ ? env->getArrayLength((jobjectArray) this$) : 0;
     }
 
-    JArray<jobject>(jclass cls, PyObject **sequence, int length) : java::lang::Object(fromPySequence(cls, sequence, length)) {
+    JArray<jobject>(jclass cls, PyObject **args, int length) : java::lang::Object(fromPySequence(cls, args, length)) {
         length = this$ ? env->getArrayLength((jobjectArray) this$) : 0;
     }
 
@@ -421,12 +421,12 @@ template<> class JArray<jboolean> : public java::lang::Object {
         }
     }
 
-    JArray<jboolean>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewBooleanArray(length)) {
+    JArray<jboolean>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewBooleanArray(length)) {
         arrayElements elts = elements();
         jboolean *buf = (jboolean *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -595,12 +595,12 @@ template<> class JArray<jbyte> : public java::lang::Object {
             }
     }
 
-    JArray<jbyte>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewByteArray(length)) {
+    JArray<jbyte>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewByteArray(length)) {
         arrayElements elts = elements();
         jbyte *buf = (jbyte *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -796,12 +796,12 @@ template<> class JArray<jchar> : public java::lang::Object {
             }
     }
 
-    JArray<jchar>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewCharArray(length)) {
+    JArray<jchar>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewCharArray(length)) {
         arrayElements elts = elements();
         jchar *buf = (jchar *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -990,12 +990,12 @@ template<> class JArray<jdouble> : public java::lang::Object {
         }
     }
 
-    JArray<jdouble>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewDoubleArray(length)) {
+    JArray<jdouble>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewDoubleArray(length)) {
         arrayElements elts = elements();
         jdouble *buf = (jdouble *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -1157,12 +1157,12 @@ template<> class JArray<jfloat> : public java::lang::Object {
         }
     }
 
-    JArray<jfloat>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewFloatArray(length)) {
+    JArray<jfloat>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewFloatArray(length)) {
         arrayElements elts = elements();
         jfloat *buf = (jfloat *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -1324,12 +1324,12 @@ template<> class JArray<jint> : public java::lang::Object {
         }
     }
 
-    JArray<jint>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewIntArray(length)) {
+    JArray<jint>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewIntArray(length)) {
         arrayElements elts = elements();
         jint *buf = (jint *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -1491,12 +1491,12 @@ template<> class JArray<jlong> : public java::lang::Object {
         }
     }
 
-    JArray<jlong>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewLongArray(length)) {
+    JArray<jlong>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewLongArray(length)) {
         arrayElements elts = elements();
         jlong *buf = (jlong *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;
@@ -1658,12 +1658,12 @@ template<> class JArray<jshort> : public java::lang::Object {
         }
     }
 
-    JArray<jshort>(PyObject **sequence, int length) : java::lang::Object(env->get_vm_env()->NewShortArray(length)) {
+    JArray<jshort>(PyObject **args, int length) : java::lang::Object(env->get_vm_env()->NewShortArray(length)) {
         arrayElements elts = elements();
         jshort *buf = (jshort *) elts;
 
         for (int i = 0; i < length; i++) {
-            PyObject *obj = sequence[i];
+            PyObject *obj = args[i];
 
             if (!obj)
                 break;

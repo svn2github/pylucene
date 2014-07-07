@@ -352,11 +352,11 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
         return -1;
     }
 
-    bool last = false;
-    bool varargs = false;
-    bool empty = false;
+    bool last = false;      /* true if last expected parameter */
+    bool varargs = false;   /* true if in varargs mode */
+    bool empty = false;     /* true if in varargs mode and no params passed */
+    int array = 0;          /* > 0 if expecting an array, its nesting level */
     unsigned int pos = 0;
-    int array = 0;
 
     for (unsigned int a = 0; a < count; a++, pos++) {
         PyObject *arg = args[a];
@@ -1563,7 +1563,7 @@ static bool setArrayObj(jobjectArray array, int index, PyObject *obj)
     else if (PyString_Check(obj) || PyUnicode_Check(obj))
     {
         jobj = env->fromPyString(obj);
-        deleteLocal = 1;
+        deleteLocal = true;
     }
     else if (PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
         jobj = ((t_JObject *) obj)->object.this$;
@@ -1572,22 +1572,22 @@ static bool setArrayObj(jobjectArray array, int index, PyObject *obj)
     else if (obj == Py_True || obj == Py_False)
     {
         jobj = env->boxBoolean(obj == Py_True);
-        deleteLocal = 1;
+        deleteLocal = true;
     }
     else if (PyFloat_Check(obj))
     {
         jobj = env->boxDouble(PyFloat_AS_DOUBLE(obj));
-        deleteLocal = 1;
+        deleteLocal = true;
     }
     else if (PyInt_Check(obj))
     {
         jobj = env->boxInteger(PyInt_AS_LONG(obj));
-        deleteLocal = 1;
+        deleteLocal = true;
     }
     else if (PyLong_Check(obj))
     {
         jobj = env->boxLong(PyLong_AsLongLong(obj));
-        deleteLocal = 1;
+        deleteLocal = true;
     }
     else
     {
