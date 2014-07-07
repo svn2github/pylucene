@@ -117,11 +117,11 @@ class SimpleIndexer(object):
             author = authors[docNum]
             # ... and use the FacetField class for adding facet fields to
             # the Lucene document (and via FacetsConfig to the taxonomy index)
-            doc.add(FacetField("Author", [author]));
+            doc.add(FacetField("Author", author))
             for f in facets:
                 doc.add(FacetField("Categories", f))
             # finally add the document to the index
-            iw.addDocument(facets_config.build(taxo, doc));
+            iw.addDocument(facets_config.build(taxo, doc))
             nDocsAdded += 1
 
         # close the taxonomy index and the index - all modifications are
@@ -168,21 +168,21 @@ class SimpleSearcher(object):
         facets = FastTaxonomyFacetCounts(taxoReader, facets_config, facets_collector)
         results = []
 
-        facet_result = facets.getTopChildren(10, "Categories", [])
+        facet_result = facets.getTopChildren(10, "Categories")
         if facet_result:
             results.append(facet_result)
             print  "Categories: ", facet_result.childCount
             for  lv in facet_result.labelValues:
                 print " '%s' (%s)"  % (lv.label, lv.value)
 
-        facet_result = facets.getTopChildren(10, "Categories", ["root","a"])
+        facet_result = facets.getTopChildren(10, "Categories", "root", "a")
         if facet_result:
             results.append(facet_result)
             print  "Root-a-Categories: ", facet_result.childCount
             for  lv in facet_result.labelValues:
                 print " '%s' (%s)"  % (lv.label, lv.value)
 
-        facet_result = facets.getTopChildren(10, "Author", [])
+        facet_result = facets.getTopChildren(10, "Author")
         if facet_result:
             results.append(facet_result)
             print  "Author: ", facet_result.childCount
@@ -199,14 +199,14 @@ class SimpleSearcher(object):
         #  User drills down on 'Categories' "root/a/f1" and we return facets for 'Author'
         searcher = IndexSearcher(indexReader)
         #  Passing no baseQuery means we drill down on all documents ("browse only"):
-        query =  DrillDownQuery(facets_config);
+        query =  DrillDownQuery(facets_config)
         # Now user drills down on Publish Date/2010:
         query.add("Categories",  drilldownCategory)
         facets_collector = FacetsCollector()
-        FacetsCollector.search(searcher, query, 10, facets_collector    )
+        FacetsCollector.search(searcher, query, 10, facets_collector)
         # Retrieve results
         facets =  FastTaxonomyFacetCounts(taxoReader, facets_config, facets_collector)
-        facet_result = facets.getTopChildren(10, "Author", [])
+        facet_result = facets.getTopChildren(10, "Author")
         print  "Author: ", facet_result.childCount
         for  lv in facet_result.labelValues:
             print " '%s' (%s)"  % (lv.label, lv.value)
