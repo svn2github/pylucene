@@ -12,7 +12,7 @@
 
 import os, sys, platform, subprocess
 
-jcc_ver = '2.19'
+jcc_ver = '2.20'
 machine = platform.machine()
 
 if machine.startswith("iPod") or machine.startswith("iPhone"):

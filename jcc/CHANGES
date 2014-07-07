@@ -1,7 +1,6 @@
 Version 2.19 -> 2.20
 --------------------
  - added support for java varargs by reconstructing array from last parameters
- - 
 
 Version 2.18 -> 2.19
 --------------------
