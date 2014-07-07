@@ -232,7 +232,6 @@ class Test_PyLuceneBase(object):
             self.closeStore(store)
         
     def test_FieldEnumeration(self):
-
         self.test_indexDocument()
 
         store = self.openStore()

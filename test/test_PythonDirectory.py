@@ -15,6 +15,7 @@
 import sys, lucene, unittest
 import os, shutil
 import test_PyLucene 
+from binascii import crc32
 from threading import RLock
 from lucene import JavaError, JArray
 
@@ -73,7 +74,8 @@ class PythonDirLock(PythonLock):
         return self.lock.release()
 
     def close(self):
-        return self.lock.close()
+        if hasattr(self.lock, 'close'):
+            self.lock.close()
 
 
 class PythonDirLockFactory(PythonLockFactory):
@@ -140,24 +142,43 @@ class PythonFileStreamOutput(PythonIndexOutput):
         self.fh = fh
         self.isOpen = True
         self._length = 0
+        self.crc = None
 
     def close(self):
         if self.isOpen:
-            super(PythonFileStreamOutput, self).close()
             self.isOpen = False
+            self.fh.flush()
             self.fh.close()
 
-    def length(self):
+    def getFilePointer(self):
         return long(self._length)
 
-    def seekInternal(self, pos):
-        self.fh.seek(pos)
+    def getChecksum(self):
+        return long(self.crc & 0xffffffff)
 
-    def flushBuffer(self, bytes):
+    def writeByte(self, b):
+        if b < 0:
+            data = chr(b + 256)
+        else:
+            data = chr(b)
+        self.fh.write(data)
+        self._length += 1
 
-        self.fh.write(bytes.string_)
+        if self.crc is None:
+            self.crc = crc32(data)
+        else:
+            self.crc = crc32(data, self.crc)
+
+    def writeBytes(self, bytes):
+        data = bytes.string_
+        self.fh.write(data)
         self.fh.flush()
-        self._length += len(bytes)
+        self._length += len(data)
+
+        if self.crc is None:
+            self.crc = crc32(data)
+        else:
+            self.crc = crc32(data, self.crc)
 
 
 class PythonFileDirectory(PythonDirectory):
@@ -257,10 +278,7 @@ class PythonDirectoryTests(unittest.TestCase, test_PyLucene.Test_PyLuceneBase):
     def closeStore(self, store, *args):
         for arg in args:
             if arg is not None:
-                try:
-                    arg.close()
-                except Exception, e:
-                    pass
+                arg.close()
         store.close()
 
     def test_IncrementalLoop(self):

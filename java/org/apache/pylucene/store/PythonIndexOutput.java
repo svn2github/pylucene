@@ -16,10 +16,10 @@
 package org.apache.pylucene.store;
 
 import java.io.IOException;
-import org.apache.lucene.store.BufferedIndexOutput;
+import org.apache.lucene.store.IndexOutput;
 
 
-public class PythonIndexOutput extends BufferedIndexOutput {
+public class PythonIndexOutput extends IndexOutput {
 
     private long pythonObject;
 
@@ -42,28 +42,33 @@ public class PythonIndexOutput extends BufferedIndexOutput {
         pythonDecRef();
     }
 
-    public void seek(long pos)
-        throws IOException
-    {
-        super.seek(pos);
-        seekInternal(pos);
-    }
-
     public native void pythonDecRef();
-    public native long length()
-        throws IOException;
-    public native void flushBuffer(byte[] data)
-        throws IOException;
-    public native void seekInternal(long pos)
+
+    public void flush()
+        throws IOException
+    {}
+
+    public native long getFilePointer();
+    public native long getChecksum()
         throws IOException;
     public native void close()
         throws IOException;
+    public native void writeByte(byte b)
+        throws IOException;
+    public native void writeBytes(byte[] bytes)
+        throws IOException;
 
-    protected void flushBuffer(byte[] b, int offset, int len)
+    public void writeBytes(byte[] bytes, int offset, int length)
         throws IOException
     {
-        byte[] data = new byte[len];
-        System.arraycopy(b, offset, data, 0, len);
-        flushBuffer(data);
+        if (offset > 0 || length < bytes.length)
+        {
+            byte[] data = new byte[length];
+
+            System.arraycopy(bytes, offset, data, 0, length);
+            writeBytes(data);
+        }
+        else
+            writeBytes(bytes);
     }
 }
