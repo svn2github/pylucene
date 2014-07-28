@@ -18,21 +18,29 @@ package org.apache.jcc;
 
 public class PythonException extends RuntimeException {
     public boolean withTrace = true;
-    protected String message, errorName, traceback;
+    protected long py_error_state = 0L;
 
     public PythonException(String message)
     {
         super(message);
-        getErrorInfo();  // sets errorName, message and traceback 
+        saveErrorState();
+    }
+
+    public void finalize()
+        throws Throwable
+    {
+        pythonDecRef();
     }
 
     public String getMessage(boolean trace)
     {
-        if (message == null)
-            message = super.getMessage();
+        if (py_error_state == 0L)
+            return super.getMessage();
+
+        String message = getErrorMessage();
 
         if (trace)
-            return message + "\n" + traceback;
+            return message + "\n" + getErrorTraceback();
 
         return message;
     }
@@ -42,16 +50,11 @@ public class PythonException extends RuntimeException {
         return getMessage(withTrace);
     }
 
-    public String getErrorName()
-    {
-        return errorName;
-    }
+    public native void pythonDecRef();
 
-    public String getTraceback()
-    {
-        return traceback;
-    }
+    public native String getErrorName();
+    public native String getErrorMessage();
+    public native String getErrorTraceback();
 
-    protected native void getErrorInfo();
-    public native void clear();
+    protected native void saveErrorState();
 }

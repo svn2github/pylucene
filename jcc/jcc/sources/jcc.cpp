@@ -750,67 +750,159 @@ extern "C" {
     }
 };
 
-static void JNICALL _PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
+static void JNICALL _PythonException_pythonDecRef(JNIEnv *vm_env, jobject self)
+{
+    jclass jcls = vm_env->GetObjectClass(self);
+    jfieldID fid = vm_env->GetFieldID(jcls, "py_error_state", "J");
+    PyObject *state = (PyObject *) vm_env->GetLongField(self, fid);
+    
+    if (state != NULL)
+    {
+        PythonGIL gil(vm_env);
+
+        Py_DECREF(state);
+        vm_env->SetLongField(self, fid, (jlong) 0);
+    }
+}
+
+static void JNICALL _PythonException_saveErrorState(JNIEnv *vm_env,
+                                                    jobject self)
 {
     PythonGIL gil(vm_env);
-
-    if (!PyErr_Occurred())
-        return;
-
-    PyObject *type, *value, *tb, *errorName;
-    jclass jcls = vm_env->GetObjectClass(self);
+    PyObject *type, *value, *tb;
 
     PyErr_Fetch(&type, &value, &tb);
 
-    errorName = PyObject_GetAttrString(type, "__name__");
+    if (type != NULL)
+    {
+        PyObject *state = PyTuple_New(3);
+
+        PyErr_NormalizeException(&type, &value, &tb);
+        PyTuple_SET_ITEM(state, 0, type);
+        if (value == NULL)
+        {
+            PyTuple_SET_ITEM(state, 1, Py_None);
+            Py_INCREF(Py_None);
+        }
+        else
+            PyTuple_SET_ITEM(state, 1, value);
+        if (tb == NULL)
+        {
+            PyTuple_SET_ITEM(state, 2, Py_None);
+            Py_INCREF(Py_None);
+        }
+        else
+            PyTuple_SET_ITEM(state, 2, tb);
+
+        jclass jcls = vm_env->GetObjectClass(self);
+        jfieldID fid = vm_env->GetFieldID(jcls, "py_error_state", "J");
+
+        vm_env->SetLongField(self, fid, (jlong) state);
+    }
+}
+
+static jstring JNICALL _PythonException_getErrorName(JNIEnv *vm_env,
+                                                     jobject self)
+{
+    jclass jcls = vm_env->GetObjectClass(self);
+    jfieldID fid = vm_env->GetFieldID(jcls, "py_error_state", "J");
+    PyObject *state = (PyObject *) vm_env->GetLongField(self, fid);
+    
+    if (state == NULL)
+        return NULL;
+
+    PythonGIL gil(vm_env);
+    PyObject *errorName =
+        PyObject_GetAttrString(PyTuple_GET_ITEM(state, 0), "__name__");
+
     if (errorName != NULL)
     {
-        jfieldID fid =
-            vm_env->GetFieldID(jcls, "errorName", "Ljava/lang/String;");
         jstring str = env->fromPyString(errorName);
-
-        vm_env->SetObjectField(self, fid, str);
-        vm_env->DeleteLocalRef(str);
         Py_DECREF(errorName);
+
+        return str;
     }
 
-    if (value != NULL)
+    return NULL;
+}
+
+static jstring JNICALL _PythonException_getErrorMessage(JNIEnv *vm_env,
+                                                        jobject self)
+{
+    jclass jcls = vm_env->GetObjectClass(self);
+    jfieldID fid = vm_env->GetFieldID(jcls, "py_error_state", "J");
+    PyObject *state = (PyObject *) vm_env->GetLongField(self, fid);
+    
+    if (state == NULL)
+        return NULL;
+
+    PythonGIL gil(vm_env);
+    PyObject *value = PyTuple_GET_ITEM(state, 1);
+
+    if (value != Py_None)
     {
         PyObject *message = PyObject_Str(value);
 
         if (message != NULL)
         {
-            jfieldID fid =
-                vm_env->GetFieldID(jcls, "message", "Ljava/lang/String;");
             jstring str = env->fromPyString(message);
-
-            vm_env->SetObjectField(self, fid, str);
-            vm_env->DeleteLocalRef(str);
             Py_DECREF(message);
+
+            return str;
         }
     }
 
+    return NULL;
+}
+
+static jstring JNICALL _PythonException_getErrorTraceback(JNIEnv *vm_env,
+                                                          jobject self)
+{
+    jclass jcls = vm_env->GetObjectClass(self);
+    jfieldID fid = vm_env->GetFieldID(jcls, "py_error_state", "J");
+    PyObject *state = (PyObject *) vm_env->GetLongField(self, fid);
+
+    if (state == NULL)
+        return NULL;
+
+    PythonGIL gil(vm_env);
     PyObject *module = NULL, *cls = NULL, *stringIO = NULL, *result = NULL;
     PyObject *_stderr = PySys_GetObject("stderr");
+
     if (!_stderr)
-        goto err;
+        return NULL;
 
     module = PyImport_ImportModule("cStringIO");
     if (!module)
-        goto err;
+        return NULL;
 
     cls = PyObject_GetAttrString(module, "StringIO");
     Py_DECREF(module);
     if (!cls)
-        goto err;
+        return NULL;
 
     stringIO = PyObject_CallObject(cls, NULL);
     Py_DECREF(cls);
     if (!stringIO)
-        goto err;
+        return NULL;
 
     Py_INCREF(_stderr);
     PySys_SetObject("stderr", stringIO);
+
+    PyObject *type = PyTuple_GET_ITEM(state, 0);
+    PyObject *value = PyTuple_GET_ITEM(state, 1);
+    PyObject *tb = PyTuple_GET_ITEM(state, 2);
+    jstring str = NULL;
+
+    Py_INCREF(type);
+    if (value == Py_None)
+        value = NULL;
+    else
+        Py_INCREF(value);
+    if (tb == Py_None)
+        tb = NULL;
+    else
+        Py_INCREF(tb);
 
     PyErr_Restore(type, value, tb);
     PyErr_Print();
@@ -820,39 +912,31 @@ static void JNICALL _PythonException_getErrorInfo(JNIEnv *vm_env, jobject self)
 
     if (result != NULL)
     {
-        jfieldID fid =
-            vm_env->GetFieldID(jcls, "traceback", "Ljava/lang/String;");
-        jstring str = env->fromPyString(result);
-
-        vm_env->SetObjectField(self, fid, str);
-        vm_env->DeleteLocalRef(str);
+        str = env->fromPyString(result);
         Py_DECREF(result);
     }
 
     PySys_SetObject("stderr", _stderr);
     Py_DECREF(_stderr);
 
-    return;
-
-  err:
-    PyErr_Restore(type, value, tb);
-}
-
-static void JNICALL _PythonException_clear(JNIEnv *vm_env, jobject self)
-{
-    PythonGIL gil(vm_env);
-    PyErr_Clear();
+    return str;
 }
 
 static void registerNatives(JNIEnv *vm_env)
 {
     jclass cls = vm_env->FindClass("org/apache/jcc/PythonException");
     JNINativeMethod methods[] = {
-        { "getErrorInfo", "()V", (void *) _PythonException_getErrorInfo },
-        { "clear", "()V", (void *) _PythonException_clear },
+        { "pythonDecRef", "()V", (void *) _PythonException_pythonDecRef },
+        { "saveErrorState", "()V", (void *) _PythonException_saveErrorState },
+        { "getErrorName", "()Ljava/lang/String;",
+          (void *) _PythonException_getErrorName },
+        { "getErrorMessage", "()Ljava/lang/String;",
+          (void *) _PythonException_getErrorMessage },
+        { "getErrorTraceback", "()Ljava/lang/String;",
+          (void *) _PythonException_getErrorTraceback },
     };
 
-    vm_env->RegisterNatives(cls, methods, 2);
+    vm_env->RegisterNatives(cls, methods, sizeof(methods) / sizeof(methods[0]));
 }
 
 #endif /* _jcc_lib */
