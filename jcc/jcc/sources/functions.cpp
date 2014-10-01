@@ -1358,37 +1358,8 @@ PyObject *PyErr_SetJavaError()
 
     vm_env->ExceptionClear();
 
-    jclass pycls = env->getPythonExceptionClass();
-
-    // Support through-layer exceptions by taking the active PythonException
-    // and making the enclosed exception visible to Python again.
-
-    if (vm_env->IsSameObject(vm_env->GetObjectClass(throwable), pycls))
-    {
-        jfieldID fid = vm_env->GetFieldID(pycls, "py_error_state", "J");
-        PyObject *state = (PyObject *) vm_env->GetLongField(throwable, fid);
-        
-        if (state != NULL)
-        {
-            PyObject *type = PyTuple_GET_ITEM(state, 0);
-            PyObject *value = PyTuple_GET_ITEM(state, 1);
-            PyObject *tb = PyTuple_GET_ITEM(state, 2);
-
-            Py_INCREF(type);
-            if (value == Py_None)
-                value = NULL;
-            else
-                Py_INCREF(value);
-            if (tb == Py_None)
-                tb = NULL;
-            else
-                Py_INCREF(tb);
-
-            PyErr_Restore(type, value, tb);
-
-            return NULL;
-        }
-    }
+    if (env->restorePythonException(throwable))
+        return NULL;
 
     PyObject *err = t_Throwable::wrap_Object(Throwable(throwable));
 

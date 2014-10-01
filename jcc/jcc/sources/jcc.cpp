@@ -43,6 +43,7 @@ static void t_jccenv_dealloc(t_jccenv *self);
 static PyObject *t_jccenv_attachCurrentThread(PyObject *self, PyObject *args);
 static PyObject *t_jccenv_detachCurrentThread(PyObject *self);
 static PyObject *t_jccenv_isCurrentThreadAttached(PyObject *self);
+static PyObject *t_jccenv_isShared(PyObject *self);
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg);
 static PyObject *t_jccenv__dumpRefs(PyObject *self,
                                     PyObject *args, PyObject *kwds);
@@ -69,6 +70,8 @@ static PyMethodDef t_jccenv_methods[] = {
     { "detachCurrentThread", (PyCFunction) t_jccenv_detachCurrentThread,
       METH_NOARGS, NULL },
     { "isCurrentThreadAttached", (PyCFunction) t_jccenv_isCurrentThreadAttached,
+      METH_NOARGS, NULL },
+    { "isShared", (PyCFunction) t_jccenv_isShared,
       METH_NOARGS, NULL },
     { "strhash", (PyCFunction) t_jccenv_strhash,
       METH_O, NULL },
@@ -178,6 +181,15 @@ static PyObject *t_jccenv_isCurrentThreadAttached(PyObject *self)
         Py_RETURN_TRUE;
 
     Py_RETURN_FALSE;
+}
+
+static PyObject *t_jccenv_isShared(PyObject *self)
+{
+#ifdef _jcc_lib
+    Py_RETURN_TRUE;
+#else
+    Py_RETURN_FALSE;
+#endif
 }
 
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
