@@ -1700,7 +1700,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     line(out, 1, 'def __str__(self):')
     line(out, 2, 'writer = StringWriter()')
     line(out, 2, 'self.getJavaException().printStackTrace(PrintWriter(writer))')
-    line(out, 2, 'return "\\n".join((super(JavaError, self).__str__(), "    Java stacktrace:", str(writer)))')
+    line(out, 2, 'return u"\\n".join((unicode(super(JavaError, self)), u"    Java stacktrace:", unicode(writer)))')
     line(out)
     line(out, 0, 'class InvalidArgsError(Exception):')
     line(out, 1, 'pass')
