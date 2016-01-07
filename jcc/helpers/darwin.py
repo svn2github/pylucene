@@ -52,3 +52,14 @@ if sys.platform == "darwin":
         if os.path.exists(os.path.join(_path, "Headers", "jni.h")):
             JAVAFRAMEWORKS = _path
             print >>sys.stderr, 'found JAVAFRAMEWORKS =', JAVAFRAMEWORKS
+
+    # monkeypatch customize_compiler so that we can remove -Wl,-x from LDSHARED
+    # set in setuptools.command.build_ext.build_ext.setup_shlib_compiler
+    from distutils.sysconfig import customize_compiler, get_config_vars
+
+    def _customize_compiler(compiler):
+        get_config_vars()['LDSHARED'] = "gcc -dynamiclib -undefined dynamic_lookup"
+        customize_compiler(compiler)
+
+    from distutils import sysconfig
+    sysconfig.customize_compiler = _customize_compiler

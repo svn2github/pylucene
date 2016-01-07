@@ -188,7 +188,8 @@ try:
     if 'USE_DISTUTILS' in os.environ:
         raise ImportError
     from setuptools import setup, Extension
-    from pkg_resources import require
+    from pkg_resources import require, parse_version
+
     with_setuptools = require('setuptools')[0].parsed_version
 
     enable_shared = False
@@ -200,16 +201,13 @@ try:
             enable_shared = True
 
         elif platform == 'darwin':
+            if (parse_version(os.environ.get('MACOSX_DEPLOYMENT_TARGET', '')) <
+                parse_version('10.5')):
+              raise RuntimeError('''
+                       
+Please set the environment variable MACOSX_DEPLOYMENT_TARGET to at least 10.5.
+''')
             enable_shared = True
-            if with_setuptools >= with_setuptools_116:
-                # fix Library building by monkey-patching expected _config_vars
-                # into build_ext otherwise build_ext is using sysconfig's
-                # instead, wrongly
-                from setuptools.command import build_ext
-                from distutils.sysconfig import get_config_var
-                get_config_var("LDSHARED")  # ensure _config_vars is initialized
-                from distutils.sysconfig import _config_vars
-                build_ext._CONFIG_VARS = _config_vars
 
         elif platform == 'linux2':
             from helpers.linux import patch_setuptools

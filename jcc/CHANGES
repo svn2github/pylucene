@@ -1,3 +1,9 @@
+Version 2.21 ->
+--------------------
+ - monkeypatched customize_compiler to fix darwin linker error due to -Wl,-x
+ - added check that MACOSX_DEPLOYMENT_TARGET is set to at least 10.5
+ - 
+
 Version 2.20 -> 2.21
 --------------------
  - improved through-layer Python error handling (with Lee Skillen)
