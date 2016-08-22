@@ -101,7 +101,8 @@ INCLUDES = {
 }
 
 CFLAGS = {
-    'darwin': ['-fno-strict-aliasing', '-Wno-write-strings'],
+    'darwin': ['-fno-strict-aliasing', '-Wno-write-strings',
+               '-mmacosx-version-min=10.5'],
     'ipod': ['-Wno-write-strings'],
     'linux2': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'sunos5': ['-features=iddollar',
@@ -123,11 +124,12 @@ DEBUG_CFLAGS = {
 }
 
 LFLAGS = {
-    'darwin/frameworks': ['-framework', 'JavaVM'],
+    'darwin/frameworks': ['-framework', 'JavaVM', '-mmacosx-version-min=10.5'],
     'darwin/home': ['-L%(darwin)s/jre/lib' %(JDK), '-ljava',
                     '-L%(darwin)s/jre/lib/server' %(JDK), '-ljvm',
                     '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib' %(JDK),
-                    '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib/server' %(JDK)],
+                    '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib/server' %(JDK),
+                    '-mmacosx-version-min=10.5'],
     'ipod': ['-ljvm', '-lpython%s.%s' %(sys.version_info[0:2]),
              '-L/usr/lib/gcc/arm-apple-darwin9/4.0.1'],
     'linux2/i386': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',
@@ -188,25 +190,22 @@ try:
     if 'USE_DISTUTILS' in os.environ:
         raise ImportError
     from setuptools import setup, Extension
-    from pkg_resources import require, parse_version
-
+    from pkg_resources import require
     with_setuptools = require('setuptools')[0].parsed_version
 
-    enable_shared = False
-    with_setuptools_c7 = ('00000000', '00000006', '*c', '00000007', '*final')
-    with_setuptools_116 = ('00000001', '00000001', '00000006', '*final')
+    try:
+        from pkg_resources import SetuptoolsVersion
+        with_modern_setuptools = True
+    except ImportError:
+        with_modern_setuptools = False
 
-    if with_setuptools >= with_setuptools_c7 and 'NO_SHARED' not in os.environ:
+    enable_shared = False
+
+    if with_modern_setuptools and 'NO_SHARED' not in os.environ:
         if platform in ('ipod', 'win32'):
             enable_shared = True
 
         elif platform == 'darwin':
-            if (parse_version(os.environ.get('MACOSX_DEPLOYMENT_TARGET', '')) <
-                parse_version('10.5')):
-              raise RuntimeError('''
-                       
-Please set the environment variable MACOSX_DEPLOYMENT_TARGET to at least 10.5.
-''')
             enable_shared = True
 
         elif platform == 'linux2':
@@ -222,10 +221,7 @@ Please set the environment variable MACOSX_DEPLOYMENT_TARGET to at least 10.5.
             distutils.cygwinccompiler.Mingw32CCompiler = JCCMinGW32CCompiler
 
         if enable_shared:
-            if with_setuptools >= with_setuptools_116:
-                from setuptools.extension import Library
-            else:
-                from setuptools import Library
+            from setuptools.extension import Library
 
 except ImportError:
     if sys.version_info < (2, 4):
