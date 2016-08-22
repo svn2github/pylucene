@@ -1016,7 +1016,7 @@ jstring JCCEnv::fromPyString(PyObject *object) const
                 jchars[i] = (jchar) pchars[i];
 
             str = get_vm_env()->NewString(jchars, len);
-            delete jchars;
+            delete[] jchars;
 
             return str;
         }

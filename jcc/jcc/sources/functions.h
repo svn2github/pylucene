@@ -131,7 +131,7 @@ template<class T> PyObject *get_iterator(T *self)
 #ifdef _java_generics
 template<class T> PyObject *get_generic_iterator(T *self)
 {
-    PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
+    PyTypeObject *param = self->parameters[0];
     jobject iterator;
 
     OBJ_CALL(iterator = env->iterator(self->object.this$));
@@ -177,7 +177,7 @@ template<class T, class U> PyObject *get_generic_iterator_next(T *self)
     if (env->get_vm_env()->IsInstanceOf(next, cls))
         return env->fromJString((jstring) next, 1);
 
-    PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
+    PyTypeObject *param = self->parameters[0];
     if (param != NULL)
         return wrapType(param, next);
 
@@ -223,7 +223,7 @@ template<class T, class U> PyObject *get_generic_enumeration_next(T *self)
     if (env->get_vm_env()->IsInstanceOf(next, cls))
         return env->fromJString((jstring) next, 1);
 
-    PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
+    PyTypeObject *param = self->parameters[0];
     if (param != NULL)
         return wrapType(param, next);
 
@@ -263,7 +263,7 @@ template<class T, class U, class V> PyObject *get_generic_next(T *self)
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
         return env->fromJString((jstring) next.this$, 0);
 
-    PyTypeObject *param = self->parameters ? self->parameters[0] : NULL;
+    PyTypeObject *param = self->parameters[0];
     if (param != NULL)
         return wrapType(param, next.this$);
 
