@@ -1,7 +1,13 @@
-Version 4.8.0 ->
+Version 4.9.0 -> 4.10.1
+-----------------------
+ - using Lucene 4.10.1 sources
+ - PyLucene built with JCC 2.20
+
+Version 4.8.0 -> 4.9.0
 ----------------------
- - FacetSample.py fixed to work with Lucene 4.8 facets API (Thomas Koch)
- - 
+ - using Lucene 4.9.0 sources
+ - FacetSample.py fixed to work with Lucene 4.9 facets API (Thomas Koch)
+ - PyLucene built with JCC 2.20
 
 Version 4.7.2 -> 4.8.0
 ----------------------

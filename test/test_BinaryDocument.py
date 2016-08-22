@@ -45,7 +45,7 @@ class TestBinaryDocument(PyLuceneTestCase):
         self.assertEqual(2, doc.fields.size())
     
         # add the doc to a ram index
-        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=StandardAnalyzer())
         writer.addDocument(doc)
         writer.close()
     
@@ -78,7 +78,7 @@ class TestBinaryDocument(PyLuceneTestCase):
         doc.add(stringFldCompressed)
     
         # add the doc to a ram index
-        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=StandardAnalyzer())
         writer.addDocument(doc)
         writer.close()
     

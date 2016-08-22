@@ -45,7 +45,7 @@ class BooleanOrTestCase(PyLuceneTestCase):
         super(BooleanOrTestCase, self).setUp()
 
         # add the doc to a ram index
-        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=StandardAnalyzer())
         d = Document()
         d.add(Field(self.FIELD_T, "Optimize not deleting all files",
                     TextField.TYPE_STORED))

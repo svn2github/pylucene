@@ -15,10 +15,9 @@
 # site-packages directory.
 #
 
-VERSION=4.x
-LUCENE_SVN_VER=HEAD
-LUCENE_VER=4.x
-LUCENE_SVN=http://svn.apache.org/repos/asf/lucene/dev/branches/branch_4x
+VERSION=6.x
+LUCENE_BRANCH=6x
+LUCENE_VER=6.3.0-SNAPSHOT
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
@@ -158,7 +157,7 @@ JARS=$(LUCENE_JAR)
 JARS+=$(ANALYZERS_JAR)          # many language analyzers
 JARS+=$(MEMORY_JAR)             # single-document memory index
 JARS+=$(HIGHLIGHTER_JAR)        # needs memory contrib
-JARS+=$(EXTENSIONS_JAR)         # needs highlighter contrib
+#JARS+=$(EXTENSIONS_JAR)         # needs highlighter contrib
 JARS+=$(QUERIES_JAR)            # regex and other contrib queries
 JARS+=$(QUERYPARSER_JAR)        # query parser
 JARS+=$(SANDBOX_JAR)            # needed by query parser
@@ -170,13 +169,12 @@ JARS+=$(JOIN_JAR)               # join module
 JARS+=$(FACET_JAR)              # facet module
 JARS+=$(SUGGEST_JAR)            # suggest/spell module
 JARS+=$(EXPRESSIONS_JAR)        # expressions module
+JARS+=$(KUROMOJI_JAR)           # japanese analyzer module
 
 
 #
 # No edits required below
 #
-
-SVNOP?=export
 
 ifeq ($(DEBUG),1)
   DEBUG_OPT=--debug
@@ -200,11 +198,12 @@ JOIN_JAR=$(LUCENE)/build/join/lucene-join-$(LUCENE_VER).jar
 FACET_JAR=$(LUCENE)/build/facet/lucene-facet-$(LUCENE_VER).jar
 SUGGEST_JAR=$(LUCENE)/build/suggest/lucene-suggest-$(LUCENE_VER).jar
 EXPRESSIONS_JAR=$(LUCENE)/build/expressions/lucene-expressions-$(LUCENE_VER).jar
+KUROMOJI_JAR=$(LUCENE)/build/analysis/kuromoji/lucene-analyzers-kuromoji-$(LUCENE_VER).jar
 
 MISC_JAR=$(LUCENE)/build/misc/lucene-misc-$(LUCENE_VER).jar
-ANTLR_JAR=$(LUCENE)/expressions/lib/antlr-runtime-3.5.jar
-ASM_JAR=$(LUCENE)/expressions/lib/asm-4.1.jar
-ASM_COMMONS_JAR=$(LUCENE)/expressions/lib/asm-commons-4.1.jar
+ANTLR_JAR=$(LUCENE)/expressions/lib/antlr4-runtime-4.5.1-1.jar
+ASM_JAR=$(LUCENE)/expressions/lib/asm-5.1.jar
+ASM_COMMONS_JAR=$(LUCENE)/expressions/lib/asm-commons-5.1.jar
 
 ICUPKG:=$(shell which icupkg)
 
@@ -214,8 +213,8 @@ ICUPKG:=$(shell which icupkg)
 default: all
 
 $(LUCENE_SRC):
-	svn $(SVNOP) --depth files -r $(LUCENE_SVN_VER) $(LUCENE_SVN) $(LUCENE_SRC)
-	svn $(SVNOP) -r $(LUCENE_SVN_VER) $(LUCENE_SVN)/lucene $(LUCENE_SRC)/lucene
+	mkdir -p $(LUCENE_SRC)
+	tar -C ~/apache/lucene.$(LUCENE_BRANCH) -cf - lucene | tar -C $(LUCENE_SRC) -xvf -
 
 sources: $(LUCENE_SRC)
 
@@ -230,14 +229,6 @@ else ifeq ($(NUM_FILES),)
 	$(error NUM_FILES is not defined, please edit Makefile as required at top)
 endif
 	cd $(LUCENE); ($(ANT) ivy-availability-check || $(ANT) ivy-bootstrap)
-
-to-orig: sources
-	mkdir -p $(LUCENE)-orig
-	tar -C $(LUCENE) -cf - . | tar -C $(LUCENE)-orig -xvf -
-
-from-orig: $(LUCENE)-orig
-	mkdir -p $(LUCENE)
-	tar -C $(LUCENE)-orig -cf - . | tar -C $(LUCENE) -xvf -
 
 lucene:
 	rm -f $(LUCENE_JAR)
@@ -290,6 +281,9 @@ $(SUGGEST_JAR): $(LUCENE_JAR)
 
 $(EXPRESSIONS_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/expressions; $(ANT) -Dversion=$(LUCENE_VER)
+
+$(KUROMOJI_JAR): $(LUCENE_JAR)
+	cd $(LUCENE)/analysis/kuromoji; $(ANT) -Dversion=$(LUCENE_VER)
 
 $(MISC_JAR): $(LUCENE_JAR)
 	cd $(LUCENE)/misc; $(ANT) -Dversion=$(LUCENE_VER)

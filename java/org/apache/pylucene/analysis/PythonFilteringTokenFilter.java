@@ -15,7 +15,7 @@
 
 package org.apache.pylucene.analysis;
 
-import org.apache.lucene.analysis.util.FilteringTokenFilter;
+import org.apache.lucene.analysis.FilteringTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.util.Version;
 import java.io.IOException;

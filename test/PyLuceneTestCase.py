@@ -31,7 +31,6 @@ class PyLuceneTestCase(TestCase):
 
     def __init__(self, *args):
         super(PyLuceneTestCase, self).__init__(*args)
-        self.TEST_VERSION = Version.LUCENE_CURRENT
 
     def setUp(self):
         self.directory = RAMDirectory()
@@ -40,12 +39,12 @@ class PyLuceneTestCase(TestCase):
         self.directory.close()
 
     def getConfig(self, analyzer=None):
-        return IndexWriterConfig(self.TEST_VERSION, analyzer)
-        
+        return IndexWriterConfig(analyzer)
+
     def getWriter(self, directory=None, analyzer=None, open_mode=None,
                   similarity=None, maxBufferedDocs=None, mergePolicy=None):
         if analyzer is None:
-            analyzer = LimitTokenCountAnalyzer(WhitespaceAnalyzer(self.TEST_VERSION), 10000)
+            analyzer = LimitTokenCountAnalyzer(WhitespaceAnalyzer(), 10000)
         config = self.getConfig(analyzer)
 
         if open_mode is None:

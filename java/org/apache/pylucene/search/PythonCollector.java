@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
-import org.apache.lucene.index.AtomicReaderContext;
 
 
 public class PythonCollector extends Collector {
