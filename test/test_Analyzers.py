@@ -32,51 +32,51 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
 
     def testSimple(self):
 
-        a = SimpleAnalyzer(Version.LUCENE_CURRENT)
-        self._assertAnalyzesTo(a, "foo bar FOO BAR", 
+        a = SimpleAnalyzer()
+        self._assertAnalyzesTo(a, "foo bar FOO BAR",
                                [ "foo", "bar", "foo", "bar" ])
-        self._assertAnalyzesTo(a, "foo      bar .  FOO <> BAR", 
+        self._assertAnalyzesTo(a, "foo      bar .  FOO <> BAR",
                                [ "foo", "bar", "foo", "bar" ])
-        self._assertAnalyzesTo(a, "foo.bar.FOO.BAR", 
+        self._assertAnalyzesTo(a, "foo.bar.FOO.BAR",
                                [ "foo", "bar", "foo", "bar" ])
-        self._assertAnalyzesTo(a, "U.S.A.", 
+        self._assertAnalyzesTo(a, "U.S.A.",
                                [ "u", "s", "a" ])
-        self._assertAnalyzesTo(a, "C++", 
+        self._assertAnalyzesTo(a, "C++",
                                [ "c" ])
-        self._assertAnalyzesTo(a, "B2B", 
+        self._assertAnalyzesTo(a, "B2B",
                                [ "b", "b" ])
-        self._assertAnalyzesTo(a, "2B", 
+        self._assertAnalyzesTo(a, "2B",
                                [ "b" ])
-        self._assertAnalyzesTo(a, "\"QUOTED\" word", 
+        self._assertAnalyzesTo(a, "\"QUOTED\" word",
                                [ "quoted", "word" ])
 
 
     def testNull(self):
 
-        a = WhitespaceAnalyzer(Version.LUCENE_CURRENT)
-        self._assertAnalyzesTo(a, "foo bar FOO BAR", 
+        a = WhitespaceAnalyzer()
+        self._assertAnalyzesTo(a, "foo bar FOO BAR",
                                [ "foo", "bar", "FOO", "BAR" ])
-        self._assertAnalyzesTo(a, "foo      bar .  FOO <> BAR", 
+        self._assertAnalyzesTo(a, "foo      bar .  FOO <> BAR",
                                [ "foo", "bar", ".", "FOO", "<>", "BAR" ])
-        self._assertAnalyzesTo(a, "foo.bar.FOO.BAR", 
+        self._assertAnalyzesTo(a, "foo.bar.FOO.BAR",
                                [ "foo.bar.FOO.BAR" ])
-        self._assertAnalyzesTo(a, "U.S.A.", 
+        self._assertAnalyzesTo(a, "U.S.A.",
                                [ "U.S.A." ])
-        self._assertAnalyzesTo(a, "C++", 
+        self._assertAnalyzesTo(a, "C++",
                                [ "C++" ])
-        self._assertAnalyzesTo(a, "B2B", 
+        self._assertAnalyzesTo(a, "B2B",
                                [ "B2B" ])
-        self._assertAnalyzesTo(a, "2B", 
+        self._assertAnalyzesTo(a, "2B",
                                [ "2B" ])
-        self._assertAnalyzesTo(a, "\"QUOTED\" word", 
+        self._assertAnalyzesTo(a, "\"QUOTED\" word",
                                [ "\"QUOTED\"", "word" ])
 
     def testStop(self):
 
-        a = StopAnalyzer(Version.LUCENE_CURRENT)
-        self._assertAnalyzesTo(a, "foo bar FOO BAR", 
+        a = StopAnalyzer()
+        self._assertAnalyzesTo(a, "foo bar FOO BAR",
                                [ "foo", "bar", "foo", "bar" ])
-        self._assertAnalyzesTo(a, "foo a bar such FOO THESE BAR", 
+        self._assertAnalyzesTo(a, "foo a bar such FOO THESE BAR",
                                [ "foo", "bar", "foo", "bar" ])
 
     def _verifyPayload(self, ts):
@@ -94,11 +94,13 @@ class AnalyzersTestCase(BaseTokenStreamTestCase):
     def testPayloadCopy(self):
 
         s = "how now brown cow"
-        ts = WhitespaceTokenizer(Version.LUCENE_CURRENT, StringReader(s))
+        ts = WhitespaceTokenizer()
+        ts.setReader(StringReader(s))
         ts = PayloadSetter(ts)
         self._verifyPayload(ts)
 
-        ts = WhitespaceTokenizer(Version.LUCENE_CURRENT, StringReader(s))
+        ts = WhitespaceTokenizer()
+        ts.setReader(StringReader(s))
         ts = PayloadSetter(ts)
         self._verifyPayload(ts)
 

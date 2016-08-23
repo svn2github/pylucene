@@ -17,16 +17,15 @@ package org.apache.pylucene.analysis;
 
 import org.apache.lucene.analysis.FilteringTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.util.Version;
 import java.io.IOException;
 
 
 public class PythonFilteringTokenFilter extends FilteringTokenFilter {
     private long pythonObject;
 
-    public PythonFilteringTokenFilter(Version version, TokenStream tokenStream)
+    public PythonFilteringTokenFilter(TokenStream tokenStream)
     {
-        super(version, tokenStream);
+        super(tokenStream);
     }
 
     public void pythonExtension(long pythonObject)
