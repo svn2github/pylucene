@@ -17,17 +17,16 @@ package org.apache.pylucene.search;
 
 import java.io.IOException;
 
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.DocIdSet;
-import org.apache.lucene.util.Bits;
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.search.SimpleCollector;
+import org.apache.lucene.search.Scorer;
 
 
-public class PythonFilter extends Filter {
+public class PythonSimpleCollector extends SimpleCollector {
 
     private long pythonObject;
 
-    public PythonFilter()
+    public PythonSimpleCollector()
     {
     }
 
@@ -46,7 +45,24 @@ public class PythonFilter extends Filter {
         pythonDecRef();
     }
 
+    protected Scorer scorer;
+
+    public void setScorer(Scorer scorer)
+        throws IOException
+    {
+        this.scorer = scorer;
+    }
+
+    public void collect(int doc)
+        throws IOException
+    {
+        collect(doc, scorer.score());
+    }
+
     public native void pythonDecRef();
-    public native DocIdSet getDocIdSet(AtomicReaderContext context, Bits acceptDocs)
+    public native void collect(int doc, float score)
         throws IOException;
+    public native void doSetNextReader(LeafReaderContext context)
+        throws IOException;
+    public native boolean needsScores();
 }
