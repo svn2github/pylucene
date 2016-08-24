@@ -26,24 +26,29 @@ class TestBooleanQuery(PyLuceneTestCase):
 
     def testEquality(self):
 
-        bq1 = BooleanQuery()
-        bq1.add(TermQuery(Term("field", "value1")), BooleanClause.Occur.SHOULD)
-        bq1.add(TermQuery(Term("field", "value2")), BooleanClause.Occur.SHOULD)
+        b1 = BooleanQuery.Builder()
+        b1.add(TermQuery(Term("field", "value1")), BooleanClause.Occur.SHOULD)
+        b1.add(TermQuery(Term("field", "value2")), BooleanClause.Occur.SHOULD)
+        bq1 = b1.build()
 
-        nested1 = BooleanQuery()
-        nested1.add(TermQuery(Term("field", "nestedvalue1")), BooleanClause.Occur.SHOULD)
-        nested1.add(TermQuery(Term("field", "nestedvalue2")), BooleanClause.Occur.SHOULD)
-        bq1.add(nested1, BooleanClause.Occur.SHOULD)
+        n1 = BooleanQuery.Builder()
+        n1.add(TermQuery(Term("field", "nestedvalue1")), BooleanClause.Occur.SHOULD)
+        n1.add(TermQuery(Term("field", "nestedvalue2")), BooleanClause.Occur.SHOULD)
+        nested1 = n1.build()
+        b1.add(nested1, BooleanClause.Occur.SHOULD)
+        bq1 = b1.build()
 
-        bq2 = BooleanQuery()
-        bq2.add(TermQuery(Term("field", "value1")), BooleanClause.Occur.SHOULD)
-        bq2.add(TermQuery(Term("field", "value2")), BooleanClause.Occur.SHOULD)
+        b2 = BooleanQuery.Builder()
+        b2.add(TermQuery(Term("field", "value1")), BooleanClause.Occur.SHOULD)
+        b2.add(TermQuery(Term("field", "value2")), BooleanClause.Occur.SHOULD)
 
-        nested2 = BooleanQuery()
-        nested2.add(TermQuery(Term("field", "nestedvalue1")), BooleanClause.Occur.SHOULD)
-        nested2.add(TermQuery(Term("field", "nestedvalue2")), BooleanClause.Occur.SHOULD)
-        bq2.add(nested2, BooleanClause.Occur.SHOULD)
-        
+        n2 = BooleanQuery.Builder()
+        n2.add(TermQuery(Term("field", "nestedvalue1")), BooleanClause.Occur.SHOULD)
+        n2.add(TermQuery(Term("field", "nestedvalue2")), BooleanClause.Occur.SHOULD)
+        nested2 = n2.build()
+        b2.add(nested2, BooleanClause.Occur.SHOULD)
+        bq2 = b2.build()
+
         self.assert_(bq1.equals(bq2))
 
 

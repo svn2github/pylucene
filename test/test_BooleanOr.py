@@ -19,7 +19,6 @@ from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import BooleanClause, BooleanQuery, TermQuery
-from org.apache.lucene.util import Version
 
 
 class BooleanOrTestCase(PyLuceneTestCase):
@@ -70,50 +69,60 @@ class BooleanOrTestCase(PyLuceneTestCase):
 
     def testFlat(self):
 
-        q = BooleanQuery()
-        q.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
-        q.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
-        q.add(BooleanClause(self.c1, BooleanClause.Occur.SHOULD))
-        q.add(BooleanClause(self.c2, BooleanClause.Occur.SHOULD))
+        b = BooleanQuery.Builder()
+        b.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
+        b.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
+        b.add(BooleanClause(self.c1, BooleanClause.Occur.SHOULD))
+        b.add(BooleanClause(self.c2, BooleanClause.Occur.SHOULD))
+        q = b.build()
         self.assertEqual(1, self.search(q))
 
     def testParenthesisMust(self):
 
-        q3 = BooleanQuery()
-        q3.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
-        q3.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
-        q4 = BooleanQuery()
-        q4.add(BooleanClause(self.c1, BooleanClause.Occur.MUST))
-        q4.add(BooleanClause(self.c2, BooleanClause.Occur.MUST))
-        q2 = BooleanQuery()
-        q2.add(q3, BooleanClause.Occur.SHOULD)
-        q2.add(q4, BooleanClause.Occur.SHOULD)
+        b3 = BooleanQuery.Builder()
+        b3.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
+        b3.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
+        q3 = b3.build()
+        b4 = BooleanQuery.Builder()
+        b4.add(BooleanClause(self.c1, BooleanClause.Occur.MUST))
+        b4.add(BooleanClause(self.c2, BooleanClause.Occur.MUST))
+        q4 = b4.build()
+        b2 = BooleanQuery.Builder()
+        b2.add(q3, BooleanClause.Occur.SHOULD)
+        b2.add(q4, BooleanClause.Occur.SHOULD)
+        q2 = b2.build()
         self.assertEqual(1, self.search(q2))
 
     def testParenthesisMust2(self):
 
-        q3 = BooleanQuery()
-        q3.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
-        q3.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
-        q4 = BooleanQuery()
-        q4.add(BooleanClause(self.c1, BooleanClause.Occur.SHOULD))
-        q4.add(BooleanClause(self.c2, BooleanClause.Occur.SHOULD))
-        q2 = BooleanQuery()
-        q2.add(q3, BooleanClause.Occur.SHOULD)
-        q2.add(q4, BooleanClause.Occur.MUST)
+        b3 = BooleanQuery.Builder()
+        b3.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
+        b3.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
+        q3 = b3.build()
+        b4 = BooleanQuery.Builder()
+        b4.add(BooleanClause(self.c1, BooleanClause.Occur.SHOULD))
+        b4.add(BooleanClause(self.c2, BooleanClause.Occur.SHOULD))
+        q4 = b4.build()
+        b2 = BooleanQuery.Builder()
+        b2.add(q3, BooleanClause.Occur.SHOULD)
+        b2.add(q4, BooleanClause.Occur.MUST)
+        q2 = b2.build()
         self.assertEqual(1, self.search(q2))
 
     def testParenthesisShould(self):
 
-        q3 = BooleanQuery()
-        q3.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
-        q3.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
-        q4 = BooleanQuery()
-        q4.add(BooleanClause(self.c1, BooleanClause.Occur.SHOULD))
-        q4.add(BooleanClause(self.c2, BooleanClause.Occur.SHOULD))
-        q2 = BooleanQuery()
-        q2.add(q3, BooleanClause.Occur.SHOULD)
-        q2.add(q4, BooleanClause.Occur.SHOULD)
+        b3 = BooleanQuery.Builder()
+        b3.add(BooleanClause(self.t1, BooleanClause.Occur.SHOULD))
+        b3.add(BooleanClause(self.t2, BooleanClause.Occur.SHOULD))
+        q3 = b3.build()
+        b4 = BooleanQuery.Builder()
+        b4.add(BooleanClause(self.c1, BooleanClause.Occur.SHOULD))
+        b4.add(BooleanClause(self.c2, BooleanClause.Occur.SHOULD))
+        q4 = b4.build()
+        b2 = BooleanQuery.Builder()
+        b2.add(q3, BooleanClause.Occur.SHOULD)
+        b2.add(q4, BooleanClause.Occur.SHOULD)
+        q2 = b2.build()
         self.assertEqual(1, self.search(q2))
 
 
