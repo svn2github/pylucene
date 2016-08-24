@@ -170,6 +170,7 @@ JARS+=$(FACET_JAR)              # facet module
 JARS+=$(SUGGEST_JAR)            # suggest/spell module
 JARS+=$(EXPRESSIONS_JAR)        # expressions module
 JARS+=$(KUROMOJI_JAR)           # japanese analyzer module
+JARS+=$(MISC_JAR)               # misc
 
 
 #
@@ -199,8 +200,8 @@ FACET_JAR=$(LUCENE)/build/facet/lucene-facet-$(LUCENE_VER).jar
 SUGGEST_JAR=$(LUCENE)/build/suggest/lucene-suggest-$(LUCENE_VER).jar
 EXPRESSIONS_JAR=$(LUCENE)/build/expressions/lucene-expressions-$(LUCENE_VER).jar
 KUROMOJI_JAR=$(LUCENE)/build/analysis/kuromoji/lucene-analyzers-kuromoji-$(LUCENE_VER).jar
-
 MISC_JAR=$(LUCENE)/build/misc/lucene-misc-$(LUCENE_VER).jar
+
 ANTLR_JAR=$(LUCENE)/expressions/lib/antlr4-runtime-4.5.1-1.jar
 ASM_JAR=$(LUCENE)/expressions/lib/asm-5.1.jar
 ASM_COMMONS_JAR=$(LUCENE)/expressions/lib/asm-commons-5.1.jar
@@ -290,7 +291,7 @@ $(MISC_JAR): $(LUCENE_JAR)
 
 JCCFLAGS?=
 
-jars: $(JARS) $(MISC_JAR) $(ANTLR_JAR) $(ASM_JAR) $(ASM_COMMONS)
+jars: $(JARS) $(ANTLR_JAR) $(ASM_JAR) $(ASM_COMMONS)
 
 
 ifneq ($(ICUPKG),)
@@ -319,7 +320,6 @@ endif
 
 GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            $(JCCFLAGS) --use_full_names \
-           --include $(MISC_JAR) \
            --include $(ANTLR_JAR) \
            --include $(ASM_JAR) \
            --include $(ASM_COMMONS_JAR) \
@@ -344,6 +344,8 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
                              java.io.DataInputStream \
            --exclude org.apache.lucene.sandbox.queries.regex.JakartaRegexpCapabilities \
            --exclude org.apache.regexp.RegexpTunnel \
+           --exclude org.apache.lucene.store.WindowsDirectory \
+           --exclude org.apache.lucene.store.NativePosixUtil \
            --python lucene \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
