@@ -18,17 +18,16 @@ from PyLuceneTestCase import PyLuceneTestCase
 from org.apache.lucene.analysis.core import SimpleAnalyzer
 from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.queryparser.classic import QueryParser
-from org.apache.lucene.util import Version
 
 
 class NotTestCase(PyLuceneTestCase):
     """
     Unit tests ported from Java Lucene
     """
-  
+
     def testNot(self):
 
-        writer = self.getWriter(analyzer=SimpleAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=SimpleAnalyzer())
 
         d1 = Document()
         d1.add(Field("field", "a b", TextField.TYPE_STORED))
@@ -38,8 +37,7 @@ class NotTestCase(PyLuceneTestCase):
         writer.close()
 
         searcher = self.getSearcher()
-        query = QueryParser(Version.LUCENE_CURRENT, "field",
-                            SimpleAnalyzer(Version.LUCENE_CURRENT)).parse("a NOT b")
+        query = QueryParser("field", SimpleAnalyzer()).parse("a NOT b")
 
         topDocs = searcher.search(query, 50)
         self.assertEqual(0, topDocs.totalHits)
