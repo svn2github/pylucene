@@ -22,7 +22,6 @@ from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import \
     BooleanClause, BooleanQuery, PhraseQuery, TermQuery
-from org.apache.lucene.util import Version
 from org.apache.pylucene.analysis import \
     PythonAnalyzer, PythonFilteringTokenFilter
 
@@ -40,24 +39,24 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         writer = self.getWriter()
         writer.addDocument(doc)
         writer.close()
-        
+
         self.searcher = self.getSearcher()
-        self.query = PhraseQuery()
+        self.builder = PhraseQuery.Builder()
 
     def testNotCloseEnough(self):
 
-        self.query.setSlop(2)
-        self.query.add(Term("field", "one"))
-        self.query.add(Term("field", "five"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder.setSlop(2)
+        self.builder.add(Term("field", "one"))
+        self.builder.add(Term("field", "five"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(0, topDocs.totalHits)
 
     def testBarelyCloseEnough(self):
 
-        self.query.setSlop(3)
-        self.query.add(Term("field", "one"))
-        self.query.add(Term("field", "five"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder.setSlop(3)
+        self.builder.add(Term("field", "one"))
+        self.builder.add(Term("field", "five"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(1, topDocs.totalHits)
 
     def testExact(self):
@@ -66,33 +65,33 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         """
 
         # slop is zero by default
-        self.query.add(Term("field", "four"))
-        self.query.add(Term("field", "five"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder.add(Term("field", "four"))
+        self.builder.add(Term("field", "five"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(1, topDocs.totalHits, "exact match")
 
-        self.query = PhraseQuery()
-        self.query.add(Term("field", "two"))
-        self.query.add(Term("field", "one"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder = PhraseQuery.Builder()
+        self.builder.add(Term("field", "two"))
+        self.builder.add(Term("field", "one"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(0, topDocs.totalHits, "reverse not exact")
 
     def testSlop1(self):
 
         # Ensures slop of 1 works with terms in order.
-        self.query.setSlop(1)
-        self.query.add(Term("field", "one"))
-        self.query.add(Term("field", "two"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder.setSlop(1)
+        self.builder.add(Term("field", "one"))
+        self.builder.add(Term("field", "two"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(1, topDocs.totalHits, "in order")
 
         # Ensures slop of 1 does not work for phrases out of order
         # must be at least 2.
-        self.query = PhraseQuery()
-        self.query.setSlop(1)
-        self.query.add(Term("field", "two"))
-        self.query.add(Term("field", "one"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder = PhraseQuery.Builder()
+        self.builder.setSlop(1)
+        self.builder.add(Term("field", "two"))
+        self.builder.add(Term("field", "one"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(0, topDocs.totalHits, "reversed, slop not 2 or more")
 
     def testOrderDoesntMatter(self):
@@ -100,17 +99,17 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         As long as slop is at least 2, terms can be reversed
         """
 
-        self.query.setSlop(2) # must be at least two for reverse order match
-        self.query.add(Term("field", "two"))
-        self.query.add(Term("field", "one"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder.setSlop(2) # must be at least two for reverse order match
+        self.builder.add(Term("field", "two"))
+        self.builder.add(Term("field", "one"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(1, topDocs.totalHits, "just sloppy enough")
 
-        self.query = PhraseQuery()
-        self.query.setSlop(2)
-        self.query.add(Term("field", "three"))
-        self.query.add(Term("field", "one"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder = PhraseQuery.Builder()
+        self.builder.setSlop(2)
+        self.builder.add(Term("field", "three"))
+        self.builder.add(Term("field", "one"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(0, topDocs.totalHits, "not sloppy enough")
 
     def testMultipleTerms(self):
@@ -118,29 +117,29 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         slop is the total number of positional moves allowed
         to line up a phrase
         """
-        
-        self.query.setSlop(2)
-        self.query.add(Term("field", "one"))
-        self.query.add(Term("field", "three"))
-        self.query.add(Term("field", "five"))
-        topDocs = self.searcher.search(self.query, 50)
+
+        self.builder.setSlop(2)
+        self.builder.add(Term("field", "one"))
+        self.builder.add(Term("field", "three"))
+        self.builder.add(Term("field", "five"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(1, topDocs.totalHits, "two total moves")
 
-        self.query = PhraseQuery()
-        self.query.setSlop(5) # it takes six moves to match this phrase
-        self.query.add(Term("field", "five"))
-        self.query.add(Term("field", "three"))
-        self.query.add(Term("field", "one"))
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder = PhraseQuery.Builder()
+        self.builder.setSlop(5) # it takes six moves to match this phrase
+        self.builder.add(Term("field", "five"))
+        self.builder.add(Term("field", "three"))
+        self.builder.add(Term("field", "one"))
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(0, topDocs.totalHits, "slop of 5 not close enough")
 
-        self.query.setSlop(6)
-        topDocs = self.searcher.search(self.query, 50)
+        self.builder.setSlop(6)
+        topDocs = self.searcher.search(self.builder.build(), 50)
         self.assertEqual(1, topDocs.totalHits, "slop of 6 just right")
 
     def testPhraseQueryWithStopAnalyzer(self):
 
-        writer = self.getWriter(analyzer=StopAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=StopAnalyzer())
         doc = Document()
         doc.add(Field("field", "the stop words are here", TextField.TYPE_STORED))
         writer.addDocument(doc)
@@ -149,44 +148,46 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         searcher = self.getSearcher()
 
         # valid exact phrase query
-        query = PhraseQuery()
-        query.add(Term("field", "stop"))
-        query.add(Term("field", "words"))
-        scoreDocs = searcher.search(query, None, 50).scoreDocs
+        builder = PhraseQuery.Builder()
+        builder.add(Term("field", "stop"))
+        builder.add(Term("field", "words"))
+        scoreDocs = searcher.search(builder.build(), 50).scoreDocs
         self.assertEqual(1, len(scoreDocs))
-  
+
     def testPhraseQueryInConjunctionScorer(self):
 
         writer = self.getWriter()
-    
+
         doc = Document()
         doc.add(Field("source", "marketing info", TextField.TYPE_STORED))
         writer.addDocument(doc)
-    
+
         doc = Document()
         doc.add(Field("contents", "foobar", TextField.TYPE_STORED))
         doc.add(Field("source", "marketing info", TextField.TYPE_STORED))
         writer.addDocument(doc)
-    
+
         writer.close()
-        
+
         searcher = self.getSearcher()
-    
-        phraseQuery = PhraseQuery()
-        phraseQuery.add(Term("source", "marketing"))
-        phraseQuery.add(Term("source", "info"))
+
+        builder = PhraseQuery.Builder()
+        builder.add(Term("source", "marketing"))
+        builder.add(Term("source", "info"))
+        phraseQuery = builder.build()
         topDocs = searcher.search(phraseQuery, 50)
         self.assertEqual(2, topDocs.totalHits)
-    
+
         termQuery = TermQuery(Term("contents","foobar"))
-        booleanQuery = BooleanQuery()
-        booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
-        booleanQuery.add(phraseQuery, BooleanClause.Occur.MUST)
+        builder = BooleanQuery.Builder()
+        builder.add(termQuery, BooleanClause.Occur.MUST)
+        builder.add(phraseQuery, BooleanClause.Occur.MUST)
+        booleanQuery = builder.build()
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(1, topDocs.totalHits)
-    
+
         writer = self.getWriter()
-        
+
         doc = Document()
         doc.add(Field("contents", "map entry woo", TextField.TYPE_STORED))
         writer.addDocument(doc)
@@ -200,28 +201,31 @@ class PhraseQueryTestCase(PyLuceneTestCase):
         writer.addDocument(doc)
 
         writer.close()
-        
+
         searcher = self.getSearcher()
-    
+
         termQuery = TermQuery(Term("contents", "woo"))
-        phraseQuery = PhraseQuery()
-        phraseQuery.add(Term("contents", "map"))
-        phraseQuery.add(Term("contents", "entry"))
-    
+        builder = PhraseQuery.Builder()
+        builder.add(Term("contents", "map"))
+        builder.add(Term("contents", "entry"))
+
         topDocs = searcher.search(termQuery, 50)
         self.assertEqual(3, topDocs.totalHits)
+        phraseQuery = builder.build()
         topDocs = searcher.search(phraseQuery, 50)
         self.assertEqual(2, topDocs.totalHits)
-    
-        booleanQuery = BooleanQuery()
-        booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
-        booleanQuery.add(phraseQuery, BooleanClause.Occur.MUST)
+
+        builder = BooleanQuery.Builder()
+        builder.add(termQuery, BooleanClause.Occur.MUST)
+        builder.add(phraseQuery, BooleanClause.Occur.MUST)
+        booleanQuery = builder.build()
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(2, topDocs.totalHits)
-    
-        booleanQuery = BooleanQuery()
-        booleanQuery.add(phraseQuery, BooleanClause.Occur.MUST)
-        booleanQuery.add(termQuery, BooleanClause.Occur.MUST)
+
+        builder = BooleanQuery.Builder()
+        builder.add(phraseQuery, BooleanClause.Occur.MUST)
+        builder.add(termQuery, BooleanClause.Occur.MUST)
+        booleanQuery = builder.build()
         topDocs = searcher.search(booleanQuery, 50)
         self.assertEqual(2, topDocs.totalHits)
 
