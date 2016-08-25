@@ -23,6 +23,8 @@
     <javac srcdir="java/org/apache/pylucene/search" 
            excludes="similarities/*,spans/*"
            destdir="${classes.dir}" classpathref="classpath" />
+    <javac srcdir="java/org/apache/pylucene/index" 
+           destdir="${classes.dir}" classpathref="classpath" />
   </target>
 
   <target name="jar" depends="compile">

@@ -25,22 +25,22 @@ class MyDeletionPolicy(PythonIndexDeletionPolicy):
 
     onInitCalled = False
     onCommitCalled = False
-    
+
     def onInit(self, commits):
       self.onInitCalled = True
 
     def onCommit(self, commits):
       self.onCommitCalled = True
-    
+
 
 class IndexDeletionPolicyTestCase(PyLuceneTestCase):
 
     def getConfig(self, analyzer):
 
         self.policy = MyDeletionPolicy()
-        config = IndexWriterConfig(self.TEST_VERSION, analyzer)
+        config = IndexWriterConfig(analyzer)
         config.setIndexDeletionPolicy(self.policy)
-        
+
         return config
 
     def testIndexDeletionPolicy(self):
