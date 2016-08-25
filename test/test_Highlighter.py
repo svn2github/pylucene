@@ -21,7 +21,6 @@ from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.search.highlight import \
     Highlighter, QueryScorer, SimpleFragmenter
-from org.apache.lucene.util import Version
 from org.apache.pylucene.search.highlight import PythonFormatter
 
 
@@ -34,11 +33,11 @@ class TestFormatter(PythonFormatter):
     def highlightTerm(self, originalText, group):
         if group.getTotalScore() <= 0:
             return originalText;
-        
+
         self.testCase.countHighlightTerm()
-        
+
         return "<b>" + originalText + "</b>"
-    
+
 
 class HighlighterTestCase(PyLuceneTestCase):
     """
@@ -56,13 +55,12 @@ class HighlighterTestCase(PyLuceneTestCase):
     def __init__(self, *args):
         super(HighlighterTestCase, self).__init__(*args)
 
-        self.parser = QueryParser(Version.LUCENE_CURRENT, self.FIELD_NAME,
-                                  StandardAnalyzer(Version.LUCENE_CURRENT))
+        self.parser = QueryParser(self.FIELD_NAME, StandardAnalyzer())
 
     def setUp(self):
         super(HighlighterTestCase, self).setUp()
 
-        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+        self.analyzer = StandardAnalyzer()
 
         writer = self.getWriter(analyzer=self.analyzer)
         for text in self.texts:
@@ -100,7 +98,7 @@ class HighlighterTestCase(PyLuceneTestCase):
         self.assert_(self.numHighlights == 3,
                      ("Failed to find correct number of highlights, %d found"
                       %(self.numHighlights)))
-        
+
     def doSearching(self, queryString):
 
         self.searcher = self.getSearcher()
@@ -114,9 +112,9 @@ class HighlighterTestCase(PyLuceneTestCase):
         self.numHighlights = 0
 
     def doStandardHighlights(self):
-        
+
         formatter = TestFormatter(self)
-        
+
         highlighter = Highlighter(formatter, QueryScorer(self.query))
         highlighter.setTextFragmenter(SimpleFragmenter(20))
         for scoreDoc in self.scoreDocs:
@@ -131,11 +129,11 @@ class HighlighterTestCase(PyLuceneTestCase):
                                                   maxNumFragmentsRequired,
                                                   fragmentSeparator)
             print "\t", result
-            
+
     def countHighlightTerm(self):
 
         self.numHighlights += 1 # update stats used in assertions
-        
+
     def addDoc(self, writer, text):
 
         d = Document()
@@ -143,7 +141,7 @@ class HighlighterTestCase(PyLuceneTestCase):
 
         d.add(f)
         writer.addDocument(d)
-        
+
 
 if __name__ == "__main__":
     lucene.initVM(vmargs=['-Djava.awt.headless=true'])
