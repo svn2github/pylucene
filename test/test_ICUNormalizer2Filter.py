@@ -26,7 +26,6 @@ from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from org.apache.lucene.analysis import Analyzer
 from org.apache.lucene.analysis.core import WhitespaceTokenizer
-from org.apache.lucene.util import Version
 from org.apache.pylucene.analysis import PythonAnalyzer
 
 
@@ -37,8 +36,8 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
         from lucene.ICUNormalizer2Filter import ICUNormalizer2Filter
 
         class _analyzer(PythonAnalyzer):
-            def createComponents(_self, fieldName, reader):
-                source = WhitespaceTokenizer(Version.LUCENE_CURRENT, reader)
+            def createComponents(_self, fieldName):
+                source = WhitespaceTokenizer()
                 return Analyzer.TokenStreamComponents(source, ICUNormalizer2Filter(source))
 
         a = _analyzer()
@@ -49,29 +48,32 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
 
         # case folding
         self._assertAnalyzesTo(a, "Ruß", [ "russ" ])
-    
+
         # case folding
         self._assertAnalyzesTo(a, u"ΜΆΪΟΣ", [ u"μάϊοσ" ])
         self._assertAnalyzesTo(a, u"Μάϊος", [ u"μάϊοσ" ])
 
         # supplementary case folding
         self._assertAnalyzesTo(a, u"𐐖", [ u"𐐾" ])
-    
+
         # normalization
         self._assertAnalyzesTo(a, u"ﴳﴺﰧ", [ u"طمطمطم" ])
 
         # removal of default ignorables
         self._assertAnalyzesTo(a, u"क्‍ष", [ u"क्ष" ])
-  
+
     def testAlternate(self):
 
         from lucene.ICUNormalizer2Filter import ICUNormalizer2Filter
 
         class analyzer(PythonAnalyzer):
             # specify nfc with decompose to get nfd
-            def tokenStream(_self, fieldName, reader):
-                return ICUNormalizer2Filter(WhitespaceTokenizer(Version.LUCENE_CURRENT, reader),
-                                            Normalizer2.getInstance(None, "nfc", UNormalizationMode2.DECOMPOSE))
+            def createComponents(_self, fieldName):
+                source = WhitespaceTokenizer()
+                return Analyzer.TokenStreamComponents(
+                    source, ICUNormalizer2Filter(
+                        source,
+                        Normalizer2.getInstance(None, "nfc", UNormalizationMode2.DECOMPOSE)))
 
         a = analyzer()
         # decompose EAcute into E + combining Acute

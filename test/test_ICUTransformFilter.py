@@ -31,12 +31,13 @@ from org.apache.pylucene.analysis import PythonTokenFilter
 
 
 class TestICUTransformFilter(BaseTokenStreamTestCase):
-  
+
     def _checkToken(self, transform, input, expected):
 
         from lucene.ICUTransformFilter import ICUTransformFilter
-        ts = ICUTransformFilter(KeywordTokenizer(StringReader(input)),
-                                transform)
+        tokenizer = KeywordTokenizer()
+        tokenizer.setReader(StringReader(input))
+        ts = ICUTransformFilter(tokenizer, transform)
         self._assertTokenStreamContents(ts, [ expected ])
 
     def _getTransliterator(self, name):
@@ -45,31 +46,31 @@ class TestICUTransformFilter(BaseTokenStreamTestCase):
 
     def testBasicFunctionality(self):
 
-        self._checkToken(self._getTransliterator("Traditional-Simplified"), 
+        self._checkToken(self._getTransliterator("Traditional-Simplified"),
                          u"簡化字", u"简化字")
         self._checkToken(self._getTransliterator("Katakana-Hiragana"),
                          u"ヒラガナ", u"ひらがな")
-        self._checkToken(self._getTransliterator("Fullwidth-Halfwidth"), 
+        self._checkToken(self._getTransliterator("Fullwidth-Halfwidth"),
                          u"アルアノリウ", u"ｱﾙｱﾉﾘｳ")
-        self._checkToken(self._getTransliterator("Any-Latin"), 
+        self._checkToken(self._getTransliterator("Any-Latin"),
                          u"Αλφαβητικός Κατάλογος", u"Alphabētikós Katálogos")
-        self._checkToken(self._getTransliterator("NFD; [:Nonspacing Mark:] Remove"), 
+        self._checkToken(self._getTransliterator("NFD; [:Nonspacing Mark:] Remove"),
                          u"Alphabētikós Katálogos", u"Alphabetikos Katalogos")
         self._checkToken(self._getTransliterator("Han-Latin"),
                          u"中国", u"zhōng guó")
-  
+
     def testCustomFunctionality(self):
 
-        # convert a's to b's and b's to c's        
+        # convert a's to b's and b's to c's
         rules = "a > b; b > c;"
         self._checkToken(Transliterator.createFromRules("test", rules, UTransDirection.FORWARD), "abacadaba", "bcbcbdbcb")
-  
+
     def testCustomFunctionality2(self):
-        
-        # convert a's to b's and b's to c's        
+
+        # convert a's to b's and b's to c's
         rules = "c { a > b; a > d;"
         self._checkToken(Transliterator.createFromRules("test", rules, UTransDirection.FORWARD), "caa", "cbd")
-  
+
     def testOptimizer2(self):
 
         self._checkToken(self._getTransliterator("Traditional-Simplified; Lower"),

@@ -25,7 +25,6 @@ import sys, lucene, unittest
 from BaseTokenStreamTestCase import BaseTokenStreamTestCase
 
 from org.apache.lucene.analysis import Analyzer
-from org.apache.lucene.util import Version
 from org.apache.lucene.analysis.core import WhitespaceTokenizer
 from org.apache.pylucene.analysis import PythonAnalyzer
 
@@ -37,8 +36,8 @@ class TestICUFoldingFilter(BaseTokenStreamTestCase):
         from lucene.ICUFoldingFilter import ICUFoldingFilter
 
         class _analyzer(PythonAnalyzer):
-            def createComponents(_self, fieldName, reader):
-                source = WhitespaceTokenizer(Version.LUCENE_CURRENT, reader)
+            def createComponents(_self, fieldName):
+                source = WhitespaceTokenizer()
                 return Analyzer.TokenStreamComponents(source, ICUFoldingFilter(source))
 
         a = _analyzer()
@@ -49,29 +48,29 @@ class TestICUFoldingFilter(BaseTokenStreamTestCase):
 
         # case folding
         self._assertAnalyzesTo(a, u"Ruß", [ "russ" ])
-    
+
         # case folding with accent removal
         self._assertAnalyzesTo(a, u"ΜΆΪΟΣ", [ u"μαιοσ" ])
         self._assertAnalyzesTo(a, u"Μάϊος", [ u"μαιοσ" ])
 
         # supplementary case folding
         self._assertAnalyzesTo(a, u"𐐖", [ u"𐐾" ])
-    
+
         # normalization
         self._assertAnalyzesTo(a, u"ﴳﴺﰧ", [ u"طمطمطم" ])
 
         # removal of default ignorables
         self._assertAnalyzesTo(a, u"क्‍ष", [ u"कष" ])
-    
+
         # removal of latin accents (composed)
         self._assertAnalyzesTo(a, u"résumé", [ "resume" ])
-    
+
         # removal of latin accents (decomposed)
         self._assertAnalyzesTo(a, u"re\u0301sume\u0301", [ u"resume" ])
-    
+
         # fold native digits
         self._assertAnalyzesTo(a, u"৭০৬", [ "706" ])
-    
+
         # ascii-folding-filter type stuff
         self._assertAnalyzesTo(a, u"đis is cræzy", [ "dis", "is", "craezy" ])
 
