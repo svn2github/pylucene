@@ -20,7 +20,6 @@ from java.util import HashMap
 from org.apache.lucene.analysis.core import SimpleAnalyzer, WhitespaceAnalyzer
 from org.apache.lucene.analysis.miscellaneous import PerFieldAnalyzerWrapper
 from org.apache.lucene.analysis.tokenattributes import CharTermAttribute
-from org.apache.lucene.util import Version
 
 
 class PerFieldAnalyzerTestCase(PyLuceneTestCase):
@@ -31,8 +30,8 @@ class PerFieldAnalyzerTestCase(PyLuceneTestCase):
     def testPerField(self):
 
         perField = HashMap()
-        perField.put("special", SimpleAnalyzer(Version.LUCENE_CURRENT))
-        analyzer = PerFieldAnalyzerWrapper(WhitespaceAnalyzer(Version.LUCENE_CURRENT), perField)
+        perField.put("special", SimpleAnalyzer())
+        analyzer = PerFieldAnalyzerWrapper(WhitespaceAnalyzer(), perField)
 
         text = "Qwerty"
         tokenStream = analyzer.tokenStream("field", StringReader(text))
