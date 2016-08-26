@@ -17,15 +17,17 @@ package org.apache.pylucene.search.spans;
 
 import java.io.IOException;
 
-import org.apache.lucene.search.spans.Spans;
+import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Term;
+
 import org.apache.lucene.search.spans.SpanCollector;
 
 
-public class PythonSpans extends Spans {
+public class PythonSpanCollector implements SpanCollector {
 
     private long pythonObject;
 
-    public PythonSpans()
+    public PythonSpanCollector()
     {
     }
 
@@ -46,18 +48,9 @@ public class PythonSpans extends Spans {
 
     public native void pythonDecRef();
 
-    public native int docID();
-    public native int nextDoc()
+    public native void collectLeaf(PostingsEnum postings, int position,
+                                   Term term)
         throws IOException;
-    public native int advance(int target)
-        throws IOException;
-    public native long cost();
 
-    public native int nextStartPosition();
-    public native int startPosition();
-    public native int endPosition();
-    public native int width();
-    public native void collect(SpanCollector collector)
-        throws IOException;
-    public native float positionsCost();
+    public native void reset();
 }

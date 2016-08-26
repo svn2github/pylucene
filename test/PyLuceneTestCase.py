@@ -61,13 +61,20 @@ class PyLuceneTestCase(TestCase):
             directory = self.directory
 
         return IndexWriter(directory, config)
-        
+
     def getSearcher(self, directory=None, reader=None):
         if reader is not None:
             return IndexSearcher(reader)
         return IndexSearcher(self.getReader(directory=directory))
-    
+
     def getReader(self, directory=None):
         if directory is None:
             directory = self.directory
         return DirectoryReader.open(directory)
+
+    def getOnlyLeafReader(self, reader):
+        subReaders = reader.leaves()
+        if subReaders.size() != 1:
+            raise ValueError(reader + " has " + subReaders.size() +
+                             " segments instead of exactly one")
+        return subReaders.get(0).reader()

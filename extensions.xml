@@ -21,7 +21,7 @@
     <javac srcdir="java/org/apache/pylucene/util"
            destdir="${classes.dir}" classpathref="classpath" />
     <javac srcdir="java/org/apache/pylucene/search" 
-           excludes="similarities/*,spans/*"
+           excludes="similarities/*"
            destdir="${classes.dir}" classpathref="classpath" />
     <javac srcdir="java/org/apache/pylucene/index" 
            destdir="${classes.dir}" classpathref="classpath" />
