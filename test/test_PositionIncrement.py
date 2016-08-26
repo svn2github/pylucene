@@ -32,8 +32,7 @@ from org.apache.lucene.search.spans import \
     Spans, SpanNearQuery, SpanTermQuery, SpanWeight
 from org.apache.lucene.util import BytesRef
 from org.apache.pylucene.analysis import \
-    PythonAnalyzer, PythonFilteringTokenFilter, PythonTokenFilter, \
-    PythonTokenizer
+    PythonAnalyzer, PythonTokenFilter, PythonTokenizer
 from org.apache.pylucene.search.spans import PythonSpanCollector
 
 
