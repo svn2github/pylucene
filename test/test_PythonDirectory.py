@@ -89,7 +89,7 @@ class PythonFileStreamInput(PythonIndexInput):
 class PythonFileStreamOutput(PythonIndexOutput):
 
     def __init__(self, name, fh):
-        super(PythonFileStreamOutput, self).__init__("python", name)
+        super(PythonFileStreamOutput, self).__init__("python: %s" %(name), name)
         self.fh = fh
         self.isOpen = True
         self._length = 0

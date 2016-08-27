@@ -22,16 +22,15 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.CharStream;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.util.Version;
 
 
 public class PythonQueryParser extends QueryParser {
 
     private long pythonObject;
 
-    public PythonQueryParser(Version version, String field, Analyzer analyzer)
+    public PythonQueryParser(String field, Analyzer analyzer)
     {
-        super(version, field, analyzer);
+        super(field, analyzer);
     }
 
     public PythonQueryParser(CharStream stream)

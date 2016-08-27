@@ -16,7 +16,6 @@ import sys, lucene, unittest
 from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.util import Version
 from org.apache.pylucene.queryparser.classic import PythonQueryParser
 
 
@@ -29,8 +28,7 @@ class PythonExceptionTestCase(PyLuceneTestCase):
             def getFieldQuery_quoted(_self, field, queryText, quoted):
                 raise TestException("TestException")
 
-        qp = TestQueryParser(Version.LUCENE_CURRENT, 'all',
-                             StandardAnalyzer(Version.LUCENE_CURRENT))
+        qp = TestQueryParser('all', StandardAnalyzer())
 
         with self.assertRaises(TestException):
             qp.parse("foo bar")
