@@ -22,7 +22,6 @@ from PyLuceneTestCase import PyLuceneTestCase
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import TermQuery
-from org.apache.lucene.util import Version
 
 
 class QueryRewriteTest(PyLuceneTestCase):
@@ -30,18 +29,18 @@ class QueryRewriteTest(PyLuceneTestCase):
     def setUp(self):
         super(QueryRewriteTest, self).setUp()
 
-        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=StandardAnalyzer())
         writer.close()
         self.reader = self.getReader()
         self.term = Term('all', 'foo')
-        
+
     def testQuery(self):
 
         base_query = TermQuery(self.term)
         new_query = base_query.rewrite(self.reader)
 
         self.assertEquals(base_query, new_query)
-    
+
 
 if __name__ == "__main__":
     env = lucene.initVM(vmargs=['-Djava.awt.headless=true'])
