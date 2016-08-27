@@ -15,25 +15,27 @@
 import sys, lucene, unittest
 import os, shutil
 
-from java.io import File, StringReader
+from java.io import StringReader
+from java.nio.file import Path, Paths
 from org.apache.lucene.analysis.core import WhitespaceAnalyzer
 from org.apache.lucene.analysis.miscellaneous import LimitTokenCountAnalyzer
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import \
     Document, Field, StoredField, StringField, TextField
 from org.apache.lucene.index import \
-    IndexWriter, IndexWriterConfig, DirectoryReader, MultiFields, Term
+    IndexOptions, IndexWriter, IndexWriterConfig, DirectoryReader, \
+    MultiFields, Term
 from org.apache.lucene.queryparser.classic import \
     MultiFieldQueryParser, QueryParser
 from org.apache.lucene.search import BooleanClause, IndexSearcher, TermQuery
 from org.apache.lucene.store import MMapDirectory, SimpleFSDirectory
-from org.apache.lucene.util import BytesRefIterator, Version
+from org.apache.lucene.util import BytesRefIterator
 
 
 class Test_PyLuceneBase(object):
 
     def getAnalyzer(self):
-        return StandardAnalyzer(Version.LUCENE_CURRENT)
+        return StandardAnalyzer()
 
     def openStore(self):
         raise NotImplemented
@@ -44,9 +46,9 @@ class Test_PyLuceneBase(object):
     def getWriter(self, store, analyzer=None, create=False):
 
         if analyzer is None:
-            analyzer = WhitespaceAnalyzer(Version.LUCENE_CURRENT)
+            analyzer = WhitespaceAnalyzer()
         analyzer = LimitTokenCountAnalyzer(analyzer, 10000)
-        config = IndexWriterConfig(Version.LUCENE_CURRENT, analyzer)
+        config = IndexWriterConfig(analyzer)
         if create:
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE)
         writer = IndexWriter(store, config)
@@ -90,7 +92,7 @@ class Test_PyLuceneBase(object):
         try:
             analyzer = self.getAnalyzer()
             writer = self.getWriter(store, analyzer, True)
-        
+
             doc = Document()
             doc.add(Field("title", "value of testing",
                           TextField.TYPE_STORED))
@@ -105,7 +107,7 @@ class Test_PyLuceneBase(object):
 
             body_text = "hello world" * 20
             body_reader = StringReader(body_text)
-            doc.add(Field("content", body_reader))
+            doc.add(Field("content", body_reader, TextField.TYPE_NOT_STORED))
 
             writer.addDocument(doc)
         finally:
@@ -118,7 +120,7 @@ class Test_PyLuceneBase(object):
         try:
             analyzer = self.getAnalyzer()
             writer = self.getWriter(store, analyzer, True)
-        
+
             doc = Document()
             doc.add(Field("title", "value of testing",
                           TextField.TYPE_STORED))
@@ -136,7 +138,7 @@ class Test_PyLuceneBase(object):
             # the encode
             body_text = u"hello world"*20
             body_reader = StringReader(body_text)
-            doc.add(Field("content", body_reader))
+            doc.add(Field("content", body_reader, TextField.TYPE_NOT_STORED))
 
             writer.addDocument(doc)
         finally:
@@ -150,8 +152,7 @@ class Test_PyLuceneBase(object):
         searcher = None
         try:
             searcher = self.getSearcher(store)
-            query = QueryParser(Version.LUCENE_CURRENT, "title",
-                                self.getAnalyzer()).parse("value")
+            query = QueryParser("title", self.getAnalyzer()).parse("value")
             topDocs = searcher.search(query, 50)
             self.assertEqual(topDocs.totalHits, 1)
         finally:
@@ -168,8 +169,7 @@ class Test_PyLuceneBase(object):
         try:
             searcher = self.getSearcher(store)
             SHOULD = BooleanClause.Occur.SHOULD
-            query = MultiFieldQueryParser.parse(Version.LUCENE_CURRENT,
-                                                "value", ["title", "docid"],
+            query = MultiFieldQueryParser.parse("value", ["title", "docid"],
                                                 [SHOULD, SHOULD],
                                                 self.getAnalyzer())
             topDocs = searcher.search(query, 50)
@@ -207,7 +207,7 @@ class Test_PyLuceneBase(object):
             self.assertEqual(topDocs.totalHits, 0)
         finally:
             self.closeStore(store)
-        
+
     def test_removeDocuments(self):
 
         self.test_indexDocument()
@@ -219,18 +219,17 @@ class Test_PyLuceneBase(object):
             writer.deleteDocuments(Term('docid', str(1)))
         finally:
             self.closeStore(store, writer)
-        
+
         store = self.openStore()
         searcher = None
         try:
             searcher = self.getSearcher(store)
-            query = QueryParser(Version.LUCENE_CURRENT, "title",
-                                self.getAnalyzer()).parse("value")
+            query = QueryParser("title", self.getAnalyzer()).parse("value")
             topDocs = searcher.search(query, 50)
             self.assertEqual(topDocs.totalHits, 0)
         finally:
             self.closeStore(store)
-        
+
     def test_FieldEnumeration(self):
         self.test_indexDocument()
 
@@ -238,7 +237,7 @@ class Test_PyLuceneBase(object):
         writer = None
         try:
             analyzer = self.getAnalyzer()
-        
+
             writer = self.getWriter(store, analyzer, False)
             doc = Document()
             doc.add(Field("title", "value of testing",
@@ -251,9 +250,9 @@ class Test_PyLuceneBase(object):
                           StoredField.TYPE))
             doc.add(Field("meta_words", "rabbits are beautiful",
                           TextField.TYPE_NOT_STORED))
-                                   
+
             writer.addDocument(doc)
-        
+
             doc = Document()
             doc.add(Field("owner", "unittester",
                           StringField.TYPE_NOT_STORED))
@@ -261,15 +260,15 @@ class Test_PyLuceneBase(object):
                           StoredField.TYPE))
             doc.add(Field("meta_words", "rabbits are beautiful",
                           TextField.TYPE_NOT_STORED))
-            writer.addDocument(doc)        
+            writer.addDocument(doc)
         finally:
             self.closeStore(store, writer)
-        
+
         store = self.openStore()
         reader = None
         try:
             reader = DirectoryReader.open(store)
-            term_enum = MultiFields.getTerms(reader, "docid").iterator(None)
+            term_enum = MultiFields.getTerms(reader, "docid").iterator()
             docids = [term.utf8ToString()
                       for term in BytesRefIterator.cast_(term_enum)]
             self.assertEqual(len(docids), 2)
@@ -288,18 +287,19 @@ class Test_PyLuceneBase(object):
             for fieldInfo in fieldInfos.iterator():
                 self.assert_(fieldInfo.name in ['owner', 'search_name',
                                                 'meta_words', 'docid', 'title'])
-        
-                if fieldInfo.isIndexed():
+
+                if fieldInfo.getIndexOptions() != IndexOptions.NONE:
                     self.assert_(fieldInfo.name in ['owner', 'meta_words',
                                                     'docid', 'title'])
 
-                if fieldInfo.isIndexed() and not fieldInfo.hasVectors():
+                if (fieldInfo.getIndexOptions() != IndexOptions.NONE and
+                    not fieldInfo.hasVectors()):
                     self.assert_(fieldInfo.name in ['owner', 'meta_words',
                                                     'docid', 'title'])
         finally:
             store = self.closeStore(store, reader)
 
-        
+
 class Test_PyLuceneWithFSStore(unittest.TestCase, Test_PyLuceneBase):
 
     STORE_DIR = "testrepo"
@@ -316,10 +316,10 @@ class Test_PyLuceneWithFSStore(unittest.TestCase, Test_PyLuceneBase):
 
     def openStore(self):
 
-        return SimpleFSDirectory(File(self.STORE_DIR))
+        return SimpleFSDirectory(Paths.get(self.STORE_DIR))
 
     def closeStore(self, store, *args):
-        
+
         for arg in args:
             if arg is not None:
                 arg.close()
@@ -331,7 +331,7 @@ class Test_PyLuceneWithMMapStore(Test_PyLuceneWithFSStore):
 
     def openStore(self):
 
-        return MMapDirectory(File(self.STORE_DIR))
+        return MMapDirectory(Paths.get(self.STORE_DIR))
 
 
 

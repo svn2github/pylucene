@@ -339,9 +339,9 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --package java.util.concurrent java.util.concurrent.Executors \
            --package java.util.regex \
            --package java.io java.io.StringReader \
-                             java.io.InputStreamReader \
-                             java.io.FileInputStream \
-                             java.io.DataInputStream \
+           --package java.nio.file java.nio.file.Path \
+                                   java.nio.file.Files \
+                                   java.nio.file.Paths \
            --exclude org.apache.lucene.sandbox.queries.regex.JakartaRegexpCapabilities \
            --exclude org.apache.regexp.RegexpTunnel \
            --exclude org.apache.lucene.store.WindowsDirectory \
