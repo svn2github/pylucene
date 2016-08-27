@@ -15,6 +15,7 @@
 
 package org.apache.pylucene.store;
 
+import java.io.IOException;
 import org.apache.lucene.store.Lock;
 
 
@@ -42,8 +43,8 @@ public class PythonLock extends Lock {
     }
 
     public native void pythonDecRef();
-    public native boolean isLocked();
-    public native boolean obtain();
-    public native void release();
+
+    public native void ensureValid()
+        throws IOException;
     public native void close();
 }

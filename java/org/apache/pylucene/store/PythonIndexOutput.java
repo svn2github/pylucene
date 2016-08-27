@@ -23,8 +23,9 @@ public class PythonIndexOutput extends IndexOutput {
 
     private long pythonObject;
 
-    public PythonIndexOutput()
+    public PythonIndexOutput(String resourceDescription, String name)
     {
+        super(resourceDescription, name);
     }
 
     public void pythonExtension(long pythonObject)

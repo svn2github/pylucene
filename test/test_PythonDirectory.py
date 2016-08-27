@@ -14,7 +14,7 @@
 
 import sys, lucene, unittest
 import os, shutil
-import test_PyLucene 
+import test_PyLucene
 from binascii import crc32
 from threading import RLock
 from lucene import JavaError, JArray
@@ -28,7 +28,7 @@ from org.apache.pylucene.store import \
 """
 The Directory Implementation here is for testing purposes only, not meant
 as an example of writing one, the implementation here suffers from a lack
-of safety when dealing with concurrent modifications as it does away with 
+of safety when dealing with concurrent modifications as it does away with
 the file locking in the default lucene fsdirectory implementation.
 """
 
@@ -43,63 +43,15 @@ class DebugWrapper(object):
         print self.obj.__class__.__name__, self.obj.name, name
         sys.stdout.flush()
         return getattr(self.obj, name)
-        
+
 class DebugFactory(object):
-    
+
     def __init__(self, klass):
         self.klass = klass
-        
+
     def __call__(self, *args, **kw):
         instance = self.klass(*args, **kw)
         return DebugWrapper(instance)
-
-
-class PythonDirLock(PythonLock):
-    # only safe for a single process
-    
-    def __init__(self, name, path, lock):
-        super(PythonDirLock, self).__init__()
-
-        self.name = name
-        self.lock_file = path
-        self.lock = lock
-
-    def isLocked(self):
-        return self.lock.locked()
-
-    def obtain(self):
-        return self.lock.acquire()
-
-    def release(self):
-        return self.lock.release()
-
-    def close(self):
-        if hasattr(self.lock, 'close'):
-            self.lock.close()
-
-
-class PythonDirLockFactory(PythonLockFactory):
-
-    def __init__(self, path):
-        super(PythonDirLockFactory, self).__init__()
-        
-        self.path = path
-        self._locks = {}
-
-    def makeLock(self, name):
-
-        lock = self._locks.get(name)
-        if lock is None:
-            lock = PythonDirLock(name, os.path.join(self.path, name), RLock())
-            self._locks[name] = lock
-
-        return lock
-
-    def clearLock(self, name):
-
-        lock = self._locks.pop(name, None)
-        if lock is not None:
-            lock.release()
 
 
 class PythonFileStreamInput(PythonIndexInput):
@@ -137,8 +89,7 @@ class PythonFileStreamInput(PythonIndexInput):
 class PythonFileStreamOutput(PythonIndexOutput):
 
     def __init__(self, name, fh):
-        super(PythonFileStreamOutput, self).__init__()
-        self.name = name
+        super(PythonFileStreamOutput, self).__init__("python", name)
         self.fh = fh
         self.isOpen = True
         self._length = 0
@@ -186,11 +137,43 @@ class PythonFileDirectory(PythonDirectory):
     def __init__(self, path):
         super(PythonFileDirectory, self).__init__()
 
-        self._lockFactory = PythonDirLockFactory(path)
+        class _lock_factory(PythonLockFactory):
+
+            def __init__(_self):
+                super(_lock_factory, _self).__init__()
+                _self._locks = {}
+
+            def obtainLock(_self, directory, name):
+
+                # only safe for a single process
+                class _lock(PythonLock):
+
+                    def __init__(__self, path):
+                        super(_lock, __self).__init__()
+
+                        __self.lock_file = path
+                        __self.lock = RLock()
+
+                    def ensureValid(__self):
+                        __self.lock.acquire()
+
+                    def close(__self):
+                        if hasattr(__self.lock, 'close'):
+                            __self.lock.close()
+
+                lock = _self._locks.get(name)
+                if lock is None:
+                    lock = _lock(os.path.join(directory.name, name))
+                    _self._locks[name] = lock
+
+                return lock
+
+        self._lockFactory = _lock_factory()
         self.name = path
         assert os.path.isdir(path)
         self.path = path
         self._streams = []
+        self.temp_count = 0
 
     def close(self):
         for stream in self._streams:
@@ -204,26 +187,29 @@ class PythonFileDirectory(PythonDirectory):
         self._streams.append(stream)
         return stream
 
-    def deleteFile(self, name):
-        if self.fileExists(name):
-            os.unlink(os.path.join(self.path, name))
+    def createTempOutput(self, prefix, suffix, context):
+        self.temp_count += 1
+        name = "%s_%d_%s.tmp" %(prefix, self.temp_count, suffix)
+        return self.createOutput(name, context)
 
-    def fileExists(self, name):
-        return os.path.exists(os.path.join(self.path, name))
+    def deleteFile(self, name):
+        os.unlink(os.path.join(self.path, name))
 
     def fileLength(self, name):
         file_path = os.path.join(self.path, name)
         return long(os.path.getsize(file_path))
-
-    def fileModified(self, name):
-        file_path = os.path.join(self.path, name)
-        return os.path.getmtime(file_path)
 
     def listAll(self):
         return os.listdir(self.path)
 
     def sync(self, name):
         pass
+    def syncMetaData(self):
+        pass
+
+    def rename(self, source, dest):
+        shutil.move(os.path.join(self.path, source),
+                    os.path.join(self.path, dest))
 
     def openInput(self, name, bufferSize=0):
         file_path = os.path.join(self.path, name)
@@ -235,21 +221,8 @@ class PythonFileDirectory(PythonDirectory):
         self._streams.append(stream)
         return stream
 
-    def touchFile(self, name):
-        file_path = os.path.join(self.path, name)
-        os.utime(file_path, None)
-
-    def setLockFactory(self, lockFactory):
-        pass
-
-    def getLockFactory(self):
-        return None
-
-    def clearLock(self, name):
-        self._lockFactory.clearLock(name)
-
-    def makeLock(self, name):
-        return self._lockFactory.makeLock(name)
+    def obtainLock(self, name):
+        return self._lockFactory.obtainLock(self, name)
 
 
 if DEBUG:
@@ -287,7 +260,7 @@ class PythonDirectoryTests(unittest.TestCase, test_PyLucene.Test_PyLuceneBase):
             print "indexing ", i
             sys.stdout.flush()
             self.test_indexDocument()
-                       
+
 
 if __name__ == "__main__":
     env = lucene.initVM(vmargs=['-Djava.awt.headless=true'])

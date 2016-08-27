@@ -50,7 +50,7 @@ public class PythonDirectory extends Directory {
     }
 
     public void sync(Collection<String> names)
-        throws IOException 
+        throws IOException
     {
         for (String name : names)
             sync(name);
@@ -62,26 +62,22 @@ public class PythonDirectory extends Directory {
         throws IOException;
     public native IndexOutput createOutput(String name, IOContext context)
         throws IOException;
+    public native IndexOutput createTempOutput(String prefix, String suffix,
+                                               IOContext context)
+        throws IOException;
     public native void deleteFile(String name)
         throws IOException;
-    public native boolean fileExists(String name)
-        throws IOException;
     public native long fileLength(String name)
-        throws IOException;
-    public native long fileModified(String name)
         throws IOException;
     public native String[] listAll()
         throws IOException;
     public native IndexInput openInput(String name, IOContext context)
         throws IOException;
-    public native void touchFile(String name)
+    public native void sync(String name)
         throws IOException;
-    public native void sync(String name) 
+    public native void rename(String source, String dest)
         throws IOException;
-    public native LockFactory getLockFactory();
-    public native void setLockFactory(LockFactory lockFactory)
+    public native void syncMetaData()
         throws IOException;
-    public native void clearLock(String name)
-        throws IOException;
-    public native Lock makeLock(String name);
+    public native Lock obtainLock(String name);
 }

@@ -17,6 +17,7 @@ package org.apache.pylucene.store;
 
 import java.io.IOException;
 
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
@@ -46,7 +47,6 @@ public class PythonLockFactory extends LockFactory {
 
     public native void pythonDecRef();
 
-    public native Lock makeLock(String lockName);
-    public native void clearLock(String lockName)
+    public native Lock obtainLock(Directory dir, String lockName)
         throws IOException;
 }
