@@ -54,7 +54,7 @@ public class PythonQueryParser extends QueryParser {
     }
 
     public native void pythonDecRef();
-    public native Query getBooleanQuery(List clauses, boolean disableCoord);
+    public native Query getBooleanQuery(List clauses);
     public native Query getFuzzyQuery(String field, String termText,
                                       float minSimilarity);
     public native Query getPrefixQuery(String field, String termText);

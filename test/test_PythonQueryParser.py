@@ -18,21 +18,19 @@ from PyLuceneTestCase import PyLuceneTestCase
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.index import Term
 from org.apache.lucene.search import BooleanClause, TermQuery
-from org.apache.lucene.util import Version
 from org.apache.pylucene.queryparser.classic import \
     PythonQueryParser, PythonMultiFieldQueryParser
 
 
 class BooleanTestMixin(object):
 
-    def getBooleanQuery(self, clauses, disableCoord):
+    def getBooleanQuery(self, clauses):
 
         extra_query = TermQuery(Term("all", "extra_clause"))
         extra_clause = BooleanClause(extra_query, BooleanClause.Occur.SHOULD)
         clauses.add(extra_clause)
-                                             
-        return super(BooleanTestMixin, self).getBooleanQuery(clauses,
-                                                             disableCoord)
+
+        return super(BooleanTestMixin, self).getBooleanQuery(clauses)
 
 
 class PythonQueryParserTestCase(PyLuceneTestCase):
@@ -42,9 +40,8 @@ class PythonQueryParserTestCase(PyLuceneTestCase):
         class TestQueryParser(BooleanTestMixin, PythonQueryParser):
             def getFieldQuery_quoted(_self, field, queryText, quoted):
                 return super(TestQueryParser, _self).getFieldQuery_quoted_super(field, queryText, quoted)
-        
-        qp = TestQueryParser(Version.LUCENE_CURRENT, 'all',
-                             StandardAnalyzer(Version.LUCENE_CURRENT))
+
+        qp = TestQueryParser('all', StandardAnalyzer())
 
         q = qp.parse("foo bar")
         self.assertEquals(str(q), "all:foo all:bar all:extra_clause")
@@ -58,11 +55,10 @@ class PythonMultiFieldQueryParserTestCase(PyLuceneTestCase):
             def getFieldQuery_quoted(_self, field, queryText, quoted):
                 return super(TestQueryParser, _self).getFieldQuery_quoted_super(field, queryText, quoted)
 
-        qp = TestQueryParser(Version.LUCENE_CURRENT, ['one', 'two'],
-                             StandardAnalyzer(Version.LUCENE_CURRENT))
-        q = qp.parse(Version.LUCENE_CURRENT, "foo bar", ['one', 'two'],
+        qp = TestQueryParser(['one', 'two'], StandardAnalyzer())
+        q = qp.parse("foo bar", ['one', 'two'],
                      [BooleanClause.Occur.SHOULD, BooleanClause.Occur.SHOULD],
-                     StandardAnalyzer(Version.LUCENE_CURRENT))
+                     StandardAnalyzer())
         self.assertEquals(str(q), "(one:foo one:bar) (two:foo two:bar)")
 
 
