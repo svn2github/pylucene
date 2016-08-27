@@ -21,8 +21,7 @@ from java.lang import Thread
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.index import Term
-from org.apache.lucene.search import PhraseQuery, TermQuery
-from org.apache.lucene.util import Version
+from org.apache.lucene.search import TermQuery
 
 
 class PyLuceneThreadTestCase(PyLuceneTestCase):
@@ -35,7 +34,7 @@ class PyLuceneThreadTestCase(PyLuceneTestCase):
 
         self.classLoader = Thread.currentThread().getContextClassLoader()
 
-        writer = self.getWriter(analyzer=StandardAnalyzer(Version.LUCENE_CURRENT))
+        writer = self.getWriter(analyzer=StandardAnalyzer())
 
         doc1 = Document()
         doc2 = Document()
@@ -95,7 +94,6 @@ class PyLuceneThreadTestCase(PyLuceneTestCase):
 
         searcher = self.getSearcher()
         try:
-            self.query = PhraseQuery()
             for word, count in self.testData[0:runCount]:
                 query = TermQuery(Term("field", word))
                 topDocs = searcher.search(query, 50)
