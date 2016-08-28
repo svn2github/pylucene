@@ -79,7 +79,7 @@ class FuzzyQueryTestCase(PyLuceneTestCase):
         query = FuzzyQuery(Term("field", "aaaaa"), FuzzyQuery.defaultMaxEdits, 6)
         hits = searcher.search(query, 1000).scoreDocs
         self.assertEqual(1, len(hits))
-    
+
         # test scoring
         query = FuzzyQuery(Term("field", "bbbbb"), FuzzyQuery.defaultMaxEdits, 0)
         hits = searcher.search(query, 1000).scoreDocs
@@ -160,12 +160,12 @@ class FuzzyQueryTestCase(PyLuceneTestCase):
         query = FuzzyQuery(Term("field", "aaaac"), FuzzyQuery.defaultMaxEdits, 5)
         hits = searcher.search(query, 1000).scoreDocs
         self.assertEqual(0, len(hits))
-    
+
         query = FuzzyQuery(Term("field", "ddddX"), FuzzyQuery.defaultMaxEdits, 0)
         hits = searcher.search(query, 1000).scoreDocs
         self.assertEqual(1, len(hits))
         self.assertEqual(searcher.doc(hits[0].doc).get("field"), ("ddddd"))
-    
+
         # now with prefix
         query = FuzzyQuery(Term("field", "ddddX"), FuzzyQuery.defaultMaxEdits, 1)
         hits = searcher.search(query, 1000).scoreDocs
@@ -190,7 +190,7 @@ class FuzzyQueryTestCase(PyLuceneTestCase):
         query = FuzzyQuery(Term("field", "ddddX"), FuzzyQuery.defaultMaxEdits, 5)
         hits = searcher.search(query, 1000).scoreDocs
         self.assertEqual(0, len(hits))
-    
+
         # different field = no match:
         query = FuzzyQuery(Term("anotherfield", "ddddX"), FuzzyQuery.defaultMaxEdits, 0)
         hits = searcher.search(query, 1000).scoreDocs
@@ -279,7 +279,7 @@ class FuzzyQueryTestCase(PyLuceneTestCase):
         reader = writer.getReader()
         searcher = self.getSearcher(reader=reader)
         writer.close()
-    
+
         query = FuzzyQuery(Term("field", "lucene"))
         query.setRewriteMethod(MultiTermQuery.TopTermsBoostOnlyBooleanQueryRewrite(50))
         hits = searcher.search(query, 1000).scoreDocs

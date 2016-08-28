@@ -48,7 +48,7 @@ class ICUTransformFilter(PythonTokenFilter):
 
     # Create a new ICUTransformFilter that transforms text on the given
     # stream.
-    #  
+    #
     #  @param input {@link TokenStream} to filter.
     #  @param transform Transliterator to transform the text.
 
@@ -80,7 +80,7 @@ class ICUTransformFilter(PythonTokenFilter):
                                                         False)
             self.termAtt.setEmpty()
             self.termAtt.append(text)
-            
+
             return True
 
         return False

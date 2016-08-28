@@ -181,15 +181,15 @@ class Test_CollectionsListBase(unittest.TestCase):
         elem1 = jArray[1]
         listElem0 = self.testList[0]
         listElem1 = self.testList[1]
-        
+
         self.assertEqual(elem0, listElem0,
                          "should be equal: %s (%s) <-> %s (%s)" % (
                             elem0,type(elem0), listElem0, type(listElem0)))
-        
+
         self.assertEqual(elem1, listElem1,
                          "should be equal: %s (%s) <-> %s (%s)" % (
                             elem1,type(elem1), listElem1, type(listElem1)))
-            
+
         self.assertEqual(type(elem0), type(listElem0),
                          "should have same type: %s <-> %s" % (
                             type(elem0), type(listElem0)))
@@ -219,11 +219,11 @@ class Test_CollectionsListBase(unittest.TestCase):
         self.assertEqual(elem0, listElem0,
                          "should be equal: %s (%s) <-> %s (%s)" % (
                             elem0, type(elem0), listElem0, type(listElem0)))
-        
+
         self.assertEqual(elem1, listElem1,
                          "should be equal: %s (%s) <-> %s (%s)" % (
                             elem1, type(elem1), listElem1, type(listElem1)))
-        
+
         self.assertEqual(type(elem0), type(listElem0),
                          "should have same type: %s <-> %s" % (
                             type(elem0), type(listElem0)))

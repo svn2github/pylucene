@@ -62,7 +62,7 @@ class ICUNormalizer2Filter(PythonTokenFilter):
             if self.normalizer.quickCheck(text) != UNormalizationCheckResult.YES:
                 self.termAtt.setEmpty()
                 self.termAtt.append(self.normalizer.normalize(text))
-                
+
             return True
 
         return False

@@ -80,7 +80,7 @@ class Test_PyLuceneBase(object):
                           StoredField.TYPE))
             doc.add(Field("meta_words", "rabbits are beautiful",
                           TextField.TYPE_NOT_STORED))
-        
+
             writer.addDocument(doc)
         finally:
             self.closeStore(store, writer)

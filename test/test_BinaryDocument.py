@@ -27,7 +27,7 @@ class TestBinaryDocument(PyLuceneTestCase):
 
     binaryValStored = "this text will be stored as a byte array in the index"
     binaryValCompressed = "this text will be also stored and compressed as a byte array in the index"
-  
+
     def testBinaryFieldInIndex(self):
 
         ft = FieldType()
@@ -36,57 +36,57 @@ class TestBinaryDocument(PyLuceneTestCase):
         bytes = JArray('byte')(self.binaryValStored)
         binaryFldStored = StoredField("binaryStored", bytes)
         stringFldStored = Field("stringStored", self.binaryValStored, ft)
-        
+
         doc = Document()
         doc.add(binaryFldStored)
         doc.add(stringFldStored)
-        
+
         # test for field count
         self.assertEqual(2, doc.fields.size())
-    
+
         # add the doc to a ram index
         writer = self.getWriter(analyzer=StandardAnalyzer())
         writer.addDocument(doc)
         writer.close()
-    
+
         # open a reader and fetch the document
         reader = self.getReader()
         docFromReader = reader.document(0)
         self.assert_(docFromReader is not None)
-    
+
         # fetch the binary stored field and compare it's content with the
         # original one
         bytes = docFromReader.getBinaryValue("binaryStored")
         binaryFldStoredTest = bytes.bytes.string_
         self.assertEqual(binaryFldStoredTest, self.binaryValStored)
-        
+
         # fetch the string field and compare it's content with the original
         # one
         stringFldStoredTest = docFromReader.get("stringStored")
         self.assertEqual(stringFldStoredTest, self.binaryValStored)
-    
+
         reader.close()
-  
+
     def testCompressionTools(self):
 
         bytes = JArray('byte')(self.binaryValCompressed)
         binaryFldCompressed = StoredField("binaryCompressed", CompressionTools.compress(bytes))
         stringFldCompressed = StoredField("stringCompressed", CompressionTools.compressString(self.binaryValCompressed))
-    
+
         doc = Document()
         doc.add(binaryFldCompressed)
         doc.add(stringFldCompressed)
-    
+
         # add the doc to a ram index
         writer = self.getWriter(analyzer=StandardAnalyzer())
         writer.addDocument(doc)
         writer.close()
-    
+
         # open a reader and fetch the document
         reader = self.getReader()
         docFromReader = reader.document(0)
         self.assert_(docFromReader is not None)
-    
+
         # fetch the binary compressed field and compare it's content with
         # the original one
         bytes = CompressionTools.decompress(docFromReader.getBinaryValue("binaryCompressed"))
