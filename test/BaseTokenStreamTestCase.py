@@ -32,7 +32,7 @@ class BaseTokenStreamTestCase(TestCase):
         def __init__(_self):
             super(PythonAttributeImpl, _self).__init__()
             _self.clearCalled = False
-    
+
         def getAndResetClearCalled(_self):
             try:
                 return _self.clearCalled
@@ -50,7 +50,7 @@ class BaseTokenStreamTestCase(TestCase):
 
         def hashCode(_self):
             return 76137213 ^ Boolean.valueOf(_self.clearCalled).hashCode()
-    
+
         def copyTo(_self, target):
             CheckClearAttributesAttributeImpl.cast_(target).clear()
 
@@ -75,19 +75,19 @@ class BaseTokenStreamTestCase(TestCase):
             self.assert_(ts.hasAttribute(OffsetAttribute.class_),
                                          "has no OffsetAttribute")
             offsetAtt = ts.getAttribute(OffsetAttribute.class_)
-    
+
         typeAtt = None
         if types is not None:
             self.assert_(ts.hasAttribute(TypeAttribute.class_),
                          "has no TypeAttribute")
             typeAtt = ts.getAttribute(TypeAttribute.class_)
-    
+
         posIncrAtt = None
         if posIncrements is not None:
             self.assert_(ts.hasAttribute(PositionIncrementAttribute.class_),
                          "has no PositionIncrementAttribute")
             posIncrAtt = ts.getAttribute(PositionIncrementAttribute.class_)
-    
+
         ts.reset()
         for i in xrange(len(output)):
             # extra safety to enforce, that the state is not preserved and
@@ -122,11 +122,11 @@ class BaseTokenStreamTestCase(TestCase):
 
     def _assertAnalyzesTo(self, a, input, output,
                           startOffsets=None, endOffsets=None,
-                          types=None, posIncrements=None):
+                          posIncrements=None):
 
         ts = a.tokenStream("dummy", StringReader(input))
         self._assertTokenStreamContents(ts, output, startOffsets, endOffsets,
-                                        types, posIncrements)
+                                        None, posIncrements)
 
     def _assertAnalyzesToReuse(self, a, input, output,
                                startOffsets=None, endOffsets=None,
@@ -135,10 +135,10 @@ class BaseTokenStreamTestCase(TestCase):
         ts = a.reusableTokenStream("dummy", StringReader(input))
         self._assertTokenStreamContents(ts, output, startOffsets, endOffsets,
                                         types, posIncrements)
-  
+
     # simple utility method for testing stemmers
     def _checkOneTerm(self, a, input, expected):
         self._assertAnalyzesTo(a, input, JArray('string')(expected))
-  
+
     def _checkOneTermReuse(self, a, input, expected):
         self._assertAnalyzesToReuse(a, input, JArray('string')(expected))
