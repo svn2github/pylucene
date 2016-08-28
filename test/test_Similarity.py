@@ -21,11 +21,11 @@ from org.apache.lucene.index import Term
 from org.apache.lucene.search import \
     BooleanClause, BooleanQuery, Explanation, PhraseQuery, TermQuery
 from org.apache.lucene.util import Version
-from org.apache.pylucene.search import PythonCollector
-from org.apache.pylucene.search.similarities import PythonDefaultSimilarity
+from org.apache.pylucene.search import PythonSimpleCollector
+from org.apache.pylucene.search.similarities import PythonClassicSimilarity
 
 
-class SimpleSimilarity(PythonDefaultSimilarity):
+class SimpleSimilarity(PythonClassicSimilarity):
 
     def queryNorm(self, sumOfSquaredWeights):
         return 1.0
@@ -46,7 +46,7 @@ class SimpleSimilarity(PythonDefaultSimilarity):
         return 1.0
 
     def idfExplain(self, collectionStats, termStats):
-        return Explanation(1.0, "inexplicable")
+        return Explanation.match(1.0, "inexplicable", [])
 
 
 class SimilarityTestCase(PyLuceneTestCase):
@@ -58,13 +58,13 @@ class SimilarityTestCase(PyLuceneTestCase):
 
         writer = self.getWriter(analyzer=SimpleAnalyzer(Version.LUCENE_CURRENT),
                                 similarity=SimpleSimilarity())
-    
+
         d1 = Document()
         d1.add(Field("field", "a c", TextField.TYPE_STORED))
 
         d2 = Document()
         d2.add(Field("field", "a b c", TextField.TYPE_STORED))
-    
+
         writer.addDocument(d1)
         writer.addDocument(d2)
         writer.commit()
@@ -77,52 +77,55 @@ class SimilarityTestCase(PyLuceneTestCase):
         b = Term("field", "b")
         c = Term("field", "c")
 
-        class collector1(PythonCollector):
+        class collector1(PythonSimpleCollector):
             def collect(_self, doc, score):
                 self.assertEqual(1.0, score)
-            def setNextReader(_self, context):
+            def doSetNextReader(_self, context):
                 pass
-            def acceptsDocsOutOfOrder(_self):
+            def needsScores(_self):
                 return True
 
         searcher.search(TermQuery(b), collector1())
 
-        bq = BooleanQuery()
-        bq.add(TermQuery(a), BooleanClause.Occur.SHOULD)
-        bq.add(TermQuery(b), BooleanClause.Occur.SHOULD)
+        builder = BooleanQuery.Builder()
+        builder.add(TermQuery(a), BooleanClause.Occur.SHOULD)
+        builder.add(TermQuery(b), BooleanClause.Occur.SHOULD)
+        bq = builder.build()
 
-        class collector2(PythonCollector):
+        class collector2(PythonSimpleCollector):
             def collect(_self, doc, score):
                 self.assertEqual(doc + _self.base + 1, score)
-            def setNextReader(_self, context):
+            def doSetNextReader(_self, context):
                 _self.base = context.docBase
-            def acceptsDocsOutOfOrder(_self):
+            def needsScores(_self):
                 return True
 
         searcher.search(bq, collector2())
 
-        pq = PhraseQuery()
-        pq.add(a)
-        pq.add(c)
+        builder = PhraseQuery.Builder()
+        builder.add(a)
+        builder.add(c)
+        pq = builder.build()
 
-        class collector3(PythonCollector):
+        class collector3(PythonSimpleCollector):
             def collect(_self, doc, score):
                 self.assertEqual(1.0, score)
-            def setNextReader(_self, context):
+            def doSetNextReader(_self, context):
                 pass
-            def acceptsDocsOutOfOrder(_self):
+            def needsScores(_self):
                 return True
 
         searcher.search(pq, collector3())
 
-        pq.setSlop(2)
+        builder.setSlop(2)
+        pq = builder.build()
 
-        class collector4(PythonCollector):
+        class collector4(PythonSimpleCollector):
             def collect(_self, doc, score):
                 self.assertEqual(2.0, score)
-            def setNextReader(_self, context):
+            def doSetNextReader(_self, context):
                 pass
-            def acceptsDocsOutOfOrder(_self):
+            def needsScores(_self):
                 return True
 
         searcher.search(pq, collector4())

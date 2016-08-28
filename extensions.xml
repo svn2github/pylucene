@@ -16,19 +16,7 @@
 
   <target name="compile">
     <mkdir dir="${classes.dir}"/>
-    <javac srcdir="java/org/apache/pylucene/analysis"
-           destdir="${classes.dir}" classpathref="classpath" />
-    <javac srcdir="java/org/apache/pylucene/util"
-           destdir="${classes.dir}" classpathref="classpath" />
-    <javac srcdir="java/org/apache/pylucene/search" 
-           excludes="similarities/*"
-           destdir="${classes.dir}" classpathref="classpath" />
-    <javac srcdir="java/org/apache/pylucene/index" 
-           destdir="${classes.dir}" classpathref="classpath" />
-    <javac srcdir="java/org/apache/pylucene/store" 
-           destdir="${classes.dir}" classpathref="classpath" />
-    <javac srcdir="java/org/apache/pylucene/queryparser" 
-           destdir="${classes.dir}" classpathref="classpath" />
+    <javac srcdir="java" destdir="${classes.dir}" classpathref="classpath" />
   </target>
 
   <target name="jar" depends="compile">

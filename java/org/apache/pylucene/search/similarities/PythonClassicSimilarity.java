@@ -18,15 +18,15 @@ package org.apache.pylucene.search.similarities;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.TermStatistics;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.index.FieldInvertState;
 
 
-public class PythonDefaultSimilarity extends DefaultSimilarity {
+public class PythonClassicSimilarity extends ClassicSimilarity {
 
     private long pythonObject;
 
-    public PythonDefaultSimilarity()
+    public PythonClassicSimilarity()
     {
     }
 
