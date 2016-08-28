@@ -15,9 +15,8 @@
 import sys, lucene, unittest
 
 from java.io import StringReader
-from org.apache.lucene.analysis.core import StopFilter
+from org.apache.lucene.analysis import StopFilter
 from org.apache.lucene.analysis.standard import StandardTokenizer
-from org.apache.lucene.util import Version
 
 
 # run with -loop to test fix for string local ref leak reported
@@ -28,15 +27,15 @@ class StopWordsTestCase(unittest.TestCase):
     def setUp(self):
 
         stopWords = ['the', 'and', 's']
-        self.stop_set = StopFilter.makeStopSet(Version.LUCENE_CURRENT,
-                                               stopWords)
+        self.stop_set = StopFilter.makeStopSet(stopWords)
         self.reader = StringReader('foo')
 
     def testStopWords(self):
 
         try:
-            result = StandardTokenizer(Version.LUCENE_CURRENT, self.reader)
-            result = StopFilter(Version.LUCENE_CURRENT, result, self.stop_set)
+            result = StandardTokenizer()
+            result.setReader(self.reader)
+            result = StopFilter(result, self.stop_set)
         except Exception, e:
             self.fail(str(e))
 
