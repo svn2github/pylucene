@@ -15,10 +15,10 @@
 import sys, lucene, unittest
 
 from java.io import StringReader
-from org.apache.lucene.analysis.core import StopAnalyzer, StopFilter
+from org.apache.lucene.analysis.core import StopAnalyzer
+from org.apache.lucene.analysis import StopFilter
 from org.apache.lucene.analysis.tokenattributes import \
     CharTermAttribute, PositionIncrementAttribute
-from org.apache.lucene.util import Version
 
 
 class StopAnalyzerTestCase(unittest.TestCase):
@@ -28,7 +28,7 @@ class StopAnalyzerTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.stop = StopAnalyzer(Version.LUCENE_CURRENT)
+        self.stop = StopAnalyzer()
         self.invalidTokens = StopAnalyzer.ENGLISH_STOP_WORDS_SET
 
     def testDefaults(self):
@@ -40,35 +40,33 @@ class StopAnalyzerTestCase(unittest.TestCase):
         stream.reset()
 
         termAtt = stream.getAttribute(CharTermAttribute.class_)
-    
+
         while stream.incrementToken():
             self.assert_(termAtt.toString() not in self.invalidTokens)
 
     def testStopList(self):
 
         stopWords = ["good", "test", "analyzer"]
-        stopWordsSet = StopFilter.makeStopSet(Version.LUCENE_CURRENT,
-                                              stopWords)
+        stopWordsSet = StopFilter.makeStopSet(stopWords)
 
-        newStop = StopAnalyzer(Version.LUCENE_40, stopWordsSet)
+        newStop = StopAnalyzer(stopWordsSet)
         reader = StringReader("This is a good test of the english stop analyzer")
         stream = newStop.tokenStream("test", reader)
         self.assert_(stream is not None)
         stream.reset()
 
         termAtt = stream.getAttribute(CharTermAttribute.class_)
-    
+
         while stream.incrementToken():
             text = termAtt.toString()
             self.assert_(text not in stopWordsSet)
 
     def testStopListPositions(self):
-        
-        stopWords = ["good", "test", "analyzer"]
-        stopWordsSet = StopFilter.makeStopSet(Version.LUCENE_CURRENT,
-                                              stopWords)
 
-        newStop = StopAnalyzer(Version.LUCENE_CURRENT, stopWordsSet)
+        stopWords = ["good", "test", "analyzer"]
+        stopWordsSet = StopFilter.makeStopSet(stopWords)
+
+        newStop = StopAnalyzer(stopWordsSet)
         reader = StringReader("This is a good test of the english stop analyzer with positions")
         expectedIncr = [ 1,   1, 1,          3, 1,  1,      1,            2,   1]
         stream = newStop.tokenStream("test", reader)
