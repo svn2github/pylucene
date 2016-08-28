@@ -17,9 +17,9 @@ from PyLuceneTestCase import PyLuceneTestCase
 
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import Document, Field, FieldType, StringField
-from org.apache.lucene.index import Term
+from org.apache.lucene.index import Term, IndexOptions
 from org.apache.lucene.search import TermQuery
-from org.apache.lucene.util import BytesRefIterator, Version
+from org.apache.lucene.util import BytesRefIterator
 
 
 class Test_Bug1842(PyLuceneTestCase):
@@ -27,15 +27,17 @@ class Test_Bug1842(PyLuceneTestCase):
     def setUp(self):
         super(Test_Bug1842, self).setUp()
 
-        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
-        
+        self.analyzer = StandardAnalyzer()
+
         w1 = self.getWriter(analyzer=self.analyzer)
         doc1 = Document()
 
         ftype = FieldType()
-        ftype.setStored(False)
-        ftype.setIndexed(True)
+        ftype.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS)
+        ftype.setTokenized(True)
         ftype.setStoreTermVectors(True)
+        ftype.freeze()
+
         doc1.add(Field("all", "blah blah blah Gesundheit", ftype))
         doc1.add(Field('id', '1', StringField.TYPE_NOT_STORED))
 
@@ -52,7 +54,7 @@ class Test_Bug1842(PyLuceneTestCase):
         termvec = reader.getTermVector(topDocs.scoreDocs[0].doc, "all")
         terms = []
         freqs = []
-        termsEnum = termvec.iterator(None)
+        termsEnum = termvec.iterator()
         for term in BytesRefIterator.cast_(termsEnum):
             terms.append(term.utf8ToString())
             freqs.append(termsEnum.totalTermFreq())

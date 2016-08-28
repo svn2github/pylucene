@@ -19,7 +19,6 @@ from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import Document, Field, StoredField, TextField
 from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.store import RAMDirectory
-from org.apache.lucene.util import Version
 
 
 class Test_Bug1763(PyLuceneTestCase):
@@ -27,10 +26,10 @@ class Test_Bug1763(PyLuceneTestCase):
     def setUp(self):
         super(Test_Bug1763, self).setUp()
 
-        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+        self.analyzer = StandardAnalyzer()
         self.d1 = RAMDirectory()
         self.d2 = RAMDirectory()
-        
+
         w1, w2 = [self.getWriter(directory=d, analyzer=self.analyzer)
                   for d in [self.d1, self.d2]]
         doc1 = Document()
@@ -47,14 +46,13 @@ class Test_Bug1763(PyLuceneTestCase):
             w.close()
 
     def test_bug1763(self):
-            
+
         w1 = self.getWriter(directory=self.d1, analyzer=self.analyzer)
-        w1.addIndexes([self.getReader(directory=self.d2)])
+        w1.addIndexes([self.d2])
         w1.close()
 
         searcher = self.getSearcher(self.d1)
-        q = QueryParser(Version.LUCENE_CURRENT, 'all',
-                        self.analyzer).parse('brown')
+        q = QueryParser('all', self.analyzer).parse('brown')
         topDocs = searcher.search(q, 50)
         self.assertEqual(searcher.doc(topDocs.scoreDocs[0].doc).get('id'), '2')
 

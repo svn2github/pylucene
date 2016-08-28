@@ -18,15 +18,14 @@ from PyLuceneTestCase import PyLuceneTestCase
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.document import Document, Field, StoredField, TextField
 from org.apache.lucene.queryparser.classic import QueryParser
-from org.apache.lucene.util import Version
 
 
 class Test_Bug1564(PyLuceneTestCase):
 
     def setUp(self):
         super(Test_Bug1564, self).setUp()
-        
-        self.analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+
+        self.analyzer = StandardAnalyzer()
         writer = self.getWriter(analyzer=self.analyzer)
 
         doc = Document()
@@ -43,8 +42,7 @@ class Test_Bug1564(PyLuceneTestCase):
     def test_bug1564(self):
 
         searcher = self.getSearcher()
-        query = QueryParser(Version.LUCENE_CURRENT, 'all',
-                            self.analyzer).parse('supreme')
+        query = QueryParser('all', self.analyzer).parse('supreme')
         topDocs = searcher.search(query, 50)
         self.assertEqual(topDocs.totalHits, 1)
 
