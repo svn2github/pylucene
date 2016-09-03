@@ -45,31 +45,10 @@ LUCENE=$(LUCENE_SRC)/lucene
 #
 
 # Mac OS X 10.9 (64-bit Python 2.7, Java 1.8)
-PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
-ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
-PYTHON=$(PREFIX_PYTHON)/bin/python
-JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
-NUM_FILES=8
-
-# Mac OS X 10.6 (64-bit Python 2.6, Java 1.6)
-#PREFIX_PYTHON=/usr
-#ANT=ant
+#PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
+#ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
-#NUM_FILES=8
-
-# Mac OS X 10.6 (MacPorts 1.8.0 64-bit Python 2.7, Java 1.6)
-#PREFIX_PYTHON=/opt/local
-#ANT=ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc --shared --arch x86_64
-#NUM_FILES=8
-
-# Mac OS X 10.6 (64-bit and 32-bit Python 2.6 together, Java 1.6)
-#PREFIX_PYTHON=/usr
-#ANT=ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64 --arch i386
 #NUM_FILES=8
 
 # Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
@@ -86,28 +65,14 @@ NUM_FILES=8
 #JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-i386.egg/jcc/__init__.py
 #NUM_FILES=8
 
-# Mac OS X  (Python 2.3.5, Java 1.5, setuptools 0.6c7, PPC Mac OS X 10.4)
-#PREFIX_PYTHON=/usr
-#ANT=ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-ppc.egg/jcc/__init__.py
-#NUM_FILES=8
-
-# Linux     (Ubuntu 11.10 64-bit, Python 2.7.2, OpenJDK 1.7, setuptools 0.6.16)
+# Linux     (Debian Jessie 64-bit, Python 2.7.9, Oracle Java 1.8
 # Be sure to also set JDK['linux2'] in jcc's setup.py to the JAVA_HOME value
 # used below for ANT (and rebuild jcc after changing it).
-#PREFIX_PYTHON=/usr
-#ANT=JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 /usr/bin/ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=8
-
-# Linux     (Ubuntu 8.10 64-bit, Python 2.5.2, OpenJDK 1.6, setuptools 0.6c9)
-#PREFIX_PYTHON=/usr
-#ANT=ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=8
+PREFIX_PYTHON=/opt/apache/pylucene/_install
+ANT=JAVA_HOME=/usr/lib/jvm/java-8-oracle /usr/bin/ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc --shared
+NUM_FILES=8
 
 # Linux     (Ubuntu 6.06, Python 2.4, Java 1.5, no setuptools)
 #PREFIX_PYTHON=/usr

@@ -51,52 +51,27 @@ See %s/INSTALL for more information about shared mode.
 
 def patch_setuptools(with_setuptools):
 
-    with_setuptools_c7 = ('00000000', '00000006', '*c', '00000007', '*final')
-    with_setuptools_c11 = ('00000000', '00000006', '*c', '00000011', '*final')
-    with_distribute_1 = ('00000000', '00000006', '00000001', '*final')
-
     try:
         from setuptools.command.build_ext import sh_link_shared_object
         enable_shared = True  # jcc/patches/patch.43 was applied
     except ImportError:
         jccdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         st_egg = os.path.dirname(setuptools.__path__[0])
-        if with_setuptools_c7 <= with_setuptools <= with_setuptools_c11 or with_distribute_1 <= with_setuptools:
-            # Old setuptools 0.6c7-10 series
-            # New distribute 0.6.1+ series
             
-            if with_setuptools < with_setuptools_c11 and not hasattr(dist, 'check_packages'):
-                # Old setuptools 0.6c7-10 series missing check_packages()
-                dist.check_packages = check_packages
-            
-            setuptools.Library = LinuxLibrary
-            extension.Library = LinuxLibrary
-            build_ext.build_ext = LinuxBuildExt
-            if build_ext.use_stubs:
-                # Build shared libraries.
-                global sh_link_shared_object # Fix UnboundLocalError
-                build_ext.link_shared_object = sh_link_shared_object
-            else:
-                # Build static libraries every where else (unless forced)
-                build_ext.libtype = 'static'
-                build_ext.link_shared_object = st_link_shared_object
+        setuptools.Library = LinuxLibrary
+        extension.Library = LinuxLibrary
+        build_ext.build_ext = LinuxBuildExt
+        if build_ext.use_stubs:
+            # Build shared libraries.
+            global sh_link_shared_object # Fix UnboundLocalError
+            build_ext.link_shared_object = sh_link_shared_object
+        else:
+            # Build static libraries every where else (unless forced)
+            build_ext.libtype = 'static'
+            build_ext.link_shared_object = st_link_shared_object
                 
-            print >>sys.stderr, "Applied shared mode monkey patch to:", setuptools
-            return True # monkey patch was applied
-                                        
-        elif with_setuptools < with_setuptools_c11:   # old 0.6c7-10 series
-            patch_version = '0.6c7'
-        elif with_setuptools >= with_distribute_1:    # new 0.6.1 and up fork
-            patch_version = '0.6c7'                   # compatible with 0.6c7
-        else:
-            patch_version = '0.6c11'                  # old 0.6c11+ series
-
-        if os.path.isdir(st_egg):
-            raise NotImplementedError, patch_st_dir(patch_version, st_egg,
-                                                    jccdir)
-        else:
-            raise NotImplementedError, patch_st_zip(patch_version, st_egg,
-                                                    jccdir)
+        print >>sys.stderr, "Applied shared mode monkey patch to:", setuptools
+        return True # monkey patch was applied
 
     return enable_shared
 
@@ -156,11 +131,3 @@ def st_link_shared_object(self, objects, output_libname, output_dir=None, librar
         basename = basename[3:]
 
     self.create_static_lib(objects, basename, output_dir, debug, target_lang)
-
-def check_packages(dist, attr, value):
-    for pkgname in value:
-        if not re.match(r'\w+(\.\w+)*', pkgname):
-            distutils.log.warn(
-                "WARNING: %r not a valid package name; please use only"
-                ".-separated package names in setup.py", pkgname
-            )
