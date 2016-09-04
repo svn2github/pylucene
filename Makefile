@@ -45,11 +45,11 @@ LUCENE=$(LUCENE_SRC)/lucene
 #
 
 # Mac OS X 10.9 (64-bit Python 2.7, Java 1.8)
-#PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
-#ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
-#NUM_FILES=8
+PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
+ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+NUM_FILES=8
 
 # Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
 #PREFIX_PYTHON=/usr
@@ -68,11 +68,11 @@ LUCENE=$(LUCENE_SRC)/lucene
 # Linux     (Debian Jessie 64-bit, Python 2.7.9, Oracle Java 1.8
 # Be sure to also set JDK['linux2'] in jcc's setup.py to the JAVA_HOME value
 # used below for ANT (and rebuild jcc after changing it).
-PREFIX_PYTHON=/opt/apache/pylucene/_install
-ANT=JAVA_HOME=/usr/lib/jvm/java-8-oracle /usr/bin/ant
-PYTHON=$(PREFIX_PYTHON)/bin/python
-JCC=$(PYTHON) -m jcc --shared
-NUM_FILES=8
+#PREFIX_PYTHON=/opt/apache/pylucene/_install
+#ANT=JAVA_HOME=/usr/lib/jvm/java-8-oracle /usr/bin/ant
+#PYTHON=$(PREFIX_PYTHON)/bin/python
+#JCC=$(PYTHON) -m jcc --shared
+#NUM_FILES=8
 
 # Linux     (Ubuntu 6.06, Python 2.4, Java 1.5, no setuptools)
 #PREFIX_PYTHON=/usr

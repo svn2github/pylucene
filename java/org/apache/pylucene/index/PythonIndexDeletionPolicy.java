@@ -45,9 +45,11 @@ public class PythonIndexDeletionPolicy extends IndexDeletionPolicy {
 
     public native void pythonDecRef();
 
+    @Override
     public native void onInit(List<? extends IndexCommit> commits)
         throws IOException;
 
+    @Override
     public native void onCommit(List<? extends IndexCommit> commits)
         throws IOException;
 }

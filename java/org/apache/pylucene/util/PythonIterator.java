@@ -43,9 +43,12 @@ public class PythonIterator implements Iterator {
 
     public native void pythonDecRef();
 
+    @Override
     public native boolean hasNext();
+    @Override
     public native Object next();
     
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException();

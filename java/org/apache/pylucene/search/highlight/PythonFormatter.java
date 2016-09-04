@@ -43,6 +43,8 @@ public class PythonFormatter implements Formatter {
     }
 
     public native void pythonDecRef();
+
+    @Override
     public native String highlightTerm(String originalText,
                                        TokenGroup tokenGroup);
 }

@@ -47,6 +47,7 @@ public class PythonLockFactory extends LockFactory {
 
     public native void pythonDecRef();
 
+    @Override
     public native Lock obtainLock(Directory dir, String lockName)
         throws IOException;
 }

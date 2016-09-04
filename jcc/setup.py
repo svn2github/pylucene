@@ -66,7 +66,7 @@ if 'JCC_JDK' in os.environ:
 
 if not JDK[platform]:
     raise RuntimeError('''
-                       
+
 Can't determine where the Java JDK has been installed on this machine.
 
 Please set the environment variable JCC_JDK to that location before
@@ -75,7 +75,7 @@ running setup.py.
 
 elif not os.path.isdir(JDK[platform]):
     raise RuntimeError('''
-                       
+
 Java JDK directory '%s' does not exist.
 
 Please set the environment variable JCC_JDK to the correct location before

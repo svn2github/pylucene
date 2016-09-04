@@ -45,6 +45,7 @@ public class PythonFilteringTokenFilter extends FilteringTokenFilter {
 
     public native void pythonDecRef();
 
+    @Override
     public native boolean accept()
         throws IOException;
 }

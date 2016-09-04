@@ -42,6 +42,9 @@ public class PythonFragmenter implements Fragmenter {
     }
 
     public native void pythonDecRef();
+
+    @Override
     public native boolean isNewFragment();
+    @Override
     public native void start(String originalText, TokenStream tokenStream);
 }

@@ -46,28 +46,43 @@ public class PythonList implements List {
 
     public native void pythonDecRef();
   
+    @Override
     public native boolean add(Object obj);
+    @Override
     public native void add(int index, Object obj);
+    @Override
     public native boolean addAll(Collection c);
+    @Override
     public native boolean addAll(int index, Collection c);
+    @Override
     public native void clear();
+    @Override
     public native boolean contains(Object obj);
+    @Override
     public native boolean containsAll(Collection c);
+    @Override
     public native boolean equals(Object obj);
+    @Override
     public native Object get(int index);
     // public native int hashCode();
+    @Override
     public native int indexOf(Object obj);
+    @Override
     public native boolean isEmpty();
+    @Override
     public native Iterator iterator();
+    @Override
     public native int lastIndexOf(Object obj);
 
     public native ListIterator listIterator(int index); 
+    @Override
     public ListIterator listIterator()
     {
         return listIterator(0);
     }
 
     private native Object removeAt(int index);
+    @Override
     public Object remove(int index)
         throws IndexOutOfBoundsException
     { 
@@ -78,17 +93,23 @@ public class PythonList implements List {
     }
     
     private native boolean removeObject(Object obj);
+    @Override
     public boolean remove(Object obj)
     {
         return removeObject(obj);
     }
     
+    @Override
     public native boolean removeAll(Collection c);
+    @Override
     public native boolean retainAll(Collection c);
+    @Override
     public native Object set(int index, Object obj);
+    @Override
     public native int size();
     
     private native List subListChecked(int fromIndex, int toIndex);     
+    @Override
     public List subList(int fromIndex, int toIndex) 
         throws IndexOutOfBoundsException, IllegalArgumentException
     { 
@@ -100,6 +121,7 @@ public class PythonList implements List {
     
     public native Object[] toArray();
 
+    @Override
     public Object[] toArray(Object[] a)
     {
         Object[] array = toArray();

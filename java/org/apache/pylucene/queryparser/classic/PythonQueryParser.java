@@ -54,14 +54,24 @@ public class PythonQueryParser extends QueryParser {
     }
 
     public native void pythonDecRef();
+
+    @Override
     public native Query getBooleanQuery(List clauses);
+
+    @Override
     public native Query getFuzzyQuery(String field, String termText,
                                       float minSimilarity);
+
+    @Override
     public native Query getPrefixQuery(String field, String termText);
+
+    @Override
     public native Query getRangeQuery(String field,
                                       String part1, String part2,
                                       boolean startInclusive,
                                       boolean endInclusive);
+
+    @Override
     public native Query getWildcardQuery(String field, String termText);
 
     public native Query getFieldQuery_quoted(String field, String queryText,

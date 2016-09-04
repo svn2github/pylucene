@@ -56,15 +56,21 @@ public class PythonIndexInput extends BufferedIndexInput {
 
     public native void pythonDecRef();
 
+    @Override
     public native PythonIndexInput clone();
+    @Override
     public native long length();
+    @Override
     public native void close()
         throws IOException;
-    public native byte[] readInternal(int length, long pos)
-        throws IOException;
+    @Override
     public native void seekInternal(long pos)
         throws IOException;
 
+    public native byte[] readInternal(int length, long pos)
+        throws IOException;
+
+    @Override
     protected void readInternal(byte[] b, int offset, int length)
         throws IOException
     {

@@ -45,20 +45,22 @@ public class PythonIndexOutput extends IndexOutput {
 
     public native void pythonDecRef();
 
-    public void flush()
-        throws IOException
-    {}
-
+    @Override
     public native long getFilePointer();
+    @Override
     public native long getChecksum()
         throws IOException;
+    @Override
     public native void close()
         throws IOException;
+    @Override
     public native void writeByte(byte b)
         throws IOException;
+
     public native void writeBytes(byte[] bytes)
         throws IOException;
 
+    @Override
     public void writeBytes(byte[] bytes, int offset, int length)
         throws IOException
     {

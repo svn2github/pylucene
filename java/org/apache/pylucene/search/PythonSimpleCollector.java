@@ -60,9 +60,14 @@ public class PythonSimpleCollector extends SimpleCollector {
     }
 
     public native void pythonDecRef();
+
     public native void collect(int doc, float score)
         throws IOException;
+
+    @Override
     public native void doSetNextReader(LeafReaderContext context)
         throws IOException;
+
+    @Override
     public native boolean needsScores();
 }

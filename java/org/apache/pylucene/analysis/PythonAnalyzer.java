@@ -41,5 +41,7 @@ public class PythonAnalyzer extends Analyzer {
     }
 
     public native void pythonDecRef();
+
+    @Override
     public native TokenStreamComponents createComponents(final String fieldName);
 }

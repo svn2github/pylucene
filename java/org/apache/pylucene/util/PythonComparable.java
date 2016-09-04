@@ -40,5 +40,7 @@ public class PythonComparable implements Comparable {
     }
 
     public native void pythonDecRef();
+
+    @Override
     public native int compareTo(Object o);
 }

@@ -46,6 +46,7 @@ public class PythonTokenizer extends Tokenizer {
 
     public native void pythonDecRef();
 
+    @Override
     public native boolean incrementToken()
         throws IOException;
 }

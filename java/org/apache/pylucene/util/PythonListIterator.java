@@ -18,13 +18,20 @@ package org.apache.pylucene.util;
 import java.util.ListIterator;
 
 public class PythonListIterator extends PythonIterator implements ListIterator {
+    @Override
     public native boolean hasPrevious();
+    @Override
     public native Object previous();
     
+    @Override
     public native int nextIndex();
+    @Override
     public native int previousIndex();
     
+    @Override
     public native void set(Object obj);    
+    @Override
     public native void add(Object obj);
+    @Override
     public native void remove();
 }

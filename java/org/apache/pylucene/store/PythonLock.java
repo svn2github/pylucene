@@ -44,7 +44,10 @@ public class PythonLock extends Lock {
 
     public native void pythonDecRef();
 
+    @Override
     public native void ensureValid()
         throws IOException;
+
+    @Override
     public native void close();
 }

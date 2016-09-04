@@ -48,9 +48,11 @@ public class PythonSpanCollector implements SpanCollector {
 
     public native void pythonDecRef();
 
+    @Override
     public native void collectLeaf(PostingsEnum postings, int position,
                                    Term term)
         throws IOException;
 
+    @Override
     public native void reset();
 }

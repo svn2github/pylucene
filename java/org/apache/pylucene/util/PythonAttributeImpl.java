@@ -41,10 +41,16 @@ public class PythonAttributeImpl extends AttributeImpl {
     }
 
     public native void pythonDecRef();
+
+    @Override
     public native void clear();
+    @Override
     public native void copyTo(AttributeImpl target);
+    @Override
     public native void reflectWith(AttributeReflector reflector);
 
+    @Override
     public native boolean equals(Object obj);
+    @Override
     public native int hashCode();
 }

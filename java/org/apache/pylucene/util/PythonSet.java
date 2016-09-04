@@ -46,21 +46,34 @@ public class PythonSet implements Set {
 
     public native void pythonDecRef();
 
+    @Override
     public native boolean add(Object obj);
+    @Override
     public native boolean addAll(Collection c);
+    @Override
     public native void clear();
+    @Override
     public native boolean contains(Object obj);
+    @Override
     public native boolean containsAll(Collection c);
+    @Override
     public native boolean equals(Object obj);
+    @Override
     public native boolean isEmpty();
+    @Override
     public native Iterator iterator();
+    @Override
     public native boolean remove(Object obj);
+    @Override
     public native boolean removeAll(Collection c);
+    @Override
     public native boolean retainAll(Collection c);
+    @Override
     public native int size();
 
     public native Object[] toArray();
     
+    @Override
     public Object[] toArray(Object[] a)
     {
         Object[] array = toArray();

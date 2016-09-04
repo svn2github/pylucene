@@ -49,6 +49,7 @@ public class PythonDirectory extends Directory {
         pythonDecRef();
     }
 
+    @Override
     public void sync(Collection<String> names)
         throws IOException
     {
@@ -56,28 +57,39 @@ public class PythonDirectory extends Directory {
             sync(name);
     }
 
+    public native void sync(String name)
+        throws IOException;
+
     public native void pythonDecRef();
 
+    @Override
     public native void close()
         throws IOException;
+    @Override
     public native IndexOutput createOutput(String name, IOContext context)
         throws IOException;
+    @Override
     public native IndexOutput createTempOutput(String prefix, String suffix,
                                                IOContext context)
         throws IOException;
+    @Override
     public native void deleteFile(String name)
         throws IOException;
+    @Override
     public native long fileLength(String name)
         throws IOException;
+    @Override
     public native String[] listAll()
         throws IOException;
+    @Override
     public native IndexInput openInput(String name, IOContext context)
         throws IOException;
-    public native void sync(String name)
-        throws IOException;
+    @Override
     public native void rename(String source, String dest)
         throws IOException;
+    @Override
     public native void syncMetaData()
         throws IOException;
+    @Override
     public native Lock obtainLock(String name);
 }
