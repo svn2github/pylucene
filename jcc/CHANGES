@@ -1,10 +1,9 @@
-Version 2.21 ->
+Version 2.21 -> 2.22
 --------------------
  - monkeypatched customize_compiler to fix darwin linker error due to -Wl,-x
  - added check that MACOSX_DEPLOYMENT_TARGET is set to at least 10.5
- - replaced MACOSX_DEPLOYMENT_PLATFORM check -mmacosx-version-min=10.5
+ - replaced MACOSX_DEPLOYMENT_TARGET check -mmacosx-version-min=10.5
  - shared mode now requires a modern setuptools (version >= 8)
- - 
 
 Version 2.20 -> 2.21
 --------------------
