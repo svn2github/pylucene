@@ -312,7 +312,12 @@ class Test_PyLuceneWithFSStore(unittest.TestCase, Test_PyLuceneBase):
     def tearDown(self):
 
         if os.path.exists(self.STORE_DIR):
-            shutil.rmtree(self.STORE_DIR)
+            try:
+                shutil.rmtree(self.STORE_DIR)
+            except WindowsError:
+                # maybe leaking file handles in closing stores
+                # does not affect other tests
+                pass
 
     def openStore(self):
 
