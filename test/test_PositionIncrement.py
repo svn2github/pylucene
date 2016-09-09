@@ -72,6 +72,8 @@ class PositionIncrementTestCase(PyLuceneTestCase):
         class _analyzer(PythonAnalyzer):
             def createComponents(_self, fieldName):
                 return Analyzer.TokenStreamComponents(_tokenizer())
+            def initReader(_self, fieldName, reader):
+                return reader
 
         writer = self.getWriter(analyzer=_analyzer())
 
@@ -260,6 +262,8 @@ class TestPayloadAnalyzer(PythonAnalyzer):
     def createComponents(self, fieldName):
         source = LowerCaseTokenizer()
         return Analyzer.TokenStreamComponents(source, PayloadFilter(source, fieldName))
+    def initReader(self, fieldName, reader):
+        return reader
 
 
 class PayloadFilter(PythonTokenFilter):

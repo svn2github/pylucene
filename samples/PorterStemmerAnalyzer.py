@@ -40,15 +40,18 @@ from org.apache.pylucene.analysis import PythonAnalyzer
 
 class PorterStemmerAnalyzer(PythonAnalyzer):
 
-    def createComponents(self, fieldName, reader):
+    def createComponents(self, fieldName):
 
-        source = StandardTokenizer(reader)
+        source = StandardTokenizer()
         filter = StandardFilter(source)
         filter = LowerCaseFilter(filter)
         filter = PorterStemFilter(filter)
         filter = StopFilter(filter, StopAnalyzer.ENGLISH_STOP_WORDS_SET)
 
         return self.TokenStreamComponents(source, filter)
+
+    def initReader(self, fieldName, reader):
+        return reader
 
 
 if __name__ == '__main__':

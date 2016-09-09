@@ -39,6 +39,8 @@ class TestICUFoldingFilter(BaseTokenStreamTestCase):
             def createComponents(_self, fieldName):
                 source = WhitespaceTokenizer()
                 return Analyzer.TokenStreamComponents(source, ICUFoldingFilter(source))
+            def initReader(_self, fieldName, reader):
+                return reader
 
         a = _analyzer()
 

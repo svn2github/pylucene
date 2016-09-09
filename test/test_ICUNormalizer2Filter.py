@@ -39,6 +39,8 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
             def createComponents(_self, fieldName):
                 source = WhitespaceTokenizer()
                 return Analyzer.TokenStreamComponents(source, ICUNormalizer2Filter(source))
+            def initReader(_self, fieldName, reader):
+                return reader
 
         a = _analyzer()
 
@@ -74,6 +76,8 @@ class TestICUNormalizer2Filter(BaseTokenStreamTestCase):
                     source, ICUNormalizer2Filter(
                         source,
                         Normalizer2.getInstance(None, "nfc", UNormalizationMode2.DECOMPOSE)))
+            def initReader(_self, fieldName, reader):
+                return reader
 
         a = analyzer()
         # decompose EAcute into E + combining Acute

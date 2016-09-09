@@ -15,6 +15,7 @@
 
 package org.apache.pylucene.analysis;
 
+import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 
 public class PythonAnalyzer extends Analyzer {
@@ -44,4 +45,7 @@ public class PythonAnalyzer extends Analyzer {
 
     @Override
     public native TokenStreamComponents createComponents(final String fieldName);
+
+    @Override
+    public native Reader initReader(String fieldName, Reader reader);
 }
