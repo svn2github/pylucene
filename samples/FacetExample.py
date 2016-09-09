@@ -33,12 +33,11 @@ TAXONOMY_DIR = "FacetExample.Taxonomy"
 
 import os, sys, lucene
 
-from java.io import File
+from java.nio.file import Paths
 from java.lang import System
 from java.text import DecimalFormat
 from java.util import Arrays
 
-from org.apache.lucene.util import Version
 from org.apache.lucene.analysis.core import WhitespaceAnalyzer
 from org.apache.lucene.search import IndexSearcher, TermQuery, MatchAllDocsQuery
 from org.apache.lucene.store import FSDirectory, SimpleFSDirectory
@@ -98,8 +97,7 @@ class SimpleIndexer(object):
         taxoDir Directory in which the taxonomy index should be created.
         """
         # create and open an index writer
-        config = IndexWriterConfig(Version.LUCENE_48,
-                                   WhitespaceAnalyzer(Version.LUCENE_48))
+        config = IndexWriterConfig(WhitespaceAnalyzer())
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE)
         iw = IndexWriter(indexDir, config)
         # create and open a taxonomy writer
@@ -230,10 +228,10 @@ class FacetExample(object):
         # in RAM or on Disc
         #indexDir = RAMDirectory()
         #taxoDir = RAMDirectory()
-        self.indexDir = FSDirectory.open(File(os.path.join(self.directory,
-                                                           INDEX_DIR)))
-        self.taxoDir = FSDirectory.open(File(os.path.join(self.directory,
-                                                          TAXONOMY_DIR)))
+        self.indexDir = FSDirectory.open(Paths.get(os.path.join(self.directory,
+                                                                INDEX_DIR)))
+        self.taxoDir = FSDirectory.open(Paths.get(os.path.join(self.directory,
+                                                               TAXONOMY_DIR)))
         # FacetConfig
         self.facets_config = FacetsConfig()
         self.facets_config.setHierarchical("Categories", True)
