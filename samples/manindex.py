@@ -21,13 +21,12 @@
 import os, re, sys, lucene
 from subprocess import *
 
-from java.io import File
+from java.nio.file import Paths
 from org.apache.lucene.analysis.miscellaneous import LimitTokenCountAnalyzer
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.index import IndexWriter, IndexWriterConfig
 from org.apache.lucene.document import Document, Field, StringField, TextField
 from org.apache.lucene.store import SimpleFSDirectory
-from org.apache.lucene.util import Version
 
 def indexDirectory(dir):
 
@@ -86,10 +85,10 @@ if __name__ == '__main__':
 
     else:
         lucene.initVM(vmargs=['-Djava.awt.headless=true'])
-        directory = SimpleFSDirectory(File(sys.argv[1]))
-        analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+        directory = SimpleFSDirectory(Paths.get(sys.argv[1]))
+        analyzer = StandardAnalyzer()
         analyzer = LimitTokenCountAnalyzer(analyzer, 10000)
-        config = IndexWriterConfig(Version.LUCENE_CURRENT, analyzer)
+        config = IndexWriterConfig(analyzer)
         writer = IndexWriter(directory, config)
 
         manpath = os.environ.get('MANPATH', '/usr/share/man').split(os.pathsep)
