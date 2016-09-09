@@ -1,7 +1,12 @@
+Version 4.10.1 -> 6.2.0
+-----------------------
+ - using Lucene 6.2.0 sources
+ - PyLucene built with JCC 2.22
+
 Version 4.9.0 -> 4.10.1
 -----------------------
  - using Lucene 4.10.1 sources
- - PyLucene built with JCC 2.20
+ - PyLucene built with JCC 2.21
 
 Version 4.8.0 -> 4.9.0
 ----------------------
