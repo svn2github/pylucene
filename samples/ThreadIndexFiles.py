@@ -22,7 +22,6 @@ from datetime import datetime
 from IndexFiles import IndexFiles
 
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.util import Version
 
 
 if __name__ == '__main__':
@@ -37,7 +36,7 @@ if __name__ == '__main__':
         env.attachCurrentThread()
         start = datetime.now()
         IndexFiles(sys.argv[1], os.path.join(base_dir, INDEX_DIR),
-                   StandardAnalyzer(Version.LUCENE_CURRENT))
+                   StandardAnalyzer())
         end = datetime.now()
         print end - start
 
