@@ -1,3 +1,8 @@
+Version 6.2.0 ->
+----------------------
+ - added explicit wrapper for org.apache.lucene.analysis.Tokenizer:input
+ - 
+
 Version 4.10.1 -> 6.2.0
 -----------------------
  - using Lucene 6.2.0 sources

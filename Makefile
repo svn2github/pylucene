@@ -315,6 +315,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
            --sequence java.util.AbstractList 'size:()I' 'get:(I)Ljava/lang/Object;' \
            org.apache.lucene.index.IndexWriter:getReader \
+           org.apache.lucene.analysis.Tokenizer:input \
            --version $(LUCENE_VER) \
            --module python/collections.py \
            --module python/ICUNormalizer2Filter.py \

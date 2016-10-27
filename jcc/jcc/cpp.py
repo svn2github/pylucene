@@ -380,7 +380,7 @@ def jcc(args):
 
     classNames = set()
     listedClassNames = set()
-    listedMethodNames = {}
+    listedMethodOrFieldNames = {}
     packages = set()
     jars = []
     classpath = [_jcc.CLASSPATH]
@@ -544,7 +544,7 @@ def jcc(args):
         else:
             if ':' in arg:
                 arg, method = arg.split(':', 1)
-                listedMethodNames.setdefault(arg, set()).add(method)
+                listedMethodOrFieldNames.setdefault(arg, set()).add(method)
             classNames.add(arg)
             listedClassNames.add(arg)
         i += 1
@@ -675,7 +675,8 @@ def jcc(args):
                 (superCls, constructors, methods, protectedMethods,
                  methodNames, fields, instanceFields, declares) = \
                     header(env, out_h, cls, typeset, packages, excludes,
-                           generics, listedMethodNames.get(cls.getName(), ()),
+                           generics,
+                           listedMethodOrFieldNames.get(cls.getName(), ()),
                            _dll_export)
 
                 if not allInOne:
@@ -683,7 +684,7 @@ def jcc(args):
                 names, superNames = code(env, out_cpp,
                                          cls, superCls, constructors,
                                          methods, protectedMethods,
-                                         methodNames, fields, instanceFields, 
+                                         methodNames, fields, instanceFields,
                                          declares, typeset)
                 if moduleName:
                     name = renames.get(className) or names[-1]
@@ -736,7 +737,7 @@ def jcc(args):
 
 
 def header(env, out, cls, typeset, packages, excludes, generics,
-           listedMethodNames, _dll_export):
+           listedMethodOrFieldNames, _dll_export):
 
     names = cls.getName().split('.')
     superCls = cls.getSuperclass()
@@ -822,7 +823,7 @@ def header(env, out, cls, typeset, packages, excludes, generics,
             continue
         modifiers = method.getModifiers()
         if (Modifier.isPublic(modifiers) or
-            method.getName() in listedMethodNames):
+            method.getName() in listedMethodOrFieldNames):
             if generics:
                 returnType = method.getGenericReturnType()
             else:
@@ -878,7 +879,8 @@ def header(env, out, cls, typeset, packages, excludes, generics,
     instanceFields = []
     for field in cls.getDeclaredFields():
         modifiers = field.getModifiers()
-        if Modifier.isPublic(modifiers):
+        if (Modifier.isPublic(modifiers) or
+            field.getName() in listedMethodOrFieldNames):
             if generics:
                 fieldType = field.getGenericType()
             else:
