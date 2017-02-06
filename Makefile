@@ -15,8 +15,8 @@
 # site-packages directory.
 #
 
-VERSION=6.2.0
-LUCENE_VER=6.2.0
+VERSION=6.4.1
+LUCENE_VER=6.4.1
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
@@ -43,7 +43,7 @@ LUCENE=$(LUCENE_SRC)/lucene
 # limit.
 #
 
-# Mac OS X 10.9 (64-bit Python 2.7, Java 1.8)
+# Mac OS X 10.12 (64-bit Python 2.7, Java 1.8)
 #PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
 #ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python

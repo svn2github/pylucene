@@ -314,10 +314,12 @@ class Test_PyLuceneWithFSStore(unittest.TestCase, Test_PyLuceneBase):
         if os.path.exists(self.STORE_DIR):
             try:
                 shutil.rmtree(self.STORE_DIR)
-            except WindowsError:
+            except Exception, e:
                 # maybe leaking file handles in closing stores
                 # does not affect other tests
-                pass
+                if e.__name__ == 'WindowsError':
+                    pass
+                raise
 
     def openStore(self):
 
