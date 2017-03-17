@@ -373,7 +373,7 @@ ARCHIVE=pylucene-$(VERSION)-src.tar.gz
 distrib:
 	mkdir -p distrib
 	svn export --force . distrib/pylucene-$(VERSION)
-	tar -cf - --exclude build $(LUCENE_SRC) | tar -C distrib/pylucene-$(VERSION) -xvf -
+	tar -cf - --exclude build `find $(LUCENE_SRC) -type l | xargs -n 1 echo --exclude` $(LUCENE_SRC) | tar -C distrib/pylucene-$(VERSION) -xvf -
 	cd distrib; tar --disable-copyfile -cvzf $(ARCHIVE) pylucene-$(VERSION)
 	cd distrib; gpg2 --armor --output $(ARCHIVE).asc --detach-sig $(ARCHIVE)
 	cd distrib; md5sum $(ARCHIVE) > $(ARCHIVE).md5
