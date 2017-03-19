@@ -13,13 +13,10 @@ Python interpreter. JCC attempts to make these Python types pythonic by
 detecting iterators and property accessors. Iterators and mappings may also
 be declared to JCC.
 
-JCC has been built on Python 2.3, 2.4, 2.5, 2.6 and 2.7 and has been used with
-various Java Runtime Environments such as Sun Java 1.5 and 1.6, Apple's
+JCC has been built on Python 2.3 to 2.7, on Python 3.6, and has been used
+with various Java Runtime Environments such as Sun Java 1.5 and 1.6, Apple's
 Java 1.5 and 1.6 on Mac OS X, open source Java OpenJDK 1.7 builds as well as
-Oracle Java 1.7.
-
-An experimental port to Python 3 is available from a branch:
-  http://svn.apache.org/repos/asf/lucene/pylucene/branches/python_3/jcc/
+Oracle Java 1.7 and 1.8.
 
 JCC is supported on Mac OS X, Linux, Solaris and Windows.
 
@@ -33,10 +30,8 @@ JCC is built with distutils or setuptools::
 
 Setuptools is required to build JCC on Python 2.3.
 
-Except for Mac OS X - where Apple's Java comes pre-installed in a known
-framework location - JCC's setup.py file needs to be edited before building
-JCC to specify the location of the Java Runtime Environment's header files
-and libraries.
+JCC's setup.py file needs to be edited before building JCC to specify the
+location of the Java Runtime Environment's header files and libraries.
 
 The svn sources for JCC are available at:
   http://svn.apache.org/repos/asf/lucene/pylucene/trunk/jcc/

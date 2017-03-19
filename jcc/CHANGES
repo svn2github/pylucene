@@ -1,3 +1,8 @@
+Version 2.23 -> 3.0
+-------------------
+ - added support for Python 3.6 (with Rüdiger Meier and Thomas Koch)
+ - 
+ 
 Version 2.22 -> 2.23
 --------------------
  - extended ability to explicitely requesting wrappers to fields

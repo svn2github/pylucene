@@ -17,7 +17,7 @@ import os, sys
 if sys.platform == 'win32':
 
     if '--find-jvm-dll' in sys.argv:
-        from windows import add_jvm_dll_directory_to_path
+        from .windows import add_jvm_dll_directory_to_path
         add_jvm_dll_directory_to_path()
 
     from jcc.config import SHARED
@@ -28,13 +28,13 @@ if sys.platform == 'win32':
             path.insert(0, eggpath)
             os.environ['Path'] = os.pathsep.join(path)
 
-from jcc import _jcc
+import jcc._jcc3 as _jcc3
 
-# used when jcc is invoked with -m from python 2.5
+# used when jcc is invoked with -m
 if __name__ == '__main__':
     import jcc.__main__
 else:
-    from _jcc import initVM
+    from ._jcc3 import initVM
 
 CLASSPATH=os.path.join(os.path.abspath(os.path.dirname(__file__)), "classes")
-_jcc.CLASSPATH = CLASSPATH
+_jcc3.CLASSPATH = CLASSPATH

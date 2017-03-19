@@ -10,7 +10,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import os, sys, zipfile, _jcc
+import os, sys, zipfile, _jcc2
 
 python_ver = '%d.%d.%d' %(sys.version_info[0:3])
 if python_ver < '2.4':
@@ -62,9 +62,9 @@ class InvalidArgsError(Exception):
     pass
 
 
-_jcc._set_exception_types(JavaError, InvalidArgsError)
-from _jcc import findClass as _findClass
-from _jcc import *
+_jcc2._set_exception_types(JavaError, InvalidArgsError)
+from _jcc2 import findClass as _findClass
+from _jcc2 import *
 
 
 def findClass(className):
@@ -383,7 +383,7 @@ def jcc(args):
     listedMethodOrFieldNames = {}
     packages = set()
     jars = []
-    classpath = [_jcc.CLASSPATH]
+    classpath = [_jcc2.CLASSPATH]
     libpath = []
     vmargs = ['-Djava.awt.headless=true']
     moduleName = None
@@ -412,13 +412,13 @@ def jcc(args):
     wininst = False
     find_jvm_dll = False
     compiler = None
-    generics = hasattr(_jcc, "Type")
+    generics = hasattr(_jcc2, "Type")
     arch = []
     resources = []
     imports = {}
     extra_setup_args = []
     initvm_args = {}
-    
+
     i = 1
     while i < len(args):
         arg = args[i]

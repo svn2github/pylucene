@@ -1,9 +1,14 @@
-exclude jcc/config.py
-include jcc/patches/patch.*
-recursive-include jcc *.h
-recursive-include _jcc *.h
+exclude jcc2/config.py
+exclude jcc3/config.py
+include jcc2/patches/patch.*
+include jcc3/patches/patch.*
+recursive-include jcc2 *.h
+recursive-include jcc3 *.h
+recursive-include _jcc2 *.h
+recursive-include _jcc3 *.h
 recursive-include java *.java
-recursive-include helpers *.py
+recursive-include helpers2 *.py
+recursive-include helpers3 *.py
 include CHANGES
 include DESCRIPTION
 include INSTALL

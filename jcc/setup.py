@@ -12,8 +12,14 @@
 
 import os, sys, platform, subprocess
 
-jcc_ver = '2.23'
+jcc_ver = '3.0'
 machine = platform.machine()
+using_python2 = sys.version_info < (3,)
+
+if not using_python2 and sys.version_info < (3, 5):
+    raise RuntimeError('''
+Python 3 is supported from version 3.5, you are running version %s.%s'''
+                       %(sys.version_info.major, sys.version_info.minor))
 
 if machine.startswith("iPod") or machine.startswith("iPhone"):
     platform = 'ipod'
@@ -23,7 +29,7 @@ else:
     platform = sys.platform
 
 # Add or edit the entry corresponding to your system in the JDK, INCLUDES,
-# CFLAGS, DEBUG_CFLAGS, LFLAGS and JAVAC dictionaries below. 
+# CFLAGS, DEBUG_CFLAGS, LFLAGS and JAVAC dictionaries below.
 # These entries are used to build JCC _and_ by JCC to drive compiling and
 # linking via distutils or setuptools the extensions it generated code for.
 #
@@ -38,12 +44,18 @@ else:
 if platform in ("win32", "mingw32"):
     try:
         JAVAFRAMEWORKS = None
-        from helpers.windows import JAVAHOME
+        if using_python2:
+            from helpers2.windows import JAVAHOME
+        else:
+            from helpers3.windows import JAVAHOME
     except ImportError:
         JAVAHOME = None
 elif platform in ("darwin",):
     try:
-        from helpers.darwin import JAVAHOME, JAVAFRAMEWORKS
+        if using_python2:
+            from helpers2.darwin import JAVAHOME, JAVAFRAMEWORKS
+        else:
+            from helpers3.darwin import JAVAHOME, JAVAFRAMEWORKS
     except ImportError:
         JAVAHOME = None
         JAVAFRAMEWORKS = None
@@ -209,14 +221,20 @@ try:
             enable_shared = True
 
         elif platform == 'linux2':
-            from helpers.linux import patch_setuptools
+            if using_python2:
+                from helpers2.linux import patch_setuptools
+            else:
+                from helpers3.linux import patch_setuptools
             enable_shared = patch_setuptools(with_setuptools)
 
         elif platform == 'mingw32':
             enable_shared = True
             # need to monkeypatch the CygwinCCompiler class to generate
             # jcc.lib in the correct place
-            from helpers.mingw32 import JCCMinGW32CCompiler
+            if using_python2:
+                from helpers2.mingw32 import JCCMinGW32CCompiler
+            else:
+                from helpers3.mingw32 import JCCMinGW32CCompiler
             import distutils.cygwinccompiler
             distutils.cygwinccompiler.Mingw32CCompiler = JCCMinGW32CCompiler
 
@@ -225,7 +243,7 @@ try:
 
 except ImportError:
     if sys.version_info < (2, 4):
-        raise ImportError, 'setuptools is required when using Python 2.3'
+        raise ImportError('setuptools is required when using Python 2.3')
     else:
         from distutils.core import setup, Extension
         with_setuptools = None
@@ -233,6 +251,11 @@ except ImportError:
 
 
 def main(debug):
+
+    if using_python2:
+        py_version_suffix = '2'
+    else:
+        py_version_suffix = '3'
 
     _jcc_argsep = os.environ.get('JCC_ARGSEP', os.pathsep)
 
@@ -271,11 +294,14 @@ def main(debug):
     else:
         _javadoc = JAVADOC[platform]
 
-    from helpers.build import jcc_build_py
+    if using_python2:
+        from helpers2.build import jcc_build_py
+    else:
+        from helpers3.build import jcc_build_py
 
     jcc_build_py.config_file = \
         os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'jcc', 'config.py')
+                     'jcc%s' %(py_version_suffix), 'config.py')
     jcc_build_py.config_text = \
         '\n'.join(['',
                    'INCLUDES=%s' %(_includes),
@@ -289,12 +315,12 @@ def main(debug):
 
     extensions = []
 
-    boot = '_jcc'
+    boot = '_jcc%s' %(py_version_suffix)
 
     cflags = ['-DPYTHON'] + _cflags
     if debug:
         cflags += _debug_cflags
-    includes = _includes + [boot, 'jcc/sources']
+    includes = _includes + [boot, 'jcc%s/sources' %(py_version_suffix)]
     lflags = _lflags
     if not debug:
         if platform == 'win32':
@@ -304,12 +330,12 @@ def main(debug):
         else:
             lflags += ['-Wl,-S']
 
-    sources = ['jcc/sources/jcc.cpp',
-               'jcc/sources/JCCEnv.cpp',
-               'jcc/sources/JObject.cpp',
-               'jcc/sources/JArray.cpp',
-               'jcc/sources/functions.cpp',
-               'jcc/sources/types.cpp']
+    sources = ['jcc%s/sources/jcc.cpp' %(py_version_suffix),
+               'jcc%s/sources/JCCEnv.cpp' %(py_version_suffix),
+               'jcc%s/sources/JObject.cpp' %(py_version_suffix),
+               'jcc%s/sources/JArray.cpp' %(py_version_suffix),
+               'jcc%s/sources/functions.cpp' %(py_version_suffix),
+               'jcc%s/sources/types.cpp' %(py_version_suffix)]
     for path, dirs, names in os.walk(boot):
         for name in names:
             if name.endswith('.cpp'):
@@ -327,7 +353,8 @@ def main(debug):
 
         if platform in ('darwin', 'ipod'):
             kwds["extra_link_args"] = \
-                lflags + ['-install_name', '@rpath/libjcc.dylib',
+                lflags + ['-install_name',
+                          '@rpath/libjcc%s.dylib' %(py_version_suffix),
                           '-current_version', jcc_ver,
                           '-compatibility_version', jcc_ver]
         elif platform == 'linux2':
@@ -335,29 +362,29 @@ def main(debug):
                 lflags + ['-lpython%s.%s' %(sys.version_info[0:2])]
             kwds["force_shared"] = True    # requires jcc/patches/patch.43
         elif platform in IMPLIB_LFLAGS:
-            jcclib = 'jcc%s.lib' %(debug and '_d' or '')
+            jcclib = 'jcc%s%s.lib' %(py_version_suffix, debug and '_d' or '')
             implib_flags = ' '.join(IMPLIB_LFLAGS[platform])
             kwds["extra_link_args"] = \
-                lflags + [implib_flags %(os.path.join('jcc', jcclib))]
+                lflags + [implib_flags %(os.path.join('jcc%s' %(py_version_suffix), jcclib))]
             package_data.append(jcclib)
         else:
             kwds["extra_link_args"] = lflags
 
-        extensions.append(Library('jcc', **kwds))
+        extensions.append(Library('jcc%s' %(py_version_suffix), **kwds))
 
         args = _javac[:]
-        args.extend(('-d', 'jcc/classes'))
+        args.extend(('-d', 'jcc%s/classes' %(py_version_suffix)))
         args.append('java/org/apache/jcc/PythonVM.java')
         args.append('java/org/apache/jcc/PythonException.java')
-        if not os.path.exists('jcc/classes'):
-            os.makedirs('jcc/classes')
+        if not os.path.exists('jcc%s/classes' %(py_version_suffix)):
+            os.makedirs('jcc%s/classes' %(py_version_suffix))
         try:
             process = Popen(args, stderr=PIPE)
-        except Exception, e:
-            raise type(e), "%s: %s" %(e, args)
+        except:
+            raise sys.exc_info()[0]("%s: %s" %(sys.exc_info()[1], args))
         process.wait()
         if process.returncode != 0:
-            raise OSError, process.stderr.read()
+            raise OSError(process.stderr.read())
         package_data.append('classes/org/apache/jcc/PythonVM.class')
         package_data.append('classes/org/apache/jcc/PythonException.class')
 
@@ -365,13 +392,13 @@ def main(debug):
         args.extend(('-d', 'javadoc', '-sourcepath', 'java', 'org.apache.jcc'))
         try:
             process = Popen(args, stderr=PIPE)
-        except Exception, e:
-            raise type(e), "%s: %s" %(e, args)
+        except:
+            raise sys.exc_info()[0]("%s: %s" %(sys.exc_info()[1], args))
         process.wait()
         if process.returncode != 0:
-            raise OSError, process.stderr.read()
+            raise OSError(process.stderr.read())
 
-    extensions.append(Extension('jcc._jcc',
+    extensions.append(Extension('jcc._jcc%s' %(py_version_suffix),
                                 extra_compile_args=cflags,
                                 extra_link_args=lflags,
                                 include_dirs=includes,
@@ -394,17 +421,20 @@ def main(debug):
                         'Programming Language :: C++',
                         'Programming Language :: Java',
                         'Programming Language :: Python',
+                        'Programming Language :: Python :: 2',
+                        'Programming Language :: Python :: 3',
+                        'Programming Language :: Python :: Implementation :: CPython',
                         'Topic :: Software Development :: Code Generators',
                         'Topic :: Software Development :: Libraries :: Java Libraries'],
         'packages': ['jcc'],
-        'package_dir': {'jcc': 'jcc'},
+        'package_dir': {'jcc': 'jcc%s' %(py_version_suffix)},
         'package_data': {'jcc': package_data},
         'ext_modules': extensions,
         "cmdclass": {"build_py": jcc_build_py},
     }
     if with_setuptools:
         args['zip_safe'] = False
-        
+
     setup(**args)
 
 

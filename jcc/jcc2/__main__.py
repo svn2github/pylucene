@@ -12,7 +12,7 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
   Input options:
     --jar JARFILE           - make JCC wrap all public classes found in
                               JARFILE, add it to the module's CLASSPATH and
-                              include it in the distribution 
+                              include it in the distribution
     --include JARFILE       - include JARFILE in the distribution and add
                               it to the module's CLASSPATH
     --import MODULE         - link against the wrappers to classes shared
@@ -22,9 +22,9 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
     --package PACKAGE       - add PACKAGE to the list of packages from
                               which dependencies are automatically wrapped
     --classpath [PATH|JAR]  - add [PATH|JAR] to CLASSPATH while generating
-                              wrappers 
+                              wrappers
     --libpath [PATH]        - add [PATH] to java.library.path while generating
-                              wrappers 
+                              wrappers
     --module MODULE         - include Python MODULE in the distribution
     --reserved SYMBOL       - mark SYMBOL as a reserved word that will be
                               mangled in the generated C++ code to avoid
@@ -70,7 +70,7 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
                               'build' by default
     --files N               - split the generated wrapper file into at least
                               N files to workaround C++ compiler file size
-                              limitations 
+                              limitations
     --arch                  - Mac OS X only: filter the -arch parameters
                               Python was configured with to build leaner
                               binaries, faster
@@ -103,5 +103,5 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
 '''
     print help
     sys.exit(0)
-  
+
 cpp.jcc(sys.argv)

@@ -49,9 +49,9 @@ PyObject *__initialize__(PyObject *module, PyObject *args, PyObject *kwds)
 
 extern "C" {
 
-    void init_jcc(void)
+    void init_jcc2(void)
     {
-        PyObject *m = Py_InitModule3("_jcc", jcc_funcs, "_jcc");
+        PyObject *m = Py_InitModule3("_jcc2", jcc_funcs, "_jcc2");
 
         initJCC(m);
 
