@@ -538,7 +538,6 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   if (last)
                   {
                       if ((PyBytes_Check(arg) && (PyBytes_Size(arg) == 1)) ||
-                          (PyUnicode_Check(arg) && (PyUnicode_GetLength(arg) == 1)) ||
                           PyLong_CheckExact(arg))
                       {
                           varargs = true;
@@ -547,8 +546,6 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                   }
               }
               else if (PyBytes_Check(arg) && (PyBytes_Size(arg) == 1))
-                  break;
-              else if (PyUnicode_Check(arg) && (PyUnicode_GetLength(arg) == 1))
                   break;
               else if (PyLong_CheckExact(arg))
                   break;
@@ -567,8 +564,10 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
                   if (last)
                   {
-                      if ((PyBytes_Check(arg) && (PyBytes_Size(arg) == 1)) ||
-                          (PyUnicode_Check(arg) && (PyUnicode_GetLength(arg) == 1)))
+                      if ((PyBytes_Check(arg) && PyBytes_Size(arg) == 1) ||
+                          (PyUnicode_Check(arg) &&
+                           PyUnicode_GetLength(arg) == 1 &&
+                           PyUnicode_READ_CHAR(arg, 0) < 0x10000))
                       {
                           varargs = true;
                           break;
@@ -577,8 +576,10 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               }
               else if (PyBytes_Check(arg) && PyBytes_Size(arg) == 1)
                   break;
-              else if (PyUnicode_Check(arg) && PyUnicode_GetLength(arg) == 1)
+              else if (PyUnicode_Check(arg) && PyUnicode_GetLength(arg) == 1 &&
+                       PyUnicode_READ_CHAR(arg, 0) < 0x10000)
                   break;
+
               return -1;
           }
 

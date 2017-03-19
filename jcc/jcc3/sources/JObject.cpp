@@ -140,30 +140,20 @@ static PyObject *t_JObject_richcmp(t_JObject *self, PyObject *arg, int op)
 static PyObject *t_JObject_str(t_JObject *self)
 {
     if (self->object.this$)
-    {
-        char *utf = env->toString(self->object.this$);
-
-        if (utf == NULL)
-            utf = env->getClassName(self->object.this$);
-
-        if (utf != NULL)
-        {
-            PyObject *unicode =
-                PyUnicode_DecodeUTF8(utf, strlen(utf), "strict");
-
-            free(utf);
-            return unicode;
-        }
-    }
+        return env->toPyUnicode(self->object.this$);
 
     return PyUnicode_FromString("<null>");
 }
 
 static PyObject *t_JObject_repr(t_JObject *self)
 {
-    PyObject *name = PyObject_GetAttrString((PyObject *) self->ob_base.ob_type,
-                                            "__name__");
     PyObject *str = self->ob_base.ob_type->tp_str((PyObject *) self);
+
+    if (str == NULL)
+        return NULL;
+
+    PyObject *name = PyObject_GetAttrString((PyObject *) Py_TYPE(self),
+                                            "__name__");
     PyObject *args = PyTuple_Pack(2, name, str);
     PyObject *format = PyUnicode_FromString("<%s: %s>");
     PyObject *repr = PyUnicode_Format(format, args);

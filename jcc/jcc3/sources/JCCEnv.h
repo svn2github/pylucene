@@ -290,6 +290,7 @@ public:
     bool restorePythonException(jthrowable throwable) const;
     jstring fromPyString(PyObject *object) const;
     PyObject *fromJString(jstring js, int delete_local_ref) const;
+    PyObject *toPyUnicode(jobject obj) const;
     void finalizeObject(JNIEnv *jenv, PyObject *obj);
 #endif
 

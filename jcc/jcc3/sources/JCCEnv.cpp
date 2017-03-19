@@ -969,7 +969,7 @@ jstring JCCEnv::fromUTF32(const uint32_t *chars, jsize len) const
 
         if (c <= 0xd7ff || (c >= 0xe000 && c <= 0xffff)) {
             jchars.push_back((jchar) c);
-        } else if (c >= 0x10000 && c <= 0x10fff) {
+        } else if (c >= 0x10000 && c <= 0x10ffff) {
             jchars.push_back(U16_LEAD(c));
             jchars.push_back(U16_TRAIL(c));
         } else if (c >= 0xd800 && c <= 0xdfff) {
@@ -1156,6 +1156,30 @@ PyObject *JCCEnv::fromJString(jstring js, int delete_local_ref) const
     return result;
 }
 
+PyObject *JCCEnv::toPyUnicode(jobject obj) const
+{
+    try {
+        if (obj)
+          return fromJString(
+              (jstring) callObjectMethod(obj, _mids[mid_obj_toString]), 0);
+        Py_RETURN_NONE;
+    } catch (int e) {
+        switch (e) {
+          case _EXC_PYTHON:
+            return NULL;
+          case _EXC_JAVA: {
+              JNIEnv *vm_env = get_vm_env();
+
+              vm_env->ExceptionDescribe();
+              vm_env->ExceptionClear();
+
+              return NULL;
+          }
+          default:
+            throw;
+        }
+    }
+}
 
 /* may be called from finalizer thread which has no vm_env thread local */
 void JCCEnv::finalizeObject(JNIEnv *jenv, PyObject *obj)

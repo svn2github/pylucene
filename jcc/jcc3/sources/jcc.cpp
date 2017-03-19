@@ -244,15 +244,12 @@ static PyObject *t_jccenv__dumpRefs(PyObject *self,
         }
         else if (values)  // return list of (value string, ref count)
         {
-            char *str = env->toString(iter->second.global);
-            PyObject *key = PyUnicode_FromString(str);
+            PyObject *key = env->toPyUnicode(iter->second.global);
             PyObject *value = PyLong_FromLong(iter->second.count);
 
             PyList_SET_ITEM(result, count++, PyTuple_Pack(2, key, value));
             Py_DECREF(key);
             Py_DECREF(value);
-
-            delete str;
         }
         else  // return list of (id hash code, ref count)
         {
