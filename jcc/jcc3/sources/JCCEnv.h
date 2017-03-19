@@ -280,17 +280,14 @@ public:
     void setClassPath(const char *classPath);
     char *getClassPath();
 
-    jstring fromUTF8(const char *bytes) const;
     jstring fromUTF32(const uint32_t *chars, jsize len) const;
-    char *toUTF8(jstring str) const;
-    char *toString(jobject obj) const;
-    char *getClassName(jobject obj) const;
 #ifdef PYTHON
     jclass getPythonExceptionClass() const;
     bool restorePythonException(jthrowable throwable) const;
     jstring fromPyString(PyObject *object) const;
     PyObject *fromJString(jstring js, int delete_local_ref) const;
     PyObject *toPyUnicode(jobject obj) const;
+    PyObject *getClassName(jobject obj) const;
     void finalizeObject(JNIEnv *jenv, PyObject *obj);
 #endif
 

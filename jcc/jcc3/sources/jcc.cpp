@@ -227,8 +227,7 @@ static PyObject *t_jccenv__dumpRefs(PyObject *self,
          iter++) {
         if (classes)  // return dict of { class name: instance count }
         {
-            char *name = env->getClassName(iter->second.global);
-            PyObject *key = PyUnicode_FromString(name);
+            PyObject *key = env->getClassName(iter->second.global);
             PyObject *value = PyDict_GetItem(result, key);
 
             if (value == NULL)
@@ -239,8 +238,6 @@ static PyObject *t_jccenv__dumpRefs(PyObject *self,
             PyDict_SetItem(result, key, value);
             Py_DECREF(key);
             Py_DECREF(value);
-
-            delete name;
         }
         else if (values)  // return list of (value string, ref count)
         {

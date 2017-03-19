@@ -99,7 +99,8 @@ namespace java {
               case 1:
                 if (!PyArg_ParseTuple(args, "s", &bytes))
                     return -1;
-                INT_CALL(self->object = String(env->fromUTF8(bytes)));
+                INT_CALL(self->object = String(
+                    env->get_vm_env()->NewStringUTF(bytes)));
                 break;
               default:
                 PyErr_SetString(PyExc_ValueError, "invalid args");

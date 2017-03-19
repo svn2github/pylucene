@@ -951,15 +951,6 @@ char *JCCEnv::getClassPath()
     return classpath;
 }
 
-jstring JCCEnv::fromUTF8(const char *bytes) const
-{
-    jstring str = get_vm_env()->NewStringUTF(bytes);
-
-    reportException();
-
-    return str;
-}
-
 jstring JCCEnv::fromUTF32(const uint32_t *chars, jsize len) const
 {
     std::vector<jchar> jchars;
@@ -982,56 +973,6 @@ jstring JCCEnv::fromUTF32(const uint32_t *chars, jsize len) const
     reportException();
 
     return str;
-}
-
-char *JCCEnv::toUTF8(jstring str) const
-{
-    JNIEnv *vm_env = get_vm_env();
-    int len = vm_env->GetStringUTFLength(str);
-    char *bytes = (char *) malloc(len + 1);
-    jboolean isCopy = 0;
-    const char *utf = vm_env->GetStringUTFChars(str, &isCopy);
-
-    if (!bytes)
-        return NULL;
-
-    memcpy(bytes, utf, len);
-    bytes[len] = '\0';
-
-    vm_env->ReleaseStringUTFChars(str, utf);
-
-    return bytes;
-}
-
-char *JCCEnv::toString(jobject obj) const
-{
-    try {
-        return obj
-            ? toUTF8((jstring) callObjectMethod(obj, _mids[mid_obj_toString]))
-            : NULL;
-    } catch (int e) {
-        switch (e) {
-          case _EXC_PYTHON:
-            return NULL;
-          case _EXC_JAVA: {
-              JNIEnv *vm_env = get_vm_env();
-
-              vm_env->ExceptionDescribe();
-              vm_env->ExceptionClear();
-
-              return NULL;
-          }
-          default:
-            throw;
-        }
-    }
-}
-
-char *JCCEnv::getClassName(jobject obj) const
-{
-    return obj
-        ? toString(callObjectMethod(obj, _mids[mid_obj_getClass]))
-        : NULL;
 }
 
 #ifdef PYTHON
@@ -1064,7 +1005,8 @@ jstring JCCEnv::fromPyString(PyObject *object) const
           }
 
           case PyUnicode_1BYTE_KIND:
-              return fromUTF8((const char *) PyUnicode_1BYTE_DATA(object));
+              return get_vm_env()->NewStringUTF(
+                  (const char *) PyUnicode_1BYTE_DATA(object));
 
           case PyUnicode_2BYTE_KIND: {
               Py_ssize_t len = PyUnicode_GET_LENGTH(object);
@@ -1082,7 +1024,7 @@ jstring JCCEnv::fromPyString(PyObject *object) const
         }
     }
     else if (PyBytes_Check(object))
-        return fromUTF8(PyBytes_AS_STRING(object));
+        return get_vm_env()->NewStringUTF(PyBytes_AS_STRING(object));
 
 
     PyObject *tuple = Py_BuildValue("(sO)", "expected a string", object);
@@ -1160,13 +1102,13 @@ PyObject *JCCEnv::toPyUnicode(jobject obj) const
 {
     try {
         if (obj)
-          return fromJString(
-              (jstring) callObjectMethod(obj, _mids[mid_obj_toString]), 0);
+            return fromJString((jstring) callObjectMethod(
+                obj, _mids[mid_obj_toString]), 0);
         Py_RETURN_NONE;
     } catch (int e) {
         switch (e) {
           case _EXC_PYTHON:
-            return NULL;
+              return NULL;
           case _EXC_JAVA: {
               JNIEnv *vm_env = get_vm_env();
 
@@ -1179,6 +1121,13 @@ PyObject *JCCEnv::toPyUnicode(jobject obj) const
             throw;
         }
     }
+}
+
+PyObject *JCCEnv::getClassName(jobject obj) const
+{
+    if (obj)
+        return toPyUnicode(callObjectMethod(obj, _mids[mid_obj_getClass]));
+    Py_RETURN_NONE;
 }
 
 /* may be called from finalizer thread which has no vm_env thread local */
