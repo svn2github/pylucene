@@ -10,12 +10,21 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import sys
 from lucene import JArray
 
 from java.lang import IllegalStateException, IndexOutOfBoundsException
 from java.util import NoSuchElementException
 from org.apache.pylucene.util import \
     PythonSet, PythonList, PythonIterator, PythonListIterator
+
+
+if sys.version_info[0] > 2:
+    def next(iterator):
+        return iterator.__next__();
+else:
+    def next(iterator):
+        return iterator.next()
 
 
 class JavaSet(PythonSet):
@@ -76,7 +85,7 @@ class JavaSet(PythonSet):
                 if hasattr(_self, '_next'):
                     return True
                 try:
-                    _self._next = _self._iterator.next()
+                    _self._next = next(_self._iterator)
                     return True
                 except StopIteration:
                     return False
@@ -85,7 +94,7 @@ class JavaSet(PythonSet):
                     next = _self._next
                     del _self._next
                 else:
-                    next = _self._iterator.next()
+                    next = next(_self._iterator)
                 return next
         return _iterator()
 
@@ -134,7 +143,7 @@ class JavaListIterator(PythonListIterator):
 
     def next(self):
         if self.index >= len(self._lst):
-            raise JavaError, NoSuchElementException(str(self.index))
+            raise JavaError(NoSuchElementException(str(self.index)))
         result = self._lst[self.index]
         self._lastIndex = self.index
         self.index += 1
@@ -142,7 +151,7 @@ class JavaListIterator(PythonListIterator):
 
     def previous(self):
         if self.index <= 0:
-            raise JavaError, NoSuchElementException(str(self.index - 1))
+            raise JavaError(NoSuchElementException(str(self.index - 1)))
         self.index -= 1
         self._lastIndex = self.index
         return self._lst[self.index]
@@ -167,7 +176,7 @@ class JavaListIterator(PythonListIterator):
         element that would be returned by previous, if any.
         """
         if self._lastIndex < 0:
-            raise JavaError, IllegalStateException("add")
+            raise JavaError(IllegalStateException("add"))
         self._lst.insert(self.index, element)
         self.index += 1
         self._lastIndex = -1 # invalidate state
@@ -178,7 +187,7 @@ class JavaListIterator(PythonListIterator):
         was returned by next or previous.
         """
         if self._lastIndex < 0:
-            raise JavaError, IllegalStateException("remove")
+            raise JavaError(IllegalStateException("remove"))
         del self._lst[self._lastIndex]
         self._lastIndex = -1 # invalidate state
 
@@ -188,7 +197,7 @@ class JavaListIterator(PythonListIterator):
         with the specified element.
         """
         if self._lastIndex < 0:
-            raise JavaError, IllegalStateException("set")
+            raise JavaError(IllegalStateException("set"))
         self._lst[self._lastIndex] = element
 
     def __iter__(self):
@@ -245,7 +254,7 @@ class JavaList(PythonList):
 
     def get(self, index):
         if index < 0 or index >= self.size():
-            raise JavaError, IndexOutOfBoundsException(str(index))
+            raise JavaError(IndexOutOfBoundsException(str(index)))
         return self._lst[index]
 
     def indexOf(self, obj):
@@ -266,7 +275,7 @@ class JavaList(PythonList):
                 if hasattr(_self, '_next'):
                     return True
                 try:
-                    _self._next = _self._iterator.next()
+                    _self._next = next(_self._iterator)
                     return True
                 except StopIteration:
                     return False
@@ -275,7 +284,7 @@ class JavaList(PythonList):
                     next = _self._next
                     del _self._next
                 else:
-                    next = _self._iterator.next()
+                    next = next(_self._iterator)
                 return next
         return _iterator()
 
@@ -352,5 +361,5 @@ class JavaList(PythonList):
 
     def set(self, index, obj):
         if index < 0 or index >= self.size():
-            raise JavaError, IndexOutOfBoundsException(str(index))
+            raise JavaError(IndexOutOfBoundsException(str(index)))
         self._lst[index] = obj

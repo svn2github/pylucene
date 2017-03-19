@@ -43,8 +43,15 @@ LUCENE=$(LUCENE_SRC)/lucene
 # limit.
 #
 
+# Mac OS X 10.12 (64-bit Python 3.6, Java 1.8)
+#PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install3
+#ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
+#PYTHON=$(PREFIX_PYTHON)/bin/python
+#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+#NUM_FILES=8
+
 # Mac OS X 10.12 (64-bit Python 2.7, Java 1.8)
-#PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install
+#PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install2
 #ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
@@ -264,7 +271,7 @@ ICURES= $(LUCENE)/analysis/icu/src/resources
 RESOURCES=--resources $(ICURES)
 
 ifneq ($(PYTHON),)
-ENDIANNESS:=$(shell $(PYTHON) -c "import struct; print struct.pack('h', 1) == '\000\001' and 'b' or 'l'")
+ENDIANNESS:=$(shell $(PYTHON) -c "import struct; print(struct.pack('h', 1) == '\000\001' and 'b' or 'l')")
 endif
 
 resources: $(ICURES)/org/apache/lucene/analysis/icu/utr30.dat
@@ -357,16 +364,18 @@ ifeq ($(findstring CYGWIN,$(OS)),CYGWIN)
   BUILD_TEST:=`cygpath -aw $(BUILD_TEST)`
 else
   ifeq ($(findstring MINGW,$(OS)),MINGW)
-    BUILD_TEST:=`$(PYTHON) -c "import os, sys; print os.path.normpath(sys.argv[1]).replace(chr(92), chr(92)*2)" $(BUILD_TEST)`
+    BUILD_TEST:=`$(PYTHON) -c "import os, sys; print(os.path.normpath(sys.argv[1]).replace(chr(92), chr(92)*2))" $(BUILD_TEST)`
   endif
 endif
+
+TEST_DIR:=`$(PYTHON) -c "import sys; print('test%s' %(sys.version_info[0]))"`
 
 install-test:
 	mkdir -p $(BUILD_TEST)
 	PYTHONPATH=$(BUILD_TEST) $(GENERATE) --install $(DEBUG_OPT) --install-dir $(BUILD_TEST)
 
 test: install-test
-	find test -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
+	find $(TEST_DIR) -name 'test_*.py' | PYTHONPATH=$(BUILD_TEST) xargs -t -n 1 $(PYTHON)
 
 ARCHIVE=pylucene-$(VERSION)-src.tar.gz
 
