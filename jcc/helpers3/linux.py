@@ -18,37 +18,6 @@ from setuptools.command import build_ext
 from setuptools.extension import Library as _Library
 
 
-def patch_st_dir(patch_version, st_egg, jccdir):
-    return '''
-
-Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
-or the NO_SHARED environment variable must be set to turn off this error.
-
-    sudo patch -d %s -Nup0 < %s/jcc/patches/patch.43.%s
-
-See %s/INSTALL for more information about shared mode.
-''' %(patch_version, st_egg, jccdir, patch_version, jccdir)
-
-
-def patch_st_zip(patch_version, st_egg, jccdir):
-    return '''
-
-Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
-or the NO_SHARED environment variable must be set to turn off this error.
-
-    mkdir tmp
-    cd tmp
-    unzip -q %s
-    patch -Nup0 < %s/jcc/patches/patch.43.%s
-    sudo zip %s -f
-    cd ..
-    rm -rf tmp
-
-See %s/INSTALL for more information about shared mode.
-''' %(patch_version, st_egg, jccdir, patch_version, st_egg, jccdir)
-
-
-
 def patch_setuptools(with_setuptools):
 
     try:
