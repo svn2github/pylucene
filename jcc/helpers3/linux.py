@@ -24,8 +24,9 @@ def patch_setuptools(with_setuptools):
         from setuptools.command.build_ext import sh_link_shared_object
         enable_shared = True  # jcc/patches/patch.43 was applied
     except ImportError:
-        jccdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        st_egg = os.path.dirname(setuptools.__path__[0])
+        # patch build_ext so that it doesn't mess with a Library's extension
+        from setuptools.command.build_ext import build_ext as _build_ext
+        from setuptools.extension import Library
 
         setuptools.Library = LinuxLibrary
         extension.Library = LinuxLibrary
@@ -39,7 +40,7 @@ def patch_setuptools(with_setuptools):
             build_ext.libtype = 'static'
             build_ext.link_shared_object = st_link_shared_object
 
-        print("Applied shared mode monkey patch to:", setuptools, file=sys.stderr)
+        print("Applied shared mode monkeypatch to:", setuptools, file=sys.stderr)
         return True # monkey patch was applied
 
     return enable_shared
@@ -58,6 +59,7 @@ class LinuxBuildExt(build_ext.build_ext):
         if fullname in self.ext_map:
             ext = self.ext_map[fullname]
             if isinstance(ext, _Library):
+                filename = '%s.so' %(fullname)
                 if ext.force_shared and not build_ext.use_stubs:
                     libtype = 'shared'
                 else:

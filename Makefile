@@ -57,18 +57,20 @@ LUCENE=$(LUCENE_SRC)/lucene
 #JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
 #NUM_FILES=8
 
-# Mac OS X 10.5 (32-bit Python 2.5, Java 1.5)
-#PREFIX_PYTHON=/usr
-#ANT=ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc --shared
-#NUM_FILES=8
-
 # Mac OS X  (Python 2.3.5, Java 1.5, setuptools 0.6c7, Intel Mac OS X 10.4)
 #PREFIX_PYTHON=/usr
 #ANT=ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
 #JCC=$(PYTHON) /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/JCC-2.3-py2.3-macosx-10.4-i386.egg/jcc/__init__.py
+#NUM_FILES=8
+
+# Linux     (Debian Jessie 64-bit, Python 3.4.2, Oracle Java 1.8                
+# Be sure to also set JDK['linux'] in jcc's setup.py to the JAVA_HOME value     
+# used below for ANT (and rebuild jcc after changing it).                       
+#PREFIX_PYTHON=/usr
+#ANT=JAVA_HOME=/usr/lib/jvm/java-8-oracle /usr/bin/ant
+#PYTHON=$(PREFIX_PYTHON)/bin/python3
+#JCC=$(PYTHON) -m jcc --shared
 #NUM_FILES=8
 
 # Linux     (Debian Jessie 64-bit, Python 2.7.9, Oracle Java 1.8

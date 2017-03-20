@@ -281,8 +281,8 @@ class PayloadFilter(PythonTokenFilter):
     def incrementToken(self):
 
         if self.input.incrementToken():
-            bytes = JArray('byte')(b"pos: %d" %(self.pos))
-            self.payloadAttr.setPayload(BytesRef(bytes))
+            data = JArray('byte')(bytes("pos: %d" %(self.pos), "utf-8"))
+            self.payloadAttr.setPayload(BytesRef(data))
 
             if self.pos == 0 or self.i % 2 == 1:
                 posIncr = 1

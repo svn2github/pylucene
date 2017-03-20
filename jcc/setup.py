@@ -16,9 +16,9 @@ jcc_ver = '3.0'
 machine = platform.machine()
 using_python2 = sys.version_info < (3,)
 
-if not using_python2 and sys.version_info < (3, 5):
+if not using_python2 and sys.version_info < (3, 3):
     raise RuntimeError('''
-Python 3 is supported from version 3.5, you are running version %s.%s'''
+Python 3 is supported from version 3.3, you are running version %s.%s'''
                        %(sys.version_info.major, sys.version_info.minor))
 
 if machine.startswith("iPod") or machine.startswith("iPhone"):
