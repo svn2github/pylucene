@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <jni.h>
 
 #ifdef linux
@@ -194,11 +195,11 @@ static PyObject *t_jccenv_isShared(PyObject *self)
 
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
 {
-    Py_hash_t hash = PyObject_Hash(arg);
-    size_t hexdig = sizeof(Py_hash_t) * 2;
+    static const size_t hexdig = sizeof(uintmax_t) * 2;
+    uintmax_t hash = (uintmax_t) PyObject_Hash(arg);
     char buffer[hexdig + 1];
 
-    sprintf(buffer, "%0*lx", (int) hexdig, (unsigned long) hash);
+    sprintf(buffer, "%0*"PRIxMAX, (int) hexdig, hash);
     return PyUnicode_FromStringAndSize(buffer, hexdig);
 }
 

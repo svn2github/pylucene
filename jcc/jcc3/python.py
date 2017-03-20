@@ -1838,7 +1838,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
                 args['extra_link_args'] += ['-Wl,-rpath', shlibdir]
             args['library_dirs'] = [shlibdir]
             args['libraries'] = ['jcc3']
-        elif sys.platform == 'linux'   # distutils no good with -R
+        elif sys.platform == 'linux':  # distutils no good with -R
             args['extra_link_args'] += ['-Wl,-rpath', shlibdir]
             args['library_dirs'] = [shlibdir]
             args['libraries'] = ['jcc3']

@@ -889,7 +889,7 @@ def header(env, out, cls, typeset, packages, excludes, generics,
     else:
         line(out, indent, 'class %s%s : public %s {',
              _dll_export, cppname(names[-1]), absname(cppnames(superNames)))
-        
+
     line(out, indent, 'public:')
     indent += 1
 
