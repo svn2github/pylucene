@@ -194,8 +194,8 @@ static PyObject *t_jccenv_isShared(PyObject *self)
 
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
 {
-    long hash = PyObject_Hash(arg);
-    size_t hexdig = sizeof(long) * 2;
+    Py_hash_t hash = PyObject_Hash(arg);
+    size_t hexdig = sizeof(Py_hash_t) * 2;
     char buffer[hexdig + 1];
 
     sprintf(buffer, "%0*lx", (int) hexdig, (unsigned long) hash);
@@ -588,6 +588,10 @@ _DLL_EXPORT PyObject *getJavaModule(PyObject *module,
 }
 
 #ifdef _jcc_lib
+
+#if PY_VERSION_HEX < 0x03050000
+#define Py_DecodeLocale(arg, size) _Py_char2wchar((arg), (size))
+#endif
 
 static void raise_error(JNIEnv *vm_env, const char *message)
 {

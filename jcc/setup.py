@@ -25,6 +25,8 @@ if machine.startswith("iPod") or machine.startswith("iPhone"):
     platform = 'ipod'
 elif sys.platform == "win32" and "--compiler=mingw32" in sys.argv:
     platform = 'mingw32'
+elif sys.platform.startswith('linux'):
+    platform = 'linux'
 else:
     platform = sys.platform
 
@@ -66,7 +68,7 @@ else:
 JDK = {
     'darwin': JAVAHOME or JAVAFRAMEWORKS,
     'ipod': '/usr/include/gcc',
-    'linux2': '/usr/lib/jvm/java-8-oracle',
+    'linux': '/usr/lib/jvm/java-8-oracle',
     'sunos5': '/usr/jdk/instances/jdk1.6.0',
     'win32': JAVAHOME,
     'mingw32': JAVAHOME,
@@ -100,8 +102,8 @@ INCLUDES = {
     'darwin/home': ['%(darwin)s/include' %(JDK),
                     '%(darwin)s/include/darwin' %(JDK)],
     'ipod': ['%(ipod)s/darwin/default' %(JDK)],
-    'linux2': ['%(linux2)s/include' %(JDK),
-               '%(linux2)s/include/linux' %(JDK)],
+    'linux': ['%(linux)s/include' %(JDK),
+              '%(linux)s/include/linux' %(JDK)],
     'sunos5': ['%(sunos5)s/include' %(JDK),
                '%(sunos5)s/include/solaris' %(JDK)],
     'win32': ['%(win32)s/include' %(JDK),
@@ -116,7 +118,7 @@ CFLAGS = {
     'darwin': ['-fno-strict-aliasing', '-Wno-write-strings',
                '-mmacosx-version-min=10.5'],
     'ipod': ['-Wno-write-strings'],
-    'linux2': ['-fno-strict-aliasing', '-Wno-write-strings'],
+    'linux': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'sunos5': ['-features=iddollar',
                '-erroff=badargtypel2w,wbadinitl,wvarhidemem'],
     'win32': ["/EHsc", "/D_CRT_SECURE_NO_WARNINGS"],  # MSVC 9 (2008)
@@ -128,7 +130,7 @@ CFLAGS = {
 DEBUG_CFLAGS = {
     'darwin': ['-O0', '-g', '-DDEBUG'],
     'ipod': ['-O0', '-g', '-DDEBUG'],
-    'linux2': ['-O0', '-g', '-DDEBUG'],
+    'linux': ['-O0', '-g', '-DDEBUG'],
     'sunos5': ['-DDEBUG'],
     'win32': ['/Od', '/DDEBUG'],
     'mingw32': ['-O0', '-g', '-DDEBUG'],
@@ -144,15 +146,15 @@ LFLAGS = {
                     '-mmacosx-version-min=10.5'],
     'ipod': ['-ljvm', '-lpython%s.%s' %(sys.version_info[0:2]),
              '-L/usr/lib/gcc/arm-apple-darwin9/4.0.1'],
-    'linux2/i386': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',
-                    '-L%(linux2)s/jre/lib/i386/client' %(JDK), '-ljvm',
-                    '-Wl,-rpath=%(linux2)s/jre/lib/i386:%(linux2)s/jre/lib/i386/client' %(JDK)],
-    'linux2/i686': ['-L%(linux2)s/jre/lib/i386' %(JDK), '-ljava',
-                    '-L%(linux2)s/jre/lib/i386/client' %(JDK), '-ljvm',
-                    '-Wl,-rpath=%(linux2)s/jre/lib/i386:%(linux2)s/jre/lib/i386/client' %(JDK)],
-    'linux2/x86_64': ['-L%(linux2)s/jre/lib/amd64' %(JDK), '-ljava',
-                      '-L%(linux2)s/jre/lib/amd64/server' %(JDK), '-ljvm',
-                      '-Wl,-rpath=%(linux2)s/jre/lib/amd64:%(linux2)s/jre/lib/amd64/server' %(JDK)],
+    'linux/i386': ['-L%(linux)s/jre/lib/i386' %(JDK), '-ljava',
+                    '-L%(linux)s/jre/lib/i386/client' %(JDK), '-ljvm',
+                    '-Wl,-rpath=%(linux)s/jre/lib/i386:%(linux)s/jre/lib/i386/client' %(JDK)],
+    'linux/i686': ['-L%(linux)s/jre/lib/i386' %(JDK), '-ljava',
+                    '-L%(linux)s/jre/lib/i386/client' %(JDK), '-ljvm',
+                    '-Wl,-rpath=%(linux)s/jre/lib/i386:%(linux)s/jre/lib/i386/client' %(JDK)],
+    'linux/x86_64': ['-L%(linux)s/jre/lib/amd64' %(JDK), '-ljava',
+                      '-L%(linux)s/jre/lib/amd64/server' %(JDK), '-ljvm',
+                      '-Wl,-rpath=%(linux)s/jre/lib/amd64:%(linux)s/jre/lib/amd64/server' %(JDK)],
     'sunos5': ['-L%(sunos5)s/jre/lib/i386' %(JDK), '-ljava',
                '-L%(sunos5)s/jre/lib/i386/client' %(JDK), '-ljvm',
                '-R%(sunos5)s/jre/lib/i386:%(sunos5)s/jre/lib/i386/client' %(JDK)],
@@ -168,8 +170,8 @@ IMPLIB_LFLAGS = {
     'mingw32': ["-Wl,--out-implib,%s"]
 }
 
-if platform == 'linux2':
-    LFLAGS['linux2'] = LFLAGS['linux2/%s' %(machine)]
+if platform == 'linux':
+    LFLAGS['linux'] = LFLAGS['linux/%s' %(machine)]
 elif platform == 'darwin':
     if JAVAHOME is not None:
         INCLUDES['darwin'] = INCLUDES['darwin/home']
@@ -181,7 +183,7 @@ elif platform == 'darwin':
 JAVAC = {
     'darwin': ['javac', '-source', '1.5', '-target', '1.5'],
     'ipod': ['jikes', '-cp', '/usr/share/classpath/glibj.zip'],
-    'linux2': ['javac'],
+    'linux': ['javac'],
     'sunos5': ['javac'],
     'win32': ['%(win32)s/bin/javac.exe' %(JDK)],
     'mingw32': ['%(mingw32)s/bin/javac.exe' %(JDK)],
@@ -191,7 +193,7 @@ JAVAC = {
 JAVADOC = {
     'darwin': ['javadoc'],
     'ipod': [],
-    'linux2': ['javadoc'],
+    'linux': ['javadoc'],
     'sunos5': ['javadoc'],
     'win32': ['%(win32)s/bin/javadoc.exe' %(JDK)],
     'mingw32': ['%(mingw32)s/bin/javadoc.exe' %(JDK)],
@@ -220,7 +222,7 @@ try:
         elif platform == 'darwin':
             enable_shared = True
 
-        elif platform == 'linux2':
+        elif platform == 'linux':
             if using_python2:
                 from helpers2.linux import patch_setuptools
             else:
@@ -357,7 +359,7 @@ def main(debug):
                           '@rpath/libjcc%s.dylib' %(py_version_suffix),
                           '-current_version', jcc_ver,
                           '-compatibility_version', jcc_ver]
-        elif platform == 'linux2':
+        elif platform == 'linux':
             kwds["extra_link_args"] = \
                 lflags + ['-lpython%s.%s' %(sys.version_info[0:2])]
             kwds["force_shared"] = True    # requires jcc/patches/patch.43
