@@ -29,11 +29,6 @@ try:
 except ImportError:
     pass
 
-python_ver = '%d.%d.%d' %(sys.version_info[0:3])
-if python_ver < '2.4':
-    from sets import Set as set
-
-
 RESULTS = { 'boolean': 'Py_RETURN_BOOL(%s);',
             'byte': 'return PyLong_FromLong((long) %s);',
             'char': 'return c2p(%s);',
@@ -128,7 +123,7 @@ def parseArgs(params, current, generics, genericParams=None):
             while cls.isArray():
                 cls = cls.getComponentType()
             if getTypeParameters(cls):
-                ns, sep, n = rpartition(typename(cls, current, False), '::')
+                ns, sep, n = typename(cls, current, False).rpartition('::')
                 return ', &a%d, &p%d, %s%st_%s::parameters_' %(i, i, ns, sep, n)
         return ', &a%d' %(i)
 
@@ -158,7 +153,7 @@ def declareVars(out, indent, params, current, generics, typeParams):
             if getTypeParameters(param):
                 line(out, indent, 'PyTypeObject **p%d;', i)
                 typeParams.add(i)
-    
+
 
 def construct(out, indent, cls, inCase, constructor, names, generics):
 
@@ -221,17 +216,6 @@ def construct(out, indent, cls, inCase, constructor, names, generics):
         line(out, indent, '}')
 
 
-def rpartition(string, sep):
-
-    if python_ver >= '2.5.0':
-        return string.rpartition(sep)
-    else:
-        parts = string.rsplit(sep, 1)
-        if len(parts) == 1:
-            return ('', '', parts[0])
-        return (parts[0], sep, parts[1])
-
-
 def fieldValue(cls, value, fieldType):
 
     if fieldType.isArray():
@@ -243,14 +227,14 @@ def fieldValue(cls, value, fieldType):
         elif fieldType.getName() == 'java.lang.String':
             result = 'JArray<jstring>(%s->this$).wrap()'
         else:
-            parts = rpartition(typename(fieldType, cls, False), '::')
+            parts = typename(fieldType, cls, False).rpartition('::')
             result = 'JArray<jobject>(%%s->this$).wrap(%s%st_%s::wrap_jobject)' %(parts)
 
     elif fieldType.getName() == 'java.lang.String':
         result = 'j2p(*%s)'
 
     elif not fieldType.isPrimitive():
-        parts = rpartition(typename(fieldType, cls, False), '::')
+        parts = typename(fieldType, cls, False).rpartition('::')
         result = '%s%st_%s::wrap_Object(*%%s)' %(parts)
 
     else:
@@ -278,10 +262,10 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
         elif returnType.getName() == 'java.lang.String':
             return 'return JArray<jstring>(%s.this$).wrap();' %(value)
 
-        ns, sep, n = rpartition(typename(returnType, cls, False), '::')
+        ns, sep, n = typename(returnType, cls, False).rpartition('::')
         return 'return JArray<jobject>(%s.this$).wrap(%s%st_%s::wrap_jobject);' %(value, ns, sep, n)
 
-    ns, sep, n = rpartition(typename(returnType, cls, False), '::')
+    ns, sep, n = typename(returnType, cls, False).rpartition('::')
     if genericRT is not None:
         if ParameterizedType.instance_(genericRT):
             genericRT = ParameterizedType.cast_(genericRT)
@@ -410,7 +394,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
 
 
 def methodargs(methods, superMethods):
-        
+
     if len(methods) == 1 and methods[0].getName() not in superMethods:
         count = len(methods[0].getParameterTypes())
         if count == 0:
@@ -422,7 +406,7 @@ def methodargs(methods, superMethods):
 
 
 def jniname(cls):
-    
+
     if cls.isPrimitive():
         name = cls.getName()
         if name != 'void':
@@ -452,11 +436,11 @@ def wrapper_typename(returnType, cls):
         if componentType.isPrimitive():
             return "t_JArrayWrapper< %s >" %(componentName)
 
-        ns, sep, n = rpartition(componentName, '::')
+        ns, sep, n = componentName.rpartition('::')
         return "t_JArrayWrapper< jobject,%s%st_%s >" %(ns, sep, n)
 
     returnName = typename(returnType, cls, False)
-    ns, sep, n = rpartition(returnName, '::')
+    ns, sep, n = returnName.rpartition('::')
     return "%s%st_%s" %(ns, sep, n)
 
 
@@ -502,13 +486,13 @@ def extension(env, out, indent, cls, names, name, count, method, generics):
             elif param.getName() == 'java.lang.String':
                 code = 'JArray<jstring>(%s).wrap()'
             else:
-                parts = rpartition(typename(param, cls, False), '::')
+                parts = typename(param, cls, False).rpartition('::')
                 code = 'JArray<jobject>(%%s).wrap(%s%st_%s::wrap_jobject)' %(parts)
             sig, decref = 'O', True
         elif param.getName() == 'java.lang.String':
             sig, code, decref = 'O', 'j2p(%%s))', True
         else:
-            parts = rpartition(typename(param, cls, False), '::')
+            parts = typename(param, cls, False).rpartition('::')
             sig, code, decref = 'O', '%s%st_%s::wrap_Object(%s%s%s(%%s))' %(parts*2), True
         if sig == 'O':
             line(out, indent, 'PyObject *o%d = %s;', i, code %('a%d' %(i)))
@@ -573,7 +557,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for name in names[:-1]:
         line(out_h, indent, 'namespace %s {', cppname(name))
         indent += 1
-    line(out_h, indent, '%sextern PyTypeObject PY_TYPE(%s);', 
+    line(out_h, indent, '%sextern PyTypeObject PY_TYPE(%s);',
          _dll_export, names[-1])
 
     if generics:
@@ -635,7 +619,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
             break
     else:
         isExtension = False
-                
+
     line(out)
     indent = 0
     for name in names[:-1]:
@@ -879,7 +863,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         if clsParams:
             line(out, indent + 1, 'DECLARE_GET_FIELD(t_%s, parameters_),',
                  names[-1])
-            
+
         line(out, indent + 1, '{ NULL, NULL, NULL, NULL, NULL }')
         line(out, indent, '};')
 
@@ -936,7 +920,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     elif nextElementMethod and enumeration.isAssignableFrom(cls):
         tp_iter = 'PyObject_SelfIter'
         returnName = typename(nextElementMethod.getReturnType(), cls, False)
-        ns, sep, n = rpartition(returnName, '::')
+        ns, sep, n = returnName.rpartition('::')
         if nextElementExt:
             tp_iternext = 'get_extension_nextElement'
         else:
@@ -990,18 +974,11 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out)
         line(out, indent, 'static PySequenceMethods t_%s_as_sequence = {',
              names[-1])
-        if python_ver < '2.5.0':
-            line(out, indent + 1, '(inquiry) %s,', lenName)
-            line(out, indent + 1, '0,')
-            line(out, indent + 1, '0,')
-            line(out, indent + 1, '(intargfunc) %s', getName)
-            line(out, indent, '};')
-        else:
-            line(out, indent + 1, '(lenfunc) %s,', lenName)
-            line(out, indent + 1, '0,')
-            line(out, indent + 1, '0,')
-            line(out, indent + 1, '(ssizeargfunc) %s', getName)
-            line(out, indent, '};')
+        line(out, indent + 1, '(lenfunc) %s,', lenName)
+        line(out, indent + 1, '0,')
+        line(out, indent + 1, '0,')
+        line(out, indent + 1, '(ssizeargfunc) %s', getName)
+        line(out, indent, '};')
         tp_as_sequence = '&t_%s_as_sequence' %(names[-1])
     else:
         tp_as_sequence = '0'
@@ -1021,7 +998,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         for clsParam in clsParams:
             clsArgs.append("PyTypeObject *p%d" %(i))
             i += 1
-        line(out, indent, 
+        line(out, indent,
              "PyObject *t_%s::wrap_Object(const %s& object, %s)",
              cppname(names[-1]), names[-1], ', '.join(clsArgs))
         line(out, indent, "{")
@@ -1041,7 +1018,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         line(out, indent, "}")
 
         line(out)
-        line(out, indent, 
+        line(out, indent,
              "PyObject *t_%s::wrap_jobject(const jobject& object, %s)",
              cppname(names[-1]), ', '.join(clsArgs))
         line(out, indent, "{")
@@ -1613,8 +1590,6 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
         if shared and not SHARED:
             raise NotImplementedError("JCC was not built with --shared mode support, see JCC's INSTALL file for more information")
     except ImportError:
-        if python_ver < '2.4':
-            raise ImportError('setuptools is required when using Python 2.3')
         if shared:
             raise ImportError('setuptools is required when using --shared')
         from distutils.core import setup, Extension
@@ -1774,7 +1749,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
 
     if egg_info:
         script_args = ['egg_info']
-    else:    
+    else:
         script_args = ['build_ext']
 
     includes[0:0] = INCLUDES

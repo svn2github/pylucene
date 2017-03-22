@@ -13,8 +13,6 @@
 import os, sys, zipfile
 from . import _jcc3
 
-python_ver = '%d.%d.%d' %(sys.version_info[0:3])
-
 class JavaError(Exception):
 
     def getJavaException(self):
@@ -306,7 +304,7 @@ def signature(fn, argsOnly=False):
         if cls.isPrimitive():
             return array + PRIMITIVES[cls.getName()]
         return '%sL%s;' %(array, cls.getName().replace('.', '/'))
-        
+
     if isinstance(fn, Constructor):
         returnType = 'V'
     elif isinstance(fn, Method):
