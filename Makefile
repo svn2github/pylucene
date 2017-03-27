@@ -15,8 +15,8 @@
 # site-packages directory.
 #
 
-VERSION=6.4.1
-LUCENE_VER=6.4.1
+VERSION=6.5.0
+LUCENE_VER=6.5.0
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
