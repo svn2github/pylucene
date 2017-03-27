@@ -1,8 +1,7 @@
-Version 6.4.1 ->
+Version 6.4.1 -> 6.5.0
 ----------------------
  - PyLucene built with JCC 3.0
- - added support for Python 3.6
- - 
+ - added support for Python 3.3+
 
 Version 6.2.0 -> 6.4.1
 ----------------------
