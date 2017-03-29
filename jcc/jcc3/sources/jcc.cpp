@@ -193,6 +193,17 @@ static PyObject *t_jccenv_isShared(PyObject *self)
 #endif
 }
 
+#ifdef _MSC_VER
+static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
+{
+    static const size_t hexdig = sizeof(unsigned long long) * 2;
+    unsigned long long hash = (unsigned long long) PyObject_Hash(arg);
+    char buffer[hexdig + 1];
+
+    sprintf(buffer, "%0*llx", (int) hexdig, hash);
+    return PyUnicode_FromStringAndSize(buffer, hexdig);
+}
+#else
 static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
 {
     static const size_t hexdig = sizeof(uintmax_t) * 2;
@@ -202,6 +213,7 @@ static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
     sprintf(buffer, "%0*"PRIxMAX, (int) hexdig, hash);
     return PyUnicode_FromStringAndSize(buffer, hexdig);
 }
+#endif
 
 static PyObject *t_jccenv__dumpRefs(PyObject *self,
                                     PyObject *args, PyObject *kwds)
