@@ -300,7 +300,7 @@ static int is_instance_of(PyObject *arg, PyTypeObject *type)
 #if defined(_MSC_VER) || defined(__SUNPRO_CC)
 int __parseArgs(PyObject *args, char *types, ...)
 {
-    int count = PY_SIZE((PyTupleObject *) args);
+    int count = Py_SIZE((PyTupleObject *) args);
     va_list list, check;
 
     va_start(list, types);
