@@ -1,3 +1,8 @@
+Version 3.0 ->
+-------------------
+ - fixed bug PYLUCENE-36 (Paulo Villegas)
+ - 
+
 Version 2.23 -> 3.0
 -------------------
  - added support for Python 3 (3.3+) (with Rüdiger Meier and Thomas Koch)
