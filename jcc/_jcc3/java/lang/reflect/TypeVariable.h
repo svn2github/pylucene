@@ -52,7 +52,7 @@ namespace java {
 namespace java {
     namespace lang {
         namespace reflect {
-            extern PyTypeObject PY_TYPE(TypeVariable);
+            DECLARE_TYPE(TypeVariable);
 
             class t_TypeVariable {
             public:

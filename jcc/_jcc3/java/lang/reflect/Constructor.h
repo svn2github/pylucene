@@ -50,7 +50,7 @@ namespace java {
 #endif
             };
 
-            extern PyTypeObject PY_TYPE(Constructor);
+            DECLARE_TYPE(Constructor);
 
             class t_Constructor {
             public:

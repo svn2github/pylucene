@@ -74,7 +74,18 @@ namespace java {
                 { NULL, NULL, 0, NULL }
             };
 
-            DECLARE_TYPE(TypeVariable, t_TypeVariable, java::lang::reflect::Type, TypeVariable, abstract_init, 0, 0, 0, 0, 0);
+            static PyType_Slot PY_TYPE_SLOTS(TypeVariable)[] = {
+                { Py_tp_methods, t_TypeVariable__methods_ },
+                { Py_tp_init, (void *) abstract_init },
+                { 0, 0 }
+            };
+
+            static PyType_Def *PY_TYPE_BASES(TypeVariable)[] = {
+                &PY_TYPE_DEF(java::lang::reflect::Type),
+                NULL
+            };
+
+            DEFINE_TYPE(TypeVariable, t_TypeVariable, TypeVariable);
 
             static PyObject *t_TypeVariable_cast_(PyTypeObject *type, PyObject *arg)
             {

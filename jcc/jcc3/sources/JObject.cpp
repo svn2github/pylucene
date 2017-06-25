@@ -49,7 +49,8 @@ static PyGetSetDef t_JObject_properties[] = {
     { NULL, NULL, NULL, NULL, NULL }
 };
 
-PyTypeObject PY_TYPE(JObject) = {
+
+static PyTypeObject JObject_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "jcc.JObject",                       /* tp_name */
     sizeof(t_JObject),                   /* tp_basicsize */
@@ -91,6 +92,10 @@ PyTypeObject PY_TYPE(JObject) = {
     (newfunc)t_JObject_new,              /* tp_new */
 };
 
+// used only to hold a pointer to JObject_type once JObject type installed
+// so that Object type can be installed using JObject's spec (to get its base)
+PyType_Def PY_TYPE_DEF(JObject) = {};
+PyTypeObject *PY_TYPE(JObject) = &JObject_type;
 
 static void t_JObject_dealloc(t_JObject *self)
 {
@@ -115,7 +120,7 @@ static PyObject *t_JObject_richcmp(t_JObject *self, PyObject *arg, int op)
     switch (op) {
       case Py_EQ:
       case Py_NE:
-        if (PyObject_TypeCheck(arg, &PY_TYPE(JObject)))
+        if (PyObject_TypeCheck(arg, PY_TYPE(JObject)))
             b = self->object == ((t_JObject *) arg)->object;
         if (op == Py_EQ)
             Py_RETURN_BOOL(b);

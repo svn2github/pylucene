@@ -48,7 +48,7 @@ namespace java {
 namespace java {
     namespace lang {
         namespace reflect {
-            extern PyTypeObject PY_TYPE(ParameterizedType);
+            DECLARE_TYPE(ParameterizedType);
 
             class t_ParameterizedType {
             public:

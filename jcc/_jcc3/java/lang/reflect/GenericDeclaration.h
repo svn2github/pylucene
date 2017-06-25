@@ -47,7 +47,7 @@ namespace java {
 namespace java {
     namespace lang {
         namespace reflect {
-            extern PyTypeObject PY_TYPE(GenericDeclaration);
+            DECLARE_TYPE(GenericDeclaration);
 
             class t_GenericDeclaration {
             public:

@@ -431,14 +431,14 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
                           if (obj == Py_None)
                               ok = 1;
-                          else if (PyObject_TypeCheck(obj, &PY_TYPE(Object)) &&
+                          else if (PyObject_TypeCheck(obj, PY_TYPE(Object)) &&
                                    vm_env->IsInstanceOf(((t_Object *) obj)->object.this$, cls))
                               ok = 1;
-                          else if (PyObject_TypeCheck(obj, &PY_TYPE(FinalizerProxy)))
+                          else if (PyObject_TypeCheck(obj, PY_TYPE(FinalizerProxy)))
                           {
                               PyObject *o = ((t_fp *) obj)->object;
 
-                              if (PyObject_TypeCheck(o, &PY_TYPE(Object)) &&
+                              if (PyObject_TypeCheck(o, PY_TYPE(Object)) &&
                                   vm_env->IsInstanceOf(((t_Object *) o)->object.this$, cls))
                                   ok = 1;
                           }
@@ -457,14 +457,14 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
 
                       if (arg == Py_None)
                           ok = 1;
-                      else if (PyObject_TypeCheck(arg, &PY_TYPE(Object)) &&
+                      else if (PyObject_TypeCheck(arg, PY_TYPE(Object)) &&
                                vm_env->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                           ok = 1;
-                      else if (PyObject_TypeCheck(arg, &PY_TYPE(FinalizerProxy)))
+                      else if (PyObject_TypeCheck(arg, PY_TYPE(FinalizerProxy)))
                       {
                           PyObject *o = ((t_fp *) arg)->object;
 
-                          if (PyObject_TypeCheck(o, &PY_TYPE(Object)) &&
+                          if (PyObject_TypeCheck(o, PY_TYPE(Object)) &&
                               vm_env->IsInstanceOf(((t_Object *) o)->object.this$, cls))
                               ok = 1;
                       }
@@ -475,13 +475,13 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
                       }
                   }
               }
-              else if (PyObject_TypeCheck(arg, &PY_TYPE(Object)) &&
+              else if (PyObject_TypeCheck(arg, PY_TYPE(Object)) &&
                        vm_env->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                   break;
-              else if (PyObject_TypeCheck(arg, &PY_TYPE(FinalizerProxy)))
+              else if (PyObject_TypeCheck(arg, PY_TYPE(FinalizerProxy)))
               {
                   arg = ((t_fp *) arg)->object;
-                  if (PyObject_TypeCheck(arg, &PY_TYPE(Object)) &&
+                  if (PyObject_TypeCheck(arg, PY_TYPE(Object)) &&
                       vm_env->IsInstanceOf(((t_Object *) arg)->object.this$, cls))
                       break;
               }
@@ -954,7 +954,7 @@ int _parseArgs(PyObject **args, unsigned int count, char *types, ...)
               {
                   Object *obj = va_arg(list, Object *);
 
-                  if (PyObject_TypeCheck(arg, &PY_TYPE(FinalizerProxy)))
+                  if (PyObject_TypeCheck(arg, PY_TYPE(FinalizerProxy)))
                       arg = ((t_fp *) arg)->object;
 
 #ifdef _java_generics
@@ -1411,7 +1411,7 @@ void throwPythonError(void)
                 Py_XDECREF(traceback);
                 exc = je;
 
-                if (exc && PyObject_TypeCheck(exc, &PY_TYPE(Throwable)))
+                if (exc && PyObject_TypeCheck(exc, PY_TYPE(Throwable)))
                 {
                     jobject jobj = ((t_Throwable *) exc)->object.this$;
 
@@ -1527,10 +1527,10 @@ PyObject *callSuper(PyTypeObject *type, PyObject *self,
 PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError)
 {
-    if (PyObject_TypeCheck(obj, &PY_TYPE(FinalizerProxy)))
+    if (PyObject_TypeCheck(obj, PY_TYPE(FinalizerProxy)))
         obj = ((t_fp *) obj)->object;
 
-    if (!PyObject_TypeCheck(obj, &PY_TYPE(Object)))
+    if (!PyObject_TypeCheck(obj, PY_TYPE(Object)))
     {
         if (reportError)
             PyErr_SetObject(PyExc_TypeError, obj);
@@ -1577,9 +1577,9 @@ static bool setArrayObj(jobjectArray array, int index, PyObject *obj)
         jobj = env->fromPyString(obj);
         deleteLocal = true;
     }
-    else if (PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
+    else if (PyObject_TypeCheck(obj, PY_TYPE(JObject)))
         jobj = ((t_JObject *) obj)->object.this$;
-    else if (PyObject_TypeCheck(obj, &PY_TYPE(FinalizerProxy)))
+    else if (PyObject_TypeCheck(obj, PY_TYPE(FinalizerProxy)))
         jobj = ((t_JObject *) ((t_fp *) obj)->object)->object.this$;
     else if (obj == Py_True || obj == Py_False)
     {
@@ -1701,18 +1701,43 @@ jobjectArray fromPySequence(jclass cls, PyObject **args, int length)
     return array;
 }
 
-void installType(PyTypeObject *type, PyObject *module, char *name,
-                 int isExtension)
+PyTypeObject *makeType(PyType_Def *def)
 {
-    if (PyType_Ready(type) == 0)
+    if (def->type == NULL)
     {
-        Py_INCREF(type);
+        int count = 0;
+
+        for (PyType_Def **base = def->bases; *base != NULL; ++base)
+            count += 1;
+
+        PyObject *bases = PyTuple_New(count);
+
+        for (int i = 0; i < count; ++i)
+            PyTuple_SET_ITEM(bases, i, (PyObject *) makeType(def->bases[i]));
+
+        def->type = (PyTypeObject *)
+            PyType_FromSpecWithBases(&def->spec, bases);
+        Py_DECREF(bases);
+    }
+
+    return def->type;
+}
+
+void installType(PyTypeObject **type, PyType_Def *def,
+                 PyObject *module, char *name, int isExtension)
+{
+    if (*type == NULL)
+    {
+        *type = makeType(def);
+        Py_INCREF(*type);
+
         if (isExtension)
         {
-            Py_TYPE(type) = &PY_TYPE(FinalizerClass);
-            Py_INCREF(&PY_TYPE(FinalizerClass));
+            Py_TYPE(*type) = PY_TYPE(FinalizerClass);
+            Py_INCREF(PY_TYPE(FinalizerClass));
         }
-        PyModule_AddObject(module, name, (PyObject *) type);
+
+        PyModule_AddObject(module, name, (PyObject *) *type);
     }
 }
 
@@ -1739,7 +1764,7 @@ PyObject *unboxBoolean(const jobject& obj)
         if (!env->isInstanceOf(obj, java::lang::Boolean::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Boolean));
+                            (PyObject *) java::lang::PY_TYPE(Boolean));
             return NULL;
         }
 
@@ -1759,7 +1784,7 @@ PyObject *unboxByte(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Byte::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Byte));
+                            (PyObject *) java::lang::PY_TYPE(Byte));
             return NULL;
         }
 
@@ -1776,7 +1801,7 @@ PyObject *unboxCharacter(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Character::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Character));
+                            (PyObject *) java::lang::PY_TYPE(Character));
             return NULL;
         }
 
@@ -1793,7 +1818,7 @@ PyObject *unboxDouble(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Double::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Double));
+                            (PyObject *) java::lang::PY_TYPE(Double));
             return NULL;
         }
 
@@ -1810,7 +1835,7 @@ PyObject *unboxFloat(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Float::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Float));
+                            (PyObject *) java::lang::PY_TYPE(Float));
             return NULL;
         }
 
@@ -1827,7 +1852,7 @@ PyObject *unboxInteger(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Integer::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Integer));
+                            (PyObject *) java::lang::PY_TYPE(Integer));
             return NULL;
         }
 
@@ -1844,7 +1869,7 @@ PyObject *unboxLong(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Long::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Long));
+                            (PyObject *) java::lang::PY_TYPE(Long));
             return NULL;
         }
 
@@ -1861,7 +1886,7 @@ PyObject *unboxShort(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::Short::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(Short));
+                            (PyObject *) java::lang::PY_TYPE(Short));
             return NULL;
         }
 
@@ -1878,7 +1903,7 @@ PyObject *unboxString(const jobject &obj)
         if (!env->isInstanceOf(obj, java::lang::String::initializeClass))
         {
             PyErr_SetObject(PyExc_TypeError,
-                            (PyObject *) &java::lang::PY_TYPE(String));
+                            (PyObject *) java::lang::PY_TYPE(String));
             return NULL;
         }
 
@@ -1896,7 +1921,7 @@ static int boxJObject(PyTypeObject *type, PyObject *arg,
         if (obj != NULL)
             *obj = Object(NULL);
     }
-    else if (PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+    else if (PyObject_TypeCheck(arg, PY_TYPE(Object)))
     {
         if (type != NULL && !is_instance_of(arg, type))
             return -1;
@@ -1904,10 +1929,10 @@ static int boxJObject(PyTypeObject *type, PyObject *arg,
         if (obj != NULL)
             *obj = ((t_Object *) arg)->object;
     }
-    else if (PyObject_TypeCheck(arg, &PY_TYPE(FinalizerProxy)))
+    else if (PyObject_TypeCheck(arg, PY_TYPE(FinalizerProxy)))
     {
         arg = ((t_fp *) arg)->object;
-        if (PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+        if (PyObject_TypeCheck(arg, PY_TYPE(Object)))
         {
             if (type != NULL && !is_instance_of(arg, type))
                 return -1;

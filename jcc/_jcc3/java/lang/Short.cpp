@@ -71,7 +71,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Short, t_Short, Object, java::lang::Short,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Short)[] = {
+            { Py_tp_methods, t_Short__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Short)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Short, t_Short, java::lang::Short);
     }
 }

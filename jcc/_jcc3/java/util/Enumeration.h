@@ -22,7 +22,7 @@ namespace java {
     namespace lang {
         class Class;
         class Object;
-    }        
+    }
     namespace util {
         using namespace java::lang;
 
@@ -40,7 +40,7 @@ namespace java {
             Object nextElement() const;
         };
 
-        extern PyTypeObject PY_TYPE(Enumeration);
+        DECLARE_TYPE(Enumeration);
 
         class t_Enumeration {
         public:

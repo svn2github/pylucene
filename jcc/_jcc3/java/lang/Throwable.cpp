@@ -68,7 +68,7 @@ namespace java {
             env->callVoidMethod(this$, _mids[mid_printStackTrace_1],
                                 writer.this$);
         }
-        
+
         String Throwable::getMessage() const
         {
             return String(env->callObjectMethod(this$, _mids[mid_getMessage]));
@@ -92,8 +92,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Throwable, t_Throwable, Object, Throwable,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Throwable)[] = {
+            { Py_tp_methods, t_Throwable__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Throwable)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Throwable, t_Throwable, Throwable);
 
         static PyObject *t_Throwable_printStackTrace(t_Throwable *self,
                                                      PyObject *args)

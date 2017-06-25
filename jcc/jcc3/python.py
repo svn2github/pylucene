@@ -115,7 +115,7 @@ def parseArgs(params, current, generics, genericParams=None):
             return ''
         if is_boxed(clsName):
             clsNames = clsName.split('.')
-            return ', &%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+            return ', %s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
         return ', %s::initializeClass' %(typename(cls, current, False))
 
     def callarg(cls, i):
@@ -193,14 +193,14 @@ def construct(out, indent, cls, inCase, constructor, names, generics):
                     cls = cls.getComponentType()
                     if cls.isArray():
                         clsNames = 'java.lang.Object'.split('.')
-                        clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                        clsArg = '%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                     elif cls.isPrimitive():
                         clsArg = 'PY_TYPE(JArray%s)' %(cls.getName().capitalize())
                     else:
                         clsArg = 'PY_TYPE(JArrayObject)'
                 else:
                     clsNames = cls.getName().split('.')
-                    clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                    clsArg = '%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                 line(out, indent, 'self->parameters[%d] = %s;', i, clsArg)
             i += 1
 
@@ -276,7 +276,7 @@ def returnValue(cls, returnType, value, genericRT=None, typeParams=None):
                     if clsArg.isArray():
                         clsArg = Class.forName('java.lang.Object')
                     clsNames = clsArg.getName().split('.')
-                    clsArg = '&%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
+                    clsArg = '%s::PY_TYPE(%s)' %(absname(cppnames(clsNames[:-1])), cppname(clsNames[-1]))
                     clsArgs.append(clsArg)
                 elif TypeVariable.instance_(clsArg):
                     gd = TypeVariable.cast_(clsArg).getGenericDeclaration()
@@ -368,7 +368,7 @@ def call(out, indent, cls, inCase, method, names, cardinality, isExtension,
     if isExtension and name == 'clone' and Modifier.isNative(modifiers):
         line(out)
         line(out, indent, '%s object(result.this$);', typename(cls, cls, False))
-        line(out, indent, 'if (PyObject_TypeCheck(arg, &PY_TYPE(FinalizerProxy)) &&')
+        line(out, indent, 'if (PyObject_TypeCheck(arg, PY_TYPE(FinalizerProxy)) &&')
         line(out, indent, '    PyObject_TypeCheck(((t_fp *) arg)->object, Py_TYPE(self)))')
         line(out, indent, '{')
         line(out, indent + 1, 'PyObject *_arg = ((t_fp *) arg)->object;')
@@ -543,7 +543,7 @@ def extension(env, out, indent, cls, names, name, count, method, generics):
             line(out, indent, 'return (jobject) NULL;')
 
 
-def python(env, out_h, out, cls, superCls, names, superNames,
+def python(env, out_h, out, cls, superClasses, names, superNames,
            constructors, methods, protectedMethods,
            methodNames, fields, instanceFields,
            mapping, sequence, rename, declares, typeset, moduleName, generics,
@@ -557,7 +557,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     for name in names[:-1]:
         line(out_h, indent, 'namespace %s {', cppname(name))
         indent += 1
-    line(out_h, indent, '%sextern PyTypeObject PY_TYPE(%s);',
+    line(out_h, indent, '%sextern PyType_Def PY_TYPE_DEF(%s);',
+         _dll_export, names[-1])
+    line(out_h, indent, '%sextern PyTypeObject *PY_TYPE(%s);',
          _dll_export, names[-1])
 
     if generics:
@@ -639,8 +641,9 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     else:
         constructorName = 'abstract_init'
 
-    if superCls:
+    if superClasses:
         superMethods = set([method.getName()
+                            for superCls in superClasses
                             for method in superCls.getMethods()])
     else:
         superMethods = ()
@@ -658,8 +661,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
             isNative = Modifier.isNative(modifiers)
             isStatic = Modifier.isStatic(modifiers)
 
-            if (isExtension and not isStatic and superCls and isNative):
-                superMethod = find_method(superCls, name, params)
+            if (isExtension and not isStatic and superClasses and isNative):
+                superMethod = find_method(superClasses[0], name, params)
 
             if isExtension and isNative and not isStatic:
                 extMethods.setdefault(name, []).append(method)
@@ -903,7 +906,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     if instanceFields or propMethods or isExtension or clsParams:
         tp_getset = 't_%s__fields_' %(names[-1])
     else:
-        tp_getset = '0'
+        tp_getset = None
 
     if iteratorMethod:
         if iteratorExt:
@@ -933,64 +936,68 @@ def python(env, out_h, out, cls, superCls, names, superNames,
             returnType = nextMethod.getReturnType()
             tp_iternext = '((PyObject *(*)(t_%s *)) get_%snext< t_%s,%s,%s >)' %(names[-1], clsParams and 'generic_' or '', names[-1], wrapper_typename(returnType, cls), typename(returnType, cls, False))
     else:
-        tp_iter = '0'
-        tp_iternext = '0'
+        tp_iter = None
+        tp_iternext = None
 
     if mappingMethod:
         method, cardinality = mappingMethod
         if cardinality > 1:
-            getName = 't_%s_%s_map_' %(names[-1], method.getName())
+            mp_subscript = 't_%s_%s_map_' %(names[-1], method.getName())
             line(out, indent, 'static PyObject *%s(t_%s *self, PyObject *key);',
-                 getName, names[-1])
+                 mp_subscript, names[-1])
         else:
-            getName = 't_%s_%s' %(names[-1], method.getName())
-        line(out)
-        line(out, indent, 'static PyMappingMethods t_%s_as_mapping = {',
-             names[-1])
-        line(out, indent + 1, '0,')
-        line(out, indent + 1, '(binaryfunc) %s,', getName)
-        line(out, indent + 1, '0,')
-        line(out, indent, '};')
-        tp_as_mapping = '&t_%s_as_mapping' %(names[-1])
+            mp_subscript = 't_%s_%s' %(names[-1], method.getName())
     else:
-        tp_as_mapping = '0'
+        mp_subscript = None
 
-    if sequenceLenMethod or sequenceGetMethod:
-        if sequenceLenMethod:
-            method, cardinality = sequenceLenMethod
-            lenName = 't_%s_%s_seq_' %(names[-1], method.getName())
-            line(out, indent, 'static int %s(t_%s *self);', lenName, names[-1])
-        else:
-            lenName = '0'
-
-        if sequenceGetMethod:
-            method, cardinality = sequenceGetMethod
-            getName = 't_%s_%s_seq_' %(names[-1], method.getName())
-            line(out, indent, 'static PyObject *%s(t_%s *self, int n);',
-                 getName, names[-1])
-        else:
-            getName = '0'
-
-        line(out)
-        line(out, indent, 'static PySequenceMethods t_%s_as_sequence = {',
-             names[-1])
-        line(out, indent + 1, '(lenfunc) %s,', lenName)
-        line(out, indent + 1, '0,')
-        line(out, indent + 1, '0,')
-        line(out, indent + 1, '(ssizeargfunc) %s', getName)
-        line(out, indent, '};')
-        tp_as_sequence = '&t_%s_as_sequence' %(names[-1])
+    if sequenceLenMethod:
+        method, cardinality = sequenceLenMethod
+        sq_length = 't_%s_%s_seq_' %(names[-1], method.getName())
+        line(out, indent, 'static int %s(t_%s *self);',
+             sq_length, names[-1])
     else:
-        tp_as_sequence = '0'
+        sq_length = None
 
-    if len(superNames) > 1:
-        base = '::'.join((absname(cppnames(superNames[:-1])), superNames[-1]))
+    if sequenceGetMethod:
+        method, cardinality = sequenceGetMethod
+        sq_item = 't_%s_%s_seq_' %(names[-1], method.getName())
+        line(out, indent, 'static PyObject *%s(t_%s *self, int n);',
+             sq_item, names[-1])
     else:
-        base = superNames[-1]
+        sq_item = None
+
     line(out)
-    line(out, indent, 'DECLARE_TYPE(%s, t_%s, %s, %s, %s, %s, %s, %s, %s, %s);',
-         names[-1], names[-1], base, cppname(names[-1]), constructorName,
-         tp_iter, tp_iternext, tp_getset, tp_as_mapping, tp_as_sequence)
+    line(out, indent, 'static PyType_Slot PY_TYPE_SLOTS(%s)[] = {', names[-1])
+    line(out, indent + 1, '{ Py_tp_methods, t_%s__methods_ },', names[-1])
+    line(out, indent + 1, '{ Py_tp_init, (void *) %s },', constructorName)
+    if tp_getset is not None:
+        line(out, indent + 1, '{ Py_tp_getset, %s },', tp_getset)
+    if tp_iter is not None:
+        line(out, indent + 1, '{ Py_tp_iter, (void *) %s },', tp_iter)
+        line(out, indent + 1, '{ Py_tp_iternext, (void *) %s },', tp_iternext)
+    if mp_subscript is not None:
+        line(out, indent + 1, '{ Py_mp_subscript, (void *) %s },', mp_subscript)
+    if sq_length is not None:
+        line(out, indent + 1, '{ Py_sq_length, (void *) %s },', sq_length)
+    if sq_item is not None:
+        line(out, indent + 1, '{ Py_sq_item, (void *) %s },', sq_item)
+    line(out, indent + 1, '{ 0, NULL }')
+    line(out, indent, '};')
+
+    line(out)
+    line(out, indent, 'static PyType_Def *PY_TYPE_BASES(%s)[] = {', names[-1])
+    for superName in superNames:
+        if len(superName) > 1:
+            base = '::'.join((absname(cppnames(superName[:-1])), superName[-1]))
+        else:
+            base = superName[-1]
+        line(out, indent + 1, '&PY_TYPE_DEF(%s),', base)
+    line(out, indent + 1, 'NULL')
+    line(out, indent, '};')
+
+    line(out)
+    line(out, indent, 'DEFINE_TYPE(%s, t_%s, %s);',
+         names[-1], names[-1], cppname(names[-1]))
 
     if clsParams:
         clsArgs = []
@@ -1040,20 +1047,21 @@ def python(env, out_h, out, cls, superCls, names, superNames,
     line(out)
     line(out, indent, 'void t_%s::install(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'installType(&PY_TYPE(%s), module, "%s", %d);',
-         names[-1], rename or names[-1], isExtension and 1 or 0)
+    line(out, indent + 1,
+         'installType(&PY_TYPE(%s), &PY_TYPE_DEF(%s), module, "%s", %d);',
+         names[-1], names[-1], rename or names[-1], isExtension and 1 or 0)
     for inner in cls.getDeclaredClasses():
         if inner in typeset:
             if Modifier.isStatic(inner.getModifiers()):
                 innerName = inner.getName().split('.')[-1]
-                line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "%s", make_descriptor(&PY_TYPE(%s)));',
+                line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "%s", make_descriptor(&PY_TYPE_DEF(%s)));',
                      names[-1], innerName[len(names[-1])+1:], innerName)
     line(out, indent, '}')
 
     line(out)
     line(out, indent, 'void t_%s::initialize(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
+    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
          names[-1], cppname(names[-1]), generics and 1 or 0)
 
     if is_unboxed(cls.getName()):
@@ -1063,8 +1071,8 @@ def python(env, out_h, out, cls, superCls, names, superNames,
         wrapfn_ = "t_%s::wrap_jobject" %(names[-1])
         boxfn_ = "boxObject"
 
-    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
-    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
+    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
+    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
 
     if isExtension:
         line(out, indent + 1, 'jclass cls = env->getClass(%s::initializeClass);',
@@ -1093,7 +1101,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
             cppFieldName += RENAME_FIELD_SUFFIX
         value = '%s::%s' %(cppname(names[-1]), cppFieldName)
         value = fieldValue(cls, value, fieldType)
-        line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s).tp_dict, "%s", make_descriptor(%s));',
+        line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "%s", make_descriptor(%s));',
              names[-1], fieldName, value)
     line(out, indent, '}')
 
@@ -1211,7 +1219,7 @@ def python(env, out_h, out, cls, superCls, names, superNames,
                     line(out, indent + 1, 'return callSuper(type, "%s"%s, %d);',
                          name, args, cardinality)
                 else:
-                    line(out, indent + 1, 'return callSuper(&PY_TYPE(%s), (PyObject *) self, "%s"%s, %d);',
+                    line(out, indent + 1, 'return callSuper(PY_TYPE(%s), (PyObject *) self, "%s"%s, %d);',
                          names[-1], name, args, cardinality)
             else:
                 line(out, indent + 1, 'PyErr_SetArgsError(%s, "%s"%s);',
@@ -1547,7 +1555,8 @@ def module(out, allInOne, classes, imports, cppdir, moduleName,
     line(out)
     line(out, 0, 'PyObject *initJCC(PyObject *module);')
     line(out, 0, 'void __install__(PyObject *module);')
-    line(out, 0, 'extern PyTypeObject PY_TYPE(JObject), PY_TYPE(ConstVariableDescriptor), PY_TYPE(FinalizerClass), PY_TYPE(FinalizerProxy);')
+    line(out, 0, 'extern PyTypeObject *PY_TYPE(JObject), *PY_TYPE(ConstVariableDescriptor), *PY_TYPE(FinalizerClass), *PY_TYPE(FinalizerProxy);')
+    line(out, 0, 'extern PyType_Def PY_TYPE_DEF(JObject);')
     line(out, 0, 'extern void _install_jarray(PyObject *);')
     line(out)
     line(out, 0, 'extern "C" {')
@@ -1566,10 +1575,11 @@ def module(out, allInOne, classes, imports, cppdir, moduleName,
     line(out)
     line(out, 2, 'initJCC(module);')
     line(out)
-    line(out, 2, 'INSTALL_TYPE(JObject, module);')
-    line(out, 2, 'INSTALL_TYPE(ConstVariableDescriptor, module);')
-    line(out, 2, 'INSTALL_TYPE(FinalizerClass, module);')
-    line(out, 2, 'INSTALL_TYPE(FinalizerProxy, module);')
+    line(out, 2, 'INSTALL_STATIC_TYPE(JObject, module);')
+    line(out, 2, 'PY_TYPE_DEF(JObject).type = PY_TYPE(JObject);')
+    line(out, 2, 'INSTALL_STATIC_TYPE(ConstVariableDescriptor, module);')
+    line(out, 2, 'INSTALL_STATIC_TYPE(FinalizerClass, module);')
+    line(out, 2, 'INSTALL_STATIC_TYPE(FinalizerProxy, module);')
     line(out, 2, '_install_jarray(module);')
     line(out, 2, '__install__(module);')
     line(out)

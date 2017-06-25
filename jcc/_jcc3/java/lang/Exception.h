@@ -34,7 +34,7 @@ namespace java {
             }
         };
 
-        extern PyTypeObject PY_TYPE(Exception);
+        DECLARE_TYPE(Exception);
 
         class t_Exception {
         public:

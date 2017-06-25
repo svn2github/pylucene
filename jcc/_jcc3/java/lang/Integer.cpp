@@ -29,7 +29,7 @@ namespace java {
 
         Class *Integer::class$ = NULL;
         jmethodID *Integer::_mids = NULL;
-        
+
         jclass Integer::initializeClass(bool getOnly)
         {
             if (getOnly)
@@ -71,7 +71,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Integer, t_Integer, Object, java::lang::Integer,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Integer)[] = {
+            { Py_tp_methods, t_Integer__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Integer)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Integer, t_Integer, java::lang::Integer);
     }
 }

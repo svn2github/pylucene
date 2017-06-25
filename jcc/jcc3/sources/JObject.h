@@ -83,6 +83,9 @@ public:
         return *this;
     }
 
+protected:
+    JObject() {}
+
 private:
     int id;      // zero when this$ is a weak ref */
 };
@@ -99,7 +102,7 @@ public:
     JObject object;
 };
 
-extern PyTypeObject PY_TYPE(JObject);
+DECLARE_TYPE(JObject);
 
 #endif /* PYTHON */
 

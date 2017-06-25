@@ -49,7 +49,7 @@ static PyObject *t_fp_seq_inplace_concat(t_fp *self, PyObject *arg);
 static PyObject *t_fp_seq_inplace_repeat(t_fp *self, Py_ssize_t n);
 
 
-PyTypeObject PY_TYPE(FinalizerClass) = {
+static PyTypeObject FinalizerClass_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "jcc.FinalizerClass",                /* tp_name */
     PyType_Type.tp_basicsize,            /* tp_basicsize */
@@ -89,6 +89,7 @@ PyTypeObject PY_TYPE(FinalizerClass) = {
     0,                                   /* tp_alloc */
     0,                                   /* tp_new */
 };
+PyTypeObject *PY_TYPE(FinalizerClass) = &FinalizerClass_type;
 
 static PyMappingMethods t_fp_as_mapping = {
     (lenfunc)t_fp_map_length,            /* mp_length          */
@@ -109,7 +110,7 @@ static PySequenceMethods t_fp_as_sequence = {
     (ssizeargfunc)t_fp_seq_inplace_repeat,    /* sq_inplace_repeat */
 };
 
-PyTypeObject PY_TYPE(FinalizerProxy) = {
+static PyTypeObject FinalizerProxy_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "jcc.FinalizerProxy",                /* tp_name */
     sizeof(t_fp),                        /* tp_basicsize */
@@ -150,6 +151,7 @@ PyTypeObject PY_TYPE(FinalizerProxy) = {
     0,                                   /* tp_alloc */
     0,                                   /* tp_new */
 };
+PyTypeObject *PY_TYPE(FinalizerProxy) = &FinalizerProxy_type;
 
 static PyObject *t_fc_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -157,7 +159,7 @@ static PyObject *t_fc_call(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (obj)
     {
-        t_fp *fp = (t_fp *) PY_TYPE(FinalizerProxy).tp_alloc(&PY_TYPE(FinalizerProxy), 0);
+        t_fp *fp = (t_fp *) PY_TYPE(FinalizerProxy)->tp_alloc(PY_TYPE(FinalizerProxy), 0);
 
         fp->object = obj;      /* released by t_fp_clear() */
         obj = (PyObject *) fp;
@@ -292,7 +294,7 @@ static PyMethodDef t_descriptor_methods[] = {
 };
 
 
-PyTypeObject PY_TYPE(ConstVariableDescriptor) = {
+static PyTypeObject ConstVariableDescriptor_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "jcc.ConstVariableDescriptor",       /* tp_name */
     sizeof(t_descriptor),                /* tp_basicsize */
@@ -332,6 +334,7 @@ PyTypeObject PY_TYPE(ConstVariableDescriptor) = {
     0,                                   /* tp_alloc */
     0,                                   /* tp_new */
 };
+PyTypeObject *PY_TYPE(ConstVariableDescriptor) = &ConstVariableDescriptor_type;
 
 static void t_descriptor_dealloc(t_descriptor *self)
 {
@@ -342,15 +345,17 @@ static void t_descriptor_dealloc(t_descriptor *self)
     self->ob_base.ob_type->tp_free((PyObject *) self);
 }
 
-PyObject *make_descriptor(PyTypeObject *value)
+PyObject *make_descriptor(PyType_Def *value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
-        Py_INCREF(value);
-        self->access.value = (PyObject *) value;
+        PyTypeObject *type = makeType(value);
+
+        Py_INCREF(type);
+        self->access.value = (PyObject *) type;
         self->flags = DESCRIPTOR_VALUE;
     }
 
@@ -360,7 +365,7 @@ PyObject *make_descriptor(PyTypeObject *value)
 PyObject *make_descriptor(getclassfn initializeClass)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -384,7 +389,7 @@ PyObject *make_descriptor(getclassfn initializeClass, int generics)
 PyObject *make_descriptor(PyObject *value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -410,7 +415,7 @@ PyObject *make_descriptor(boxfn fn)
 PyObject *make_descriptor(jboolean b)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -425,7 +430,7 @@ PyObject *make_descriptor(jboolean b)
 PyObject *make_descriptor(jbyte value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -439,7 +444,7 @@ PyObject *make_descriptor(jbyte value)
 PyObject *make_descriptor(jchar value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -453,7 +458,7 @@ PyObject *make_descriptor(jchar value)
 PyObject *make_descriptor(jdouble value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -467,7 +472,7 @@ PyObject *make_descriptor(jdouble value)
 PyObject *make_descriptor(jfloat value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -481,7 +486,7 @@ PyObject *make_descriptor(jfloat value)
 PyObject *make_descriptor(jint value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -495,7 +500,7 @@ PyObject *make_descriptor(jint value)
 PyObject *make_descriptor(jlong value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {
@@ -509,7 +514,7 @@ PyObject *make_descriptor(jlong value)
 PyObject *make_descriptor(jshort value)
 {
     t_descriptor *self = (t_descriptor *)
-        PY_TYPE(ConstVariableDescriptor).tp_alloc(&PY_TYPE(ConstVariableDescriptor), 0);
+        PY_TYPE(ConstVariableDescriptor)->tp_alloc(PY_TYPE(ConstVariableDescriptor), 0);
 
     if (self)
     {

@@ -15,24 +15,27 @@
 #include <Python.h>
 #include "macros.h"
 
+void installType(PyTypeObject **type, PyType_Def *def, PyObject *module,
+                 char *name, int isExtension);
+
 namespace java {
     namespace lang {
 
-        extern PyTypeObject PY_TYPE(Object);
-        extern PyTypeObject PY_TYPE(String);
-        extern PyTypeObject PY_TYPE(Class);
-        extern PyTypeObject PY_TYPE(Throwable);
-        extern PyTypeObject PY_TYPE(Exception);
-        extern PyTypeObject PY_TYPE(RuntimeException);
-        extern PyTypeObject PY_TYPE(Boolean);
-        extern PyTypeObject PY_TYPE(Byte);
-        extern PyTypeObject PY_TYPE(Character);
-        extern PyTypeObject PY_TYPE(Integer);
-        extern PyTypeObject PY_TYPE(Double);
-        extern PyTypeObject PY_TYPE(Float);
-        extern PyTypeObject PY_TYPE(Long);
-        extern PyTypeObject PY_TYPE(Short);
-        
+        DECLARE_TYPE(Object);
+        DECLARE_TYPE(String);
+        DECLARE_TYPE(Class);
+        DECLARE_TYPE(Throwable);
+        DECLARE_TYPE(Exception);
+        DECLARE_TYPE(RuntimeException);
+        DECLARE_TYPE(Boolean);
+        DECLARE_TYPE(Byte);
+        DECLARE_TYPE(Character);
+        DECLARE_TYPE(Integer);
+        DECLARE_TYPE(Double);
+        DECLARE_TYPE(Float);
+        DECLARE_TYPE(Long);
+        DECLARE_TYPE(Short);
+
         namespace reflect {
             void __install__(PyObject *module);
         }

@@ -1,6 +1,7 @@
 Version 3.0 ->
 -------------------
  - fixed bug PYLUCENE-36 (Paulo Villegas)
+ - reworked type construction to use PyType_FromSpecWithBases (Python 3)
  - 
 
 Version 2.23 -> 3.0

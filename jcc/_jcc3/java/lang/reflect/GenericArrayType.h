@@ -44,7 +44,7 @@ namespace java {
 namespace java {
     namespace lang {
         namespace reflect {
-            extern PyTypeObject PY_TYPE(GenericArrayType);
+            DECLARE_TYPE(GenericArrayType);
 
             class t_GenericArrayType {
             public:

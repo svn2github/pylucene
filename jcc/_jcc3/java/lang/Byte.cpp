@@ -71,7 +71,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Byte, t_Byte, Object, java::lang::Byte,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Byte)[] = {
+            { Py_tp_methods, t_Byte__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Byte)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Byte, t_Byte, java::lang::Byte);
     }
 }

@@ -63,56 +63,36 @@
 #define DECLARE_GETSET_FIELD(type, name)        \
     { #name, (getter) type##_get__##name, (setter) type##_set__##name, "", NULL }
 
-#define PY_TYPE(name) name##$$Type
+struct PyType_Def {
+    PyType_Spec spec;
+    PyTypeObject *type;
+    PyType_Def **bases;   // NULL terminated array
+};
 
-#define DECLARE_TYPE(name, t_name, base, javaClass,                         \
-                     init, iter, iternext, getset, mapping, sequence)       \
-PyTypeObject PY_TYPE(name) = {                                              \
-    PyVarObject_HEAD_INIT(NULL, 0)                                          \
-    /* tp_name            */   #name,                                       \
-    /* tp_basicsize       */   sizeof(t_name),                              \
-    /* tp_itemsize        */   0,                                           \
-    /* tp_dealloc         */   0,                                           \
-    /* tp_print           */   0,                                           \
-    /* tp_getattr         */   0,                                           \
-    /* tp_setattr         */   0,                                           \
-    /* tp_compare         */   0,                                           \
-    /* tp_repr            */   0,                                           \
-    /* tp_as_number       */   0,                                           \
-    /* tp_as_sequence     */   sequence,                                    \
-    /* tp_as_mapping      */   mapping,                                     \
-    /* tp_hash            */   0,                                           \
-    /* tp_call            */   0,                                           \
-    /* tp_str             */   0,                                           \
-    /* tp_getattro        */   0,                                           \
-    /* tp_setattro        */   0,                                           \
-    /* tp_as_buffer       */   0,                                           \
-    /* tp_flags           */   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,    \
-    /* tp_doc             */   #t_name" objects",                           \
-    /* tp_traverse        */   0,                                           \
-    /* tp_clear           */   0,                                           \
-    /* tp_richcompare     */   0,                                           \
-    /* tp_weaklistoffset  */   0,                                           \
-    /* tp_iter            */   (getiterfunc) iter,                          \
-    /* tp_iternext        */   (iternextfunc) iternext,                     \
-    /* tp_methods         */   t_name##__methods_,                          \
-    /* tp_members         */   0,                                           \
-    /* tp_getset          */   getset,                                      \
-    /* tp_base            */   &PY_TYPE(base),                              \
-    /* tp_dict            */   0,                                           \
-    /* tp_descr_get       */   0,                                           \
-    /* tp_descr_set       */   0,                                           \
-    /* tp_dictoffset      */   0,                                           \
-    /* tp_init            */   (initproc)init,                              \
-    /* tp_alloc           */   0,                                           \
-    /* tp_new             */   0,                                           \
+#define PY_TYPE(name) name##$$Type
+#define PY_TYPE_DEF(name) name##$$TypeDef
+#define PY_TYPE_BASES(name) name##$$TypeBases
+#define PY_TYPE_SLOTS(name) name##$$TypeSlots
+
+#define DEFINE_TYPE(name, t_name, javaClass)                                \
+PyType_Def PY_TYPE_DEF(name) = {                                            \
+  {                                                                         \
+    #name,                                                                  \
+    sizeof(t_name),                                                         \
+    0,                                                                      \
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                               \
+    PY_TYPE_SLOTS(name)                                                     \
+  },                                                                        \
+  NULL,                                                                     \
+  PY_TYPE_BASES(name),                                                      \
 };                                                                          \
+PyTypeObject *PY_TYPE(name) = NULL;                                         \
 PyObject *t_name::wrap_Object(const javaClass& object)                  \
 {                                                                       \
     if (!!object)                                                       \
     {                                                                   \
         t_name *self =                                                  \
-            (t_name *) PY_TYPE(name).tp_alloc(&PY_TYPE(name), 0);       \
+            (t_name *) PY_TYPE(name)->tp_alloc(PY_TYPE(name), 0);       \
         if (self)                                                       \
             self->object = object;                                      \
         return (PyObject *) self;                                       \
@@ -126,11 +106,11 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
         if (!env->isInstanceOf(object, javaClass::initializeClass))     \
         {                                                               \
             PyErr_SetObject(PyExc_TypeError,                            \
-                            (PyObject *) &PY_TYPE(name));               \
+                            (PyObject *) PY_TYPE(name));                \
             return NULL;                                                \
         }                                                               \
         t_name *self = (t_name *)                                       \
-            PY_TYPE(name).tp_alloc(&PY_TYPE(name), 0);                  \
+            PY_TYPE(name)->tp_alloc(PY_TYPE(name), 0);                  \
         if (self)                                                       \
             self->object = javaClass(object);                           \
         return (PyObject *) self;                                       \
@@ -138,12 +118,18 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
     Py_RETURN_NONE;                                                     \
 }                                                                       \
 
+#define DECLARE_TYPE(name)                                              \
+    extern PyType_Def PY_TYPE_DEF(name);                                \
+    extern PyTypeObject *PY_TYPE(name)
 
 #define INSTALL_TYPE(name, module)                                      \
-    if (PyType_Ready(&PY_TYPE(name)) == 0)                              \
+    installType(&PY_TYPE(name), &PY_TYPE_DEF(name), module, #name, 0)
+
+#define INSTALL_STATIC_TYPE(name, module)                               \
+    if (PyType_Ready(PY_TYPE(name)) == 0)                               \
     {                                                                   \
-        Py_INCREF(&PY_TYPE(name));                                      \
-        PyModule_AddObject(module, #name, (PyObject *) &PY_TYPE(name)); \
+        Py_INCREF(PY_TYPE(name));                                       \
+        PyModule_AddObject(module, #name, (PyObject *) PY_TYPE(name));  \
     }
 
 

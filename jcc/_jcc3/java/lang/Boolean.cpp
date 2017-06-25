@@ -32,7 +32,7 @@ namespace java {
 
         Boolean *Boolean::TRUE = NULL;
         Boolean *Boolean::FALSE = NULL;
-        
+
         jclass Boolean::initializeClass(bool getOnly)
         {
             if (getOnly)
@@ -77,7 +77,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Boolean, t_Boolean, Object, java::lang::Boolean,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Boolean)[] = {
+            { Py_tp_methods, t_Boolean__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Boolean)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Boolean, t_Boolean, java::lang::Boolean);
     }
 }

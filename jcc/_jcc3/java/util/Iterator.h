@@ -22,7 +22,7 @@ namespace java {
     namespace lang {
         class Class;
         class Object;
-    }        
+    }
     namespace util {
         using namespace java::lang;
 
@@ -40,7 +40,7 @@ namespace java {
             Object next() const;
         };
 
-        extern PyTypeObject PY_TYPE(Iterator);
+        DECLARE_TYPE(Iterator);
 
         class t_Iterator {
         public:

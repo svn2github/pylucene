@@ -36,7 +36,7 @@ namespace java {
             jint intValue() const;
         };
 
-        extern PyTypeObject PY_TYPE(Integer);
+        DECLARE_TYPE(Integer);
 
         class t_Integer {
         public:

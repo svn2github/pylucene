@@ -77,8 +77,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Enumeration, t_Enumeration, JObject,
-                     java::util::Enumeration, abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Enumeration)[] = {
+            { Py_tp_methods, t_Enumeration__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Enumeration)[] = {
+            &PY_TYPE_DEF(JObject),
+            NULL
+        };
+
+        DEFINE_TYPE(Enumeration, t_Enumeration, java::util::Enumeration);
 
 #ifdef _java_generics
         PyObject *t_Enumeration::wrap_Object(const Enumeration& object,

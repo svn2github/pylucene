@@ -15,13 +15,16 @@
 #include <Python.h>
 #include "macros.h"
 
+void installType(PyTypeObject **type, PyType_Def *def, PyObject *module,
+                 char *name, int isExtension);
+
 namespace java {
     namespace io {
 
-        extern PyTypeObject PY_TYPE(Writer);
-        extern PyTypeObject PY_TYPE(StringWriter);
-        extern PyTypeObject PY_TYPE(PrintWriter);
-        
+        DECLARE_TYPE(Writer);
+        DECLARE_TYPE(StringWriter);
+        DECLARE_TYPE(PrintWriter);
+
         namespace reflect {
             void __install__(PyObject *module);
         }

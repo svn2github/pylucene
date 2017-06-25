@@ -57,7 +57,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Writer, t_Writer, java::lang::Object, Writer,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Writer)[] = {
+            { Py_tp_methods, t_Writer__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Writer)[] = {
+            &PY_TYPE_DEF(java::lang::Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Writer, t_Writer, java::io::Writer);
     }
 }

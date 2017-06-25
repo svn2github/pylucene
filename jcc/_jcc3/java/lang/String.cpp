@@ -84,8 +84,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(String, t_String, Object, java::lang::String,
-                     t_String_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(String)[] = {
+            { Py_tp_methods, t_String__methods_ },
+            { Py_tp_init, (void *) t_String_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(String)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(String, t_String, java::lang::String);
 
         static int t_String_init(t_String *self,
                                  PyObject *args, PyObject *kwds)

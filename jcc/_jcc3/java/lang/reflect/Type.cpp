@@ -46,7 +46,18 @@ namespace java {
                 { NULL, NULL, 0, NULL }
             };
 
-            DECLARE_TYPE(Type, t_Type, java::lang::Object, Type, abstract_init, 0, 0, 0, 0, 0);
+            static PyType_Slot PY_TYPE_SLOTS(Type)[] = {
+                { Py_tp_methods, t_Type__methods_ },
+                { Py_tp_init, (void *) abstract_init },
+                { 0, 0 }
+            };
+
+            static PyType_Def *PY_TYPE_BASES(Type)[] = {
+                &PY_TYPE_DEF(Object),
+                NULL
+            };
+
+            DEFINE_TYPE(Type, t_Type, Type);
 
             static PyObject *t_Type_cast_(PyTypeObject *type, PyObject *arg)
             {

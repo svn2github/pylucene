@@ -16,14 +16,17 @@ from . import _jcc3
 class JavaError(Exception):
 
     def getJavaException(self):
-        return self.args[0]
+        return self.args[0] if self.args else None
 
     def __str__(self):
-        writer = StringWriter()
-        self.getJavaException().printStackTrace(PrintWriter(writer))
-
-        return '\n'.join((super(JavaError, self).__str__(),
-                          "Java stacktrace:", str(writer)))
+        exc = self.getJavaException()
+        if exc is None:
+            return "Java Error"
+        else:
+            writer = StringWriter()
+            exc.printStackTrace(PrintWriter(writer))
+            return '\n'.join((super(JavaError, self).__str__(),
+                              "Java stacktrace:", str(writer)))
 
 
 class InvalidArgsError(Exception):
@@ -641,7 +644,7 @@ def jcc(args):
                 line(out_h, 0, '#ifndef %s_H', '_'.join(names))
                 line(out_h, 0, '#define %s_H', '_'.join(names))
 
-                (superCls, constructors, methods, protectedMethods,
+                (superClasses, constructors, methods, protectedMethods,
                  methodNames, fields, instanceFields, declares) = \
                     header(env, out_h, cls, typeset, packages, excludes,
                            generics,
@@ -651,7 +654,7 @@ def jcc(args):
                 if not allInOne:
                     out_cpp = open(fileName + '.cpp', 'w')
                 names, superNames = code(env, out_cpp,
-                                         cls, superCls, constructors,
+                                         cls, superClasses, constructors,
                                          methods, protectedMethods,
                                          methodNames, fields, instanceFields,
                                          declares, typeset)
@@ -663,7 +666,7 @@ def jcc(args):
                         else:
                             pythonNames[name] = cls
                     python(env, out_h, out_cpp,
-                           cls, superCls, names, superNames,
+                           cls, superClasses, names, superNames,
                            constructors, methods, protectedMethods,
                            methodNames, fields, instanceFields,
                            mappings.get(className), sequences.get(className),
@@ -710,6 +713,7 @@ def header(env, out, cls, typeset, packages, excludes, generics,
 
     names = cls.getName().split('.')
     superCls = cls.getSuperclass()
+    superClasses = [superCls] if superCls else []
     declares = set([cls.getClass()])
 
     interfaces = []
@@ -739,19 +743,20 @@ def header(env, out, cls, typeset, packages, excludes, generics,
 
     if cls.isInterface():
         if interfaces:
-            superCls = interfaces.pop(0)
+            superClasses = interfaces[:1]
         else:
-            superCls = findClass('java/lang/Object')
-        superClsName = superCls.getName()
-    elif superCls:
-        superClsName = superCls.getName()
+            superClasses = [findClass('java/lang/Object')]
+        superClsNames = [superCls.getName()
+                         for superCls in superClasses] or ['JObject']
+    elif superClasses:
+        superClsNames = [superCls.getName() for superCls in superClasses]
         if generics:
             for clsParam in getTypeParameters(cls):
                 if Class.instance_(clsParam):
                     addRequiredTypes(clsParam, typeset, True)
                     known(clsParam, typeset, declares, packages, excludes, True)
     else:
-        superClsName = 'JObject'
+        superClsNames = ['JObject']
 
     constructors = []
     for constructor in cls.getDeclaredConstructors():
@@ -760,7 +765,7 @@ def header(env, out, cls, typeset, packages, excludes, generics,
                 genericParams = constructor.getGenericParameterTypes()
                 params = constructor.getParameterTypes()
                 # It appears that the implicit instance-of-the-declaring-class
-                # parameter of a non-static inner class is missing from 
+                # parameter of a non-static inner class is missing from
                 # getGenericParameterTypes()
                 if len(params) == len(genericParams) + 1:
                     params[1:] = genericParams
@@ -859,14 +864,15 @@ def header(env, out, cls, typeset, packages, excludes, generics,
     instanceFields.sort(key=lambda x: x.getName())
 
     line(out)
-    superNames = superClsName.split('.')
-    line(out, 0, '#include "%s.h"', '/'.join(superNames))
+    for superClsName in superClsNames:
+        superNames = superClsName.split('.')
+        line(out, 0, '#include "%s.h"', '/'.join(superNames))
 
     line(out, 0)
     namespaces = {}
     for declare in declares:
         namespace = namespaces
-        if declare not in (cls, superCls):
+        if declare is not cls and declare not in superClasses:
             declareNames = declare.getName().split('.')
             for declareName in declareNames[:-1]:
                 namespace = namespace.setdefault(declareName, {})
@@ -881,14 +887,12 @@ def header(env, out, cls, typeset, packages, excludes, generics,
         indent += 1
 
     line(out)
-    if superClsName == 'JObject':
-        line(out, indent, 'class %s%s : public JObject {',
-             _dll_export, cppname(names[-1]))
-    else:
-        line(out, indent, 'class %s%s : public %s {',
-             _dll_export, cppname(names[-1]), absname(cppnames(superNames)))
+    virtual = ''
+    line(out, indent, 'class %s%s : %s {', _dll_export, cppname(names[-1]),
+         ', '.join(["public%s %s" %(virtual, absname(cppnames(superClsName.split('.'))))
+                    for superClsName in superClsNames]))
 
-    line(out, indent, 'public:')
+    line(out, indent, ' public:')
     indent += 1
 
     if methods or protectedMethods or constructors:
@@ -922,14 +926,15 @@ def header(env, out, cls, typeset, packages, excludes, generics,
     line(out, indent, 'static jclass initializeClass(bool);');
     line(out)
 
-    line(out, indent, 'explicit %s(jobject obj) : %s(obj) {',
-         cppname(names[-1]), absname(cppnames(superNames)))
-    line(out, indent + 1, 'if (obj != NULL)');
+    line(out, indent, 'explicit %s(jobject obj) : %s {',
+         cppname(names[-1]), ', '.join(['%s(obj)' %(absname(cppnames(superConstructorName.split('.')))) for superConstructorName in superClsNames]))
+    line(out, indent + 1, 'if (obj != NULL && mids$ == NULL)');
     line(out, indent + 2, 'env->getClass(initializeClass);')
     line(out, indent, '}')
-    line(out, indent, '%s(const %s& obj) : %s(obj) {}',
+
+    line(out, indent, '%s(const %s& obj) : %s {}',
          cppname(names[-1]), cppname(names[-1]),
-         absname(cppnames(superNames)))
+         ', '.join(['%s(obj)' %(absname(cppnames(superConstructorName.split('.')))) for superConstructorName in superClsNames]))
 
     if fields:
         line(out)
@@ -989,27 +994,27 @@ def header(env, out, cls, typeset, packages, excludes, generics,
         indent -= 1
         line(out, indent, '}')
 
-    return (superCls, constructors, methods, protectedMethods,
+    return (superClasses, constructors, methods, protectedMethods,
             methodNames, fields, instanceFields, declares)
 
 
-def code(env, out, cls, superCls, constructors, methods, protectedMethods,
+def code(env, out, cls, superClasses, constructors, methods, protectedMethods,
          methodNames, fields, instanceFields, declares, typeset):
 
     className = cls.getName()
     names = className.split('.')
 
-    if superCls:
-        superClsName = superCls.getName()
+    if superClasses:
+        superClsNames = [superCls.getName() for superCls in superClasses]
     else:
-        superClsName = 'JObject'
-    superNames = superClsName.split('.')
+        superClsNames = ['JObject']
+    superNames = [superClsName.split('.') for superClsName in superClsNames]
 
     line(out, 0, '#include <jni.h>')
     line(out, 0, '#include "JCCEnv.h"')
     line(out, 0, '#include "%s.h"', className.replace('.', '/'))
     for declare in declares:
-        if declare not in (cls, superCls):
+        if declare is not cls and declare not in superClasses:
             line(out, 0, '#include "%s.h"', declare.getName().replace('.', '/'))
     line(out, 0, '#include "JArray.h"')
 
@@ -1089,7 +1094,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
                  fieldName, fieldName, signature(field))
 
     line(out)
-    line(out, indent + 2, 'class$ = (::java::lang::Class *) new JObject(cls);')
+    line(out, indent + 2, 'class$ = new ::java::lang::Class(cls);')
 
     if fields:
         line(out, indent + 2, 'cls = (jclass) class$->this$;')
@@ -1123,7 +1128,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
 
         line(out, indent, "%s::%s(%s) : %s(env->newObject(initializeClass, &mids$, mid_init$_%s%s)) {}",
              cppname(names[-1]), cppname(names[-1]), decls,
-             absname(cppnames(superNames)),
+             absname(cppnames(superNames[0])),
              env.strhash(sig), args)
 
     for method in methods:
@@ -1134,9 +1139,9 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
         superMethod = None
         isStatic = Modifier.isStatic(modifiers)
 
-        if (isExtension and not isStatic and superCls and
+        if (isExtension and not isStatic and superClasses and
             Modifier.isNative(modifiers)):
-            superMethod = find_method(superCls, methodName, params)
+            superMethod = find_method(superClasses[0], methodName, params)
             if superMethod is None:
                 continue
 
@@ -1150,7 +1155,7 @@ def code(env, out, cls, superCls, constructors, methods, protectedMethods,
             isStatic = False
             if superMethod is not None:
                 qualifier = 'Nonvirtual'
-                this = 'this$, (jclass) %s::class$->this$' %(absname(cppnames(superNames)))
+                this = 'this$, (jclass) %s::class$->this$' %(absname(cppnames(superNames[0])))
                 declaringClass = superMethod.getDeclaringClass()
                 midns = '%s::' %(typename(declaringClass, cls, False))
                 sig = signature(superMethod)

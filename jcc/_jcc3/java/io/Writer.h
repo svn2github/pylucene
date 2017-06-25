@@ -18,7 +18,6 @@
 #include <Python.h>
 #include "java/lang/Object.h"
 #include "java/lang/Class.h"
-#include "JArray.h"
 
 namespace java {
     namespace io {
@@ -34,7 +33,7 @@ namespace java {
             }
         };
 
-        extern PyTypeObject PY_TYPE(Writer);
+        DECLARE_TYPE(Writer);
 
         class t_Writer {
         public:

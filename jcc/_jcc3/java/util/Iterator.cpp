@@ -79,8 +79,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Iterator, t_Iterator, JObject, java::util::Iterator,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Iterator)[] = {
+            { Py_tp_methods, t_Iterator__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Iterator)[] = {
+            &PY_TYPE_DEF(JObject),
+            NULL
+        };
+
+        DEFINE_TYPE(Iterator, t_Iterator, java::util::Iterator);
 
 #ifdef _java_generics
         PyObject *t_Iterator::wrap_Object(const Iterator& object,

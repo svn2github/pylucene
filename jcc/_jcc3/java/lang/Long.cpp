@@ -29,7 +29,7 @@ namespace java {
 
         Class *Long::class$ = NULL;
         jmethodID *Long::_mids = NULL;
-        
+
         jclass Long::initializeClass(bool getOnly)
         {
             if (getOnly)
@@ -71,7 +71,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Long, t_Long, Object, java::lang::Long,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Long)[] = {
+            { Py_tp_methods, t_Long__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Long)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Long, t_Long, java::lang::Long);
     }
 }

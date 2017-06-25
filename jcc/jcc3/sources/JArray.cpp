@@ -413,7 +413,7 @@ static PyObject *cast_(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O", &arg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+    if (!PyObject_TypeCheck(arg, PY_TYPE(Object)))
     {
         PyErr_SetObject(PyExc_TypeError, arg);
         return NULL;
@@ -455,7 +455,7 @@ static PyObject *instance_(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O", &arg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+    if (!PyObject_TypeCheck(arg, PY_TYPE(Object)))
         Py_RETURN_FALSE;
 
     Class argCls = ((t_Object *) arg)->object.getClass();
@@ -603,7 +603,7 @@ public:
             (richcmpfunc) (PyObject *(*)(U *, PyObject *, int)) richcompare<U>;
         type_object.tp_iter = (getiterfunc) (PyObject *(*)(U *)) iter<U>;
         type_object.tp_methods = methods;
-        type_object.tp_base = &PY_TYPE(Object);
+        type_object.tp_base = PY_TYPE(Object);
         type_object.tp_init =
             (initproc) (int (*)(U *, PyObject *, PyObject *)) init<T,U>;
         type_object.tp_new = (newfunc) _new;
@@ -636,11 +636,11 @@ template<> int init< jobject,_t_jobjectarray<jobject> >(_t_jobjectarray<jobject>
 
     if (clsObj == NULL)
         cls = env->findClass("java/lang/Object");
-    else if (PyObject_TypeCheck(clsObj, &PY_TYPE(Class)))
+    else if (PyObject_TypeCheck(clsObj, PY_TYPE(Class)))
         cls = (jclass) ((t_Class *) clsObj)->object.this$;
     else if (PyType_Check(clsObj))
     {
-        if (PyType_IsSubtype((PyTypeObject *) clsObj, &PY_TYPE(JObject)))
+        if (PyType_IsSubtype((PyTypeObject *) clsObj, PY_TYPE(JObject)))
         {
             PyObject *cobj = PyObject_GetAttrString(clsObj, "wrapfn_");
 
@@ -730,7 +730,7 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
     if (!PyArg_ParseTuple(args, "O|O", &arg, &clsArg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+    if (!PyObject_TypeCheck(arg, PY_TYPE(Object)))
     {
         PyErr_SetObject(PyExc_TypeError, arg);
         return NULL;
@@ -751,7 +751,7 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
             PyErr_SetObject(PyExc_TypeError, clsArg);
             return NULL;
         }
-        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &PY_TYPE(JObject)))
+        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, PY_TYPE(JObject)))
         {
             PyErr_SetObject(PyExc_ValueError, clsArg);
             return NULL;
@@ -793,7 +793,7 @@ template<> PyObject *cast_<jobject>(PyTypeObject *type,
 
 template<> PyObject *wrapfn_<jobject>(const jobject &object) {
     PyObject *cobj = PyObject_GetAttrString(
-        (PyObject *) &PY_TYPE(Object), "wrapfn_");
+        (PyObject *) PY_TYPE(Object), "wrapfn_");
     PyObject *(*wrapfn)(const jobject&) = NULL;
 
     if (cobj == NULL)
@@ -818,7 +818,7 @@ template<> PyObject *instance_<jobject>(PyTypeObject *type,
     if (!PyArg_ParseTuple(args, "O|O", &arg, &clsArg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+    if (!PyObject_TypeCheck(arg, PY_TYPE(Object)))
         Py_RETURN_FALSE;
 
     Class argCls = ((t_Object *) arg)->object.getClass();
@@ -833,7 +833,7 @@ template<> PyObject *instance_<jobject>(PyTypeObject *type,
             PyErr_SetObject(PyExc_TypeError, clsArg);
             return NULL;
         }
-        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &PY_TYPE(JObject)))
+        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, PY_TYPE(JObject)))
         {
             PyErr_SetObject(PyExc_ValueError, clsArg);
             return NULL;
@@ -868,7 +868,7 @@ template<> PyObject *assignable_<jobject>(PyTypeObject *type,
     if (!PyArg_ParseTuple(args, "O|O", &arg, &clsArg))
         return NULL;
 
-    if (!PyObject_TypeCheck(arg, &PY_TYPE(Object)))
+    if (!PyObject_TypeCheck(arg, PY_TYPE(Object)))
         Py_RETURN_FALSE;
 
     Class argCls = ((t_Object *) arg)->object.getClass();
@@ -883,7 +883,7 @@ template<> PyObject *assignable_<jobject>(PyTypeObject *type,
             PyErr_SetObject(PyExc_TypeError, clsArg);
             return NULL;
         }
-        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, &PY_TYPE(JObject)))
+        else if (!PyType_IsSubtype((PyTypeObject *) clsArg, PY_TYPE(JObject)))
         {
             PyErr_SetObject(PyExc_ValueError, clsArg);
             return NULL;

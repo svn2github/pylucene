@@ -35,7 +35,7 @@ namespace java {
             PrintWriter(const PrintWriter& obj) : Writer(obj) {}
         };
 
-        extern PyTypeObject PY_TYPE(PrintWriter);
+        DECLARE_TYPE(PrintWriter);
 
         class t_PrintWriter {
         public:

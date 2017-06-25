@@ -197,7 +197,7 @@ template<> class JArray<jobject> : public java::lang::Object {
 
                 if (PyBytes_Check(obj) || PyUnicode_Check(obj))
                     jobj = env->fromPyString(obj);
-                else if (!PyObject_TypeCheck(obj, &PY_TYPE(JObject)))
+                else if (!PyObject_TypeCheck(obj, PY_TYPE(JObject)))
                 {
                     PyErr_SetObject(PyExc_TypeError, obj);
                     return -1;

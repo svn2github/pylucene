@@ -56,7 +56,18 @@ namespace java {
                 { NULL, NULL, 0, NULL }
             };
 
-            DECLARE_TYPE(GenericArrayType, t_GenericArrayType, java::lang::reflect::Type, GenericArrayType, abstract_init, 0, 0, 0, 0, 0);
+            static PyType_Slot PY_TYPE_SLOTS(GenericArrayType)[] = {
+                { Py_tp_methods, t_GenericArrayType__methods_ },
+                { Py_tp_init, (void *) abstract_init },
+                { 0, 0 }
+            };
+
+            static PyType_Def *PY_TYPE_BASES(GenericArrayType)[] = {
+                &PY_TYPE_DEF(java::lang::reflect::Type),
+                NULL
+            };
+
+            DEFINE_TYPE(GenericArrayType, t_GenericArrayType, GenericArrayType);
 
             static PyObject *t_GenericArrayType_cast_(PyTypeObject *type, PyObject *arg)
             {

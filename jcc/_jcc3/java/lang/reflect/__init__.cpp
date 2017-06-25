@@ -15,21 +15,24 @@
 #include <Python.h>
 #include "macros.h"
 
+void installType(PyTypeObject **type, PyType_Def *def, PyObject *module,
+                 char *name, int isExtension);
+
 namespace java {
     namespace lang {
         namespace reflect {
 
-            extern PyTypeObject PY_TYPE(Constructor);
-            extern PyTypeObject PY_TYPE(Method);
-            extern PyTypeObject PY_TYPE(Modifier);
-            extern PyTypeObject PY_TYPE(Field);
+            DECLARE_TYPE(Constructor);
+            DECLARE_TYPE(Method);
+            DECLARE_TYPE(Modifier);
+            DECLARE_TYPE(Field);
 #ifdef _java_generics
-            extern PyTypeObject PY_TYPE(Type);
-            extern PyTypeObject PY_TYPE(ParameterizedType);
-            extern PyTypeObject PY_TYPE(TypeVariable);
-            extern PyTypeObject PY_TYPE(GenericArrayType);
-            extern PyTypeObject PY_TYPE(WildcardType);
-            extern PyTypeObject PY_TYPE(GenericDeclaration);
+            DECLARE_TYPE(Type);
+            DECLARE_TYPE(ParameterizedType);
+            DECLARE_TYPE(TypeVariable);
+            DECLARE_TYPE(GenericArrayType);
+            DECLARE_TYPE(WildcardType);
+            DECLARE_TYPE(GenericDeclaration);
 #endif
 
             void __install__(PyObject *m)

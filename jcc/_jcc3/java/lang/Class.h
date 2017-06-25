@@ -71,7 +71,7 @@ namespace java {
 #endif
         };
 
-        extern PyTypeObject PY_TYPE(Class);
+        DECLARE_TYPE(Class);
 
         class t_Class {
         public:

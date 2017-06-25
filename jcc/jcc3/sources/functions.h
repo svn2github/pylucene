@@ -90,7 +90,7 @@ java::lang::String p2j(PyObject *object);
 PyObject *j2p(const java::lang::String& js);
 PyObject *c2p(jchar c);
 
-PyObject *make_descriptor(PyTypeObject *value);
+PyObject *make_descriptor(PyType_Def *value);
 PyObject *make_descriptor(getclassfn initializeClass);
 PyObject *make_descriptor(getclassfn initializeClass, int generics);
 PyObject *make_descriptor(PyObject *value);
@@ -250,7 +250,7 @@ template<class T, class U, class V> PyObject *get_generic_next(T *self)
         PyErr_SetNone(PyExc_StopIteration);
         return NULL;
     }
-        
+
     jclass cls = env->getClass(java::lang::String::initializeClass);
     if (env->get_vm_env()->IsInstanceOf(next.this$, cls))
         return env->fromJString((jstring) next.this$, 0);
@@ -271,15 +271,16 @@ jobjectArray fromPySequence(jclass cls, PyObject *sequence);
 jobjectArray fromPySequence(jclass cls, PyObject **args, int length);
 PyObject *castCheck(PyObject *obj, getclassfn initializeClass,
                     int reportError);
-void installType(PyTypeObject *type, PyObject *module, char *name,
-                 int isExtension);
+PyTypeObject *makeType(PyType_Def *def);
+void installType(PyTypeObject **type, PyType_Def *spec, PyObject *module,
+                 char *name, int isExtension);
 
 #ifdef _java_generics
 PyObject *typeParameters(PyTypeObject *types[], size_t size);
 #endif
 
-extern PyTypeObject PY_TYPE(FinalizerClass);
-extern PyTypeObject PY_TYPE(FinalizerProxy);
+extern PyTypeObject *PY_TYPE(FinalizerClass);
+extern PyTypeObject *PY_TYPE(FinalizerProxy);
 
 typedef struct {
     PyObject_HEAD

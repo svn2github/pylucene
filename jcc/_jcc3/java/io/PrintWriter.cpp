@@ -67,9 +67,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(PrintWriter, t_PrintWriter, Writer,
-                     java::io::PrintWriter, t_PrintWriter_init,
-                     0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(PrintWriter)[] = {
+            { Py_tp_methods, t_PrintWriter__methods_ },
+            { Py_tp_init, (void *) t_PrintWriter_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(PrintWriter)[] = {
+            &PY_TYPE_DEF(Writer),
+            NULL
+        };
+
+        DEFINE_TYPE(PrintWriter, t_PrintWriter, java::io::PrintWriter);
 
         static int t_PrintWriter_init(t_PrintWriter *self,
                                       PyObject *args, PyObject *kwds)

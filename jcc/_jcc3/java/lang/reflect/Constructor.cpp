@@ -153,8 +153,18 @@ namespace java {
                 { NULL, NULL, 0, NULL }
             };
 
-            DECLARE_TYPE(Constructor, t_Constructor, Object, Constructor,
-                         abstract_init, 0, 0, 0, 0, 0);
+            static PyType_Slot PY_TYPE_SLOTS(Constructor)[] = {
+                { Py_tp_methods, t_Constructor__methods_ },
+                { Py_tp_init, (void *) abstract_init },
+                { 0, 0 }
+            };
+
+            static PyType_Def *PY_TYPE_BASES(Constructor)[] = {
+                &PY_TYPE_DEF(Object),
+                NULL
+            };
+
+            DEFINE_TYPE(Constructor, t_Constructor, Constructor);
 
             static PyObject *t_Constructor_getModifiers(t_Constructor *self)
             {

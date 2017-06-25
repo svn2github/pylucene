@@ -120,8 +120,18 @@ namespace java {
                 { NULL, NULL, 0, NULL }
             };
 
-            DECLARE_TYPE(Field, t_Field, Object, Field,
-                         abstract_init, 0, 0, 0, 0, 0);
+            static PyType_Slot PY_TYPE_SLOTS(Field)[] = {
+                { Py_tp_methods, t_Field__methods_ },
+                { Py_tp_init, (void *) abstract_init },
+                { 0, 0 }
+            };
+
+            static PyType_Def *PY_TYPE_BASES(Field)[] = {
+                &PY_TYPE_DEF(Object),
+                NULL
+            };
+
+            DEFINE_TYPE(Field, t_Field, Field);
 
             static PyObject *t_Field_getModifiers(t_Field *self)
             {

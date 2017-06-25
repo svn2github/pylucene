@@ -29,7 +29,7 @@ namespace java {
 
         Class *Double::class$ = NULL;
         jmethodID *Double::_mids = NULL;
-        
+
         jclass Double::initializeClass(bool getOnly)
         {
             if (getOnly)
@@ -71,7 +71,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Double, t_Double, Object, java::lang::Double,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Double)[] = {
+            { Py_tp_methods, t_Double__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Double)[] = {
+            &PY_TYPE_DEF(Object),
+            NULL
+        };
+
+        DEFINE_TYPE(Double, t_Double, java::lang::Double);
     }
 }

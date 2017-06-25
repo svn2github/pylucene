@@ -56,7 +56,17 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Exception, t_Exception, Throwable, Exception,
-                     abstract_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Exception)[] = {
+            { Py_tp_methods, t_Exception__methods_ },
+            { Py_tp_init, (void *) abstract_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Exception)[] = {
+            &PY_TYPE_DEF(Throwable),
+            NULL
+        };
+
+        DEFINE_TYPE(Exception, t_Exception, java::lang::Exception);
     }
 }

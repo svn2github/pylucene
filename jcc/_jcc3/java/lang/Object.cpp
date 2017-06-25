@@ -103,8 +103,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(Object, t_Object, JObject, java::lang::Object,
-                     t_Object_init, 0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(Object)[] = {
+            { Py_tp_methods, t_Object__methods_ },
+            { Py_tp_init, (void *) t_Object_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(Object)[] = {
+            &PY_TYPE_DEF(JObject),
+            NULL
+        };
+
+        DEFINE_TYPE(Object, t_Object, java::lang::Object);
 
         static int t_Object_init(t_Object *self,
                                  PyObject *args, PyObject *kwds)
@@ -117,7 +127,7 @@ namespace java {
                 PyErr_SetString(PyExc_ValueError, "invalid args");
                 return -1;
             }
-        
+
             return 0;
         }
 

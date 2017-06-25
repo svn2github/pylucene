@@ -512,7 +512,7 @@ bool JCCEnv::restorePythonException(jthrowable throwable) const
     {
         jfieldID fid = vm_env->GetFieldID(pycls, "py_error_state", "J");
         PyObject *state = (PyObject *) vm_env->GetLongField(throwable, fid);
-        
+
         if (state != NULL)
         {
             PyObject *type = PyTuple_GET_ITEM(state, 0);

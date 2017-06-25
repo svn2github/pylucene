@@ -18,7 +18,7 @@
 #include "java/lang/RuntimeException.h"
 #include "macros.h"
 
-extern PyTypeObject PY_TYPE(JObject), PY_TYPE(ConstVariableDescriptor);
+extern PyTypeObject *PY_TYPE(JObject), *PY_TYPE(ConstVariableDescriptor);
 
 PyObject *initJCC(PyObject *module);
 PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds);
@@ -70,8 +70,10 @@ static struct PyModuleDef _jccmodule = {
 
         initJCC(m);
 
-        INSTALL_TYPE(JObject, m);
-        INSTALL_TYPE(ConstVariableDescriptor, m);
+        INSTALL_STATIC_TYPE(JObject, m);
+        PY_TYPE_DEF(JObject).type = PY_TYPE(JObject);
+
+        INSTALL_STATIC_TYPE(ConstVariableDescriptor, m);
         java::lang::__install__(m);
         java::io::__install__(m);
 

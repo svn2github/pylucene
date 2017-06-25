@@ -66,9 +66,18 @@ namespace java {
             { NULL, NULL, 0, NULL }
         };
 
-        DECLARE_TYPE(StringWriter, t_StringWriter, Writer,
-                     java::io::StringWriter, t_StringWriter_init,
-                     0, 0, 0, 0, 0);
+        static PyType_Slot PY_TYPE_SLOTS(StringWriter)[] = {
+            { Py_tp_methods, t_StringWriter__methods_ },
+            { Py_tp_init, (void *) t_StringWriter_init },
+            { 0, 0 }
+        };
+
+        static PyType_Def *PY_TYPE_BASES(StringWriter)[] = {
+            &PY_TYPE_DEF(Writer),
+            NULL
+        };
+
+        DEFINE_TYPE(StringWriter, t_StringWriter, java::io::StringWriter);
 
         static int t_StringWriter_init(t_StringWriter *self,
                                        PyObject *args, PyObject *kwds)
@@ -81,7 +90,7 @@ namespace java {
                 PyErr_SetString(PyExc_ValueError, "invalid args");
                 return -1;
             }
-        
+
             return 0;
         }
     }
