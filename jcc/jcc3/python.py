@@ -1054,14 +1054,14 @@ def python(env, out_h, out, cls, superClasses, names, superNames,
         if inner in typeset:
             if Modifier.isStatic(inner.getModifiers()):
                 innerName = inner.getName().split('.')[-1]
-                line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "%s", make_descriptor(&PY_TYPE_DEF(%s)));',
+                line(out, indent + 1, 'PyObject_SetAttrString((PyObject *) PY_TYPE(%s), "%s", make_descriptor(&PY_TYPE_DEF(%s)));',
                      names[-1], innerName[len(names[-1])+1:], innerName)
     line(out, indent, '}')
 
     line(out)
     line(out, indent, 'void t_%s::initialize(PyObject *module)', names[-1])
     line(out, indent, '{')
-    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "class_", make_descriptor(%s::initializeClass, %s));',
+    line(out, indent + 1, 'PyObject_SetAttrString((PyObject *) PY_TYPE(%s), "class_", make_descriptor(%s::initializeClass, %s));',
          names[-1], cppname(names[-1]), generics and 1 or 0)
 
     if is_unboxed(cls.getName()):
@@ -1071,8 +1071,8 @@ def python(env, out_h, out, cls, superClasses, names, superNames,
         wrapfn_ = "t_%s::wrap_jobject" %(names[-1])
         boxfn_ = "boxObject"
 
-    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
-    line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
+    line(out, indent + 1, 'PyObject_SetAttrString((PyObject *) PY_TYPE(%s), "wrapfn_", make_descriptor(%s));', names[-1], wrapfn_)
+    line(out, indent + 1, 'PyObject_SetAttrString((PyObject *) PY_TYPE(%s), "boxfn_", make_descriptor(%s));', names[-1], boxfn_)
 
     if isExtension:
         line(out, indent + 1, 'jclass cls = env->getClass(%s::initializeClass);',
@@ -1101,7 +1101,7 @@ def python(env, out_h, out, cls, superClasses, names, superNames,
             cppFieldName += RENAME_FIELD_SUFFIX
         value = '%s::%s' %(cppname(names[-1]), cppFieldName)
         value = fieldValue(cls, value, fieldType)
-        line(out, indent + 1, 'PyDict_SetItemString(PY_TYPE(%s)->tp_dict, "%s", make_descriptor(%s));',
+        line(out, indent + 1, 'PyObject_SetAttrString((PyObject *) PY_TYPE(%s), "%s", make_descriptor(%s));',
              names[-1], fieldName, value)
     line(out, indent, '}')
 
@@ -1693,7 +1693,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
     line(out, 1, 'def __str__(self):')
     line(out, 2, 'writer = StringWriter()')
     line(out, 2, 'self.getJavaException().printStackTrace(PrintWriter(writer))')
-    line(out, 2, 'return u"\\n".join((str(super(JavaError, self)), u"    Java stacktrace:", str(writer)))')
+    line(out, 2, 'return "\\n".join((str(super(JavaError, self)), "    Java stacktrace:", str(writer)))')
     line(out)
     line(out, 0, 'class InvalidArgsError(Exception):')
     line(out, 1, 'pass')
