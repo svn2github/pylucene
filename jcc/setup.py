@@ -361,7 +361,8 @@ def main(debug):
                           '-compatibility_version', jcc_ver]
         elif platform == 'linux':
             kwds["extra_link_args"] = \
-                lflags + ['-lpython%s.%s' %(sys.version_info[0:2])]
+                lflags + ['-lpython%s.%s%s' %(
+                    sys.version_info[0:2] + ('' if using_python2 else 'm',))]
             kwds["force_shared"] = True    # requires jcc/patches/patch.43
         elif platform in IMPLIB_LFLAGS:
             jcclib = 'jcc%s%s.lib' %(py_version_suffix, debug and '_d' or '')
