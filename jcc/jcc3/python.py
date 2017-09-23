@@ -1684,7 +1684,7 @@ def compile(env, jccPath, output, moduleName, install, dist, debug, jars,
                 else:
                     copytree(module, dst, False)
             else:
-                shutil.copy2(module.split('.')[0] + '.py', modulePath)
+                shutil.copy2(module.rpartition('.')[0] + '.py', modulePath)
 
     line(out)
     line(out, 0, 'class JavaError(Exception):')
