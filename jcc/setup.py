@@ -116,7 +116,7 @@ INCLUDES = {
 
 CFLAGS = {
     'darwin': ['-fno-strict-aliasing', '-Wno-write-strings',
-               '-mmacosx-version-min=10.5'],
+               '-mmacosx-version-min=10.9', '-std=c++11', '-stdlib=libc++'],
     'ipod': ['-Wno-write-strings'],
     'linux': ['-fno-strict-aliasing', '-Wno-write-strings'],
     'sunos5': ['-features=iddollar',
@@ -138,12 +138,12 @@ DEBUG_CFLAGS = {
 }
 
 LFLAGS = {
-    'darwin/frameworks': ['-framework', 'JavaVM', '-mmacosx-version-min=10.5'],
+    'darwin/frameworks': ['-framework', 'JavaVM', '-mmacosx-version-min=10.9'],
     'darwin/home': ['-L%(darwin)s/jre/lib' %(JDK), '-ljava',
                     '-L%(darwin)s/jre/lib/server' %(JDK), '-ljvm',
                     '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib' %(JDK),
                     '-Wl,-rpath', '-Wl,%(darwin)s/jre/lib/server' %(JDK),
-                    '-mmacosx-version-min=10.5'],
+                    '-mmacosx-version-min=10.9'],
     'ipod': ['-ljvm', '-lpython%s.%s' %(sys.version_info[0:2]),
              '-L/usr/lib/gcc/arm-apple-darwin9/4.0.1'],
     'linux/i386': ['-L%(linux)s/jre/lib/i386' %(JDK), '-ljava',

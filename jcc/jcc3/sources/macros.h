@@ -91,8 +91,8 @@ PyObject *t_name::wrap_Object(const javaClass& object)                  \
 {                                                                       \
     if (!!object)                                                       \
     {                                                                   \
-        t_name *self =                                                  \
-            (t_name *) PY_TYPE(name)->tp_alloc(PY_TYPE(name), 0);       \
+        t_name *self = (t_name *)                                       \
+            PyType_GenericAlloc(PY_TYPE(name), 0);                      \
         if (self)                                                       \
             self->object = object;                                      \
         return (PyObject *) self;                                       \
@@ -110,7 +110,7 @@ PyObject *t_name::wrap_jobject(const jobject& object)                   \
             return NULL;                                                \
         }                                                               \
         t_name *self = (t_name *)                                       \
-            PY_TYPE(name)->tp_alloc(PY_TYPE(name), 0);                  \
+            PyType_GenericAlloc(PY_TYPE(name), 0);                      \
         if (self)                                                       \
             self->object = javaClass(object);                           \
         return (PyObject *) self;                                       \

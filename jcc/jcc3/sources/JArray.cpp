@@ -337,15 +337,15 @@ static PyObject *seq_repeat(U *self, Py_ssize_t n)
 }
 
 template<typename U>
-static PyObject *seq_getslice(U *self, Py_ssize_t lo, Py_ssize_t hi)
-{
-    return toSequence<U>(self, lo, hi);
-}
-
-template<typename U>
 static int seq_set(U *self, Py_ssize_t n, PyObject *value)
 {
     return self->array.set(n, value);
+}
+
+template<typename U>
+static PyObject *seq_getslice(U *self, Py_ssize_t lo, Py_ssize_t hi)
+{
+    return toSequence<U>(self, lo, hi);
 }
 
 template<typename U>
@@ -398,6 +398,76 @@ static int seq_setslice(U *self, Py_ssize_t lo, Py_ssize_t hi, PyObject *values)
     Py_DECREF(sequence);
     return -1;
 }
+
+
+template<typename U>
+static PyObject *map_subscript(U *self, PyObject *key)
+{
+  if (PySlice_Check(key))
+  {
+      Py_ssize_t from, to, step, slicelength;
+
+      if (PySlice_GetIndicesEx(key, seq_length(self), &from, &to, &step,
+                               &slicelength) < 0)
+          return NULL;
+
+      if (step != 1)
+      {
+          PyErr_SetString(PyExc_ValueError, "slice step must be 1");
+          return NULL;
+      }
+
+      return seq_getslice<U>(self, from, to);
+  }
+
+  if (PyIndex_Check(key))
+  {
+      Py_ssize_t at = PyNumber_AsSsize_t(key, PyExc_IndexError);
+
+      if (at == -1 && PyErr_Occurred())
+          return NULL;
+
+      return seq_get<U>(self, at);
+  }
+
+  PyErr_SetObject(PyExc_TypeError, key);
+  return NULL;
+}
+
+template<typename U>
+static int map_ass_subscript(U *self, PyObject *key, PyObject *value)
+{
+  if (PySlice_Check(key))
+  {
+      Py_ssize_t from, to, step, slicelength;
+
+      if (PySlice_GetIndicesEx(key, seq_length(self), &from, &to, &step,
+                               &slicelength) < 0)
+          return -1;
+
+      if (step != 1)
+      {
+          PyErr_SetString(PyExc_ValueError, "slice step must be 1");
+          return -1;
+      }
+
+      return seq_setslice<U>(self, from, to, value);
+  }
+
+  if (PyIndex_Check(key))
+  {
+      Py_ssize_t at = PyNumber_AsSsize_t(key, PyExc_IndexError);
+
+      if (at == -1 && PyErr_Occurred())
+          return -1;
+
+      return seq_set<U>(self, at, value);
+  }
+
+  PyErr_SetObject(PyExc_TypeError, key);
+  return -1;
+}
+
 
 template<typename T>
 static jclass initializeClass(bool getOnly)
@@ -484,6 +554,7 @@ static PyObject *assignable_(PyTypeObject *type, PyObject *args, PyObject *kwds)
 template< typename T, typename U = _t_JArray<T> > class jarray_type {
 public:
     PySequenceMethods seq_methods;
+    PyMappingMethods map_methods;
     PyTypeObject type_object;
 
     class iterator_type {
@@ -553,6 +624,7 @@ public:
     jarray_type()
     {
         memset(&seq_methods, 0, sizeof(seq_methods));
+        memset(&map_methods, 0, sizeof(map_methods));
         memset(&type_object, 0, sizeof(type_object));
 
         static PyMethodDef methods[] = {
@@ -591,11 +663,20 @@ public:
         seq_methods.sq_inplace_concat = NULL;
         seq_methods.sq_inplace_repeat = NULL;
 
+        map_methods.mp_length =
+            (lenfunc) (Py_ssize_t (*)(U *)) seq_length<U>;
+        map_methods.mp_subscript =
+            (binaryfunc) (PyObject *(*)(U *, PyObject *)) map_subscript<U>;
+        map_methods.mp_ass_subscript =
+            (objobjargproc) (int (*)(U *, PyObject *,
+                                     PyObject *)) map_ass_subscript<U>;
+
         Py_REFCNT(&type_object) = 1;
         type_object.tp_basicsize = sizeof(U);
         type_object.tp_dealloc = (destructor) (void (*)(U *)) dealloc<T,U>;
         type_object.tp_repr = (reprfunc) (PyObject *(*)(U *)) repr<U>;
         type_object.tp_as_sequence = &seq_methods;
+        type_object.tp_as_mapping = &map_methods;
         type_object.tp_str = (reprfunc) (PyObject *(*)(U *)) str<U>;
         type_object.tp_flags = Py_TPFLAGS_DEFAULT;
         type_object.tp_doc = "JArray<T> wrapper type";
@@ -623,6 +704,11 @@ template<> PyObject *get(_t_jobjectarray<jobject> *self, Py_ssize_t n)
 template<> PyObject *toSequence(_t_jobjectarray<jobject> *self)
 {
     return self->array.toSequence(self->wrapfn);
+}
+template<> PyObject *toSequence(_t_jobjectarray<jobject> *self,
+                                Py_ssize_t lo, Py_ssize_t hi)
+{
+    return self->array.toSequence(lo, hi, self->wrapfn);
 }
 
 template<> int init< jobject,_t_jobjectarray<jobject> >(_t_jobjectarray<jobject> *self, PyObject *args, PyObject *kwds)

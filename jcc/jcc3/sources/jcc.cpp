@@ -211,7 +211,7 @@ static PyObject *t_jccenv_strhash(PyObject *self, PyObject *arg)
     uintmax_t hash = (uintmax_t) PyObject_Hash(arg);
     char buffer[hexdig + 1];
 
-    sprintf(buffer, "%0*"PRIxMAX, (int) hexdig, hash);
+    sprintf(buffer, "%0*" PRIxMAX, (int) hexdig, hash);
     return PyUnicode_FromStringAndSize(buffer, hexdig);
 }
 #endif
