@@ -403,69 +403,69 @@ static int seq_setslice(U *self, Py_ssize_t lo, Py_ssize_t hi, PyObject *values)
 template<typename U>
 static PyObject *map_subscript(U *self, PyObject *key)
 {
-  if (PySlice_Check(key))
-  {
-      Py_ssize_t from, to, step, slicelength;
+    if (PySlice_Check(key))
+    {
+        Py_ssize_t from, to, step, slicelength;
 
-      if (PySlice_GetIndicesEx(key, seq_length(self), &from, &to, &step,
-                               &slicelength) < 0)
-          return NULL;
+        if (PySlice_GetIndicesEx(key, seq_length(self), &from, &to, &step,
+                                 &slicelength) < 0)
+            return NULL;
 
-      if (step != 1)
-      {
-          PyErr_SetString(PyExc_ValueError, "slice step must be 1");
-          return NULL;
-      }
+        if (step != 1)
+        {
+            PyErr_SetString(PyExc_ValueError, "slice step must be 1");
+            return NULL;
+        }
 
-      return seq_getslice<U>(self, from, to);
-  }
+        return seq_getslice<U>(self, from, to);
+    }
 
-  if (PyIndex_Check(key))
-  {
-      Py_ssize_t at = PyNumber_AsSsize_t(key, PyExc_IndexError);
+    if (PyIndex_Check(key))
+    {
+        Py_ssize_t at = PyNumber_AsSsize_t(key, PyExc_IndexError);
 
-      if (at == -1 && PyErr_Occurred())
-          return NULL;
+        if (at == -1 && PyErr_Occurred())
+            return NULL;
 
-      return seq_get<U>(self, at);
-  }
+        return seq_get<U>(self, at);
+    }
 
-  PyErr_SetObject(PyExc_TypeError, key);
-  return NULL;
+    PyErr_SetObject(PyExc_TypeError, key);
+    return NULL;
 }
 
 template<typename U>
 static int map_ass_subscript(U *self, PyObject *key, PyObject *value)
 {
-  if (PySlice_Check(key))
-  {
-      Py_ssize_t from, to, step, slicelength;
+    if (PySlice_Check(key))
+    {
+        Py_ssize_t from, to, step, slicelength;
 
-      if (PySlice_GetIndicesEx(key, seq_length(self), &from, &to, &step,
-                               &slicelength) < 0)
-          return -1;
+        if (PySlice_GetIndicesEx(key, seq_length(self), &from, &to, &step,
+                                 &slicelength) < 0)
+            return -1;
 
-      if (step != 1)
-      {
-          PyErr_SetString(PyExc_ValueError, "slice step must be 1");
-          return -1;
-      }
+        if (step != 1)
+        {
+            PyErr_SetString(PyExc_ValueError, "slice step must be 1");
+            return -1;
+        }
 
-      return seq_setslice<U>(self, from, to, value);
-  }
+        return seq_setslice<U>(self, from, to, value);
+    }
 
-  if (PyIndex_Check(key))
-  {
-      Py_ssize_t at = PyNumber_AsSsize_t(key, PyExc_IndexError);
+    if (PyIndex_Check(key))
+    {
+        Py_ssize_t at = PyNumber_AsSsize_t(key, PyExc_IndexError);
 
-      if (at == -1 && PyErr_Occurred())
-          return -1;
+        if (at == -1 && PyErr_Occurred())
+            return -1;
 
-      return seq_set<U>(self, at, value);
-  }
+        return seq_set<U>(self, at, value);
+    }
 
-  PyErr_SetObject(PyExc_TypeError, key);
-  return -1;
+    PyErr_SetObject(PyExc_TypeError, key);
+    return -1;
 }
 
 
