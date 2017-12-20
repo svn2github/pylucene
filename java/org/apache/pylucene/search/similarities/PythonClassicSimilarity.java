@@ -48,12 +48,6 @@ public class PythonClassicSimilarity extends ClassicSimilarity {
     public native void pythonDecRef();
 
     @Override
-    public native float queryNorm(float sumOfSquaredWeights);
-    @Override
-    public native float coord(int overlap, int maxOverlap);
-    @Override
-    public native float lengthNorm(FieldInvertState state);
-    @Override
     public native float tf(float freq);
     @Override
     public native float sloppyFreq(int distance);

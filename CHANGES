@@ -1,3 +1,9 @@
+Version 6.5.0 -> 7.2.0
+----------------------
+ - using Lucene 7.2.0 sources
+ - PyLucene built with JCC 3.1
+ - 
+
 Version 6.4.1 -> 6.5.0
 ----------------------
  - using Lucene 6.5.0 sources

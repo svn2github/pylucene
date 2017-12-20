@@ -16,8 +16,7 @@ import sys, lucene, unittest
 from lucene import JArray
 from PyLuceneTestCase import PyLuceneTestCase
 
-from org.apache.lucene.document import \
-    Document, StoredField, CompressionTools, Field, FieldType
+from org.apache.lucene.document import Document, StoredField, Field, FieldType
 from org.apache.lucene.analysis.standard import StandardAnalyzer
 from org.apache.lucene.index import IndexWriter
 from org.apache.lucene.util import Version
@@ -64,35 +63,6 @@ class TestBinaryDocument(PyLuceneTestCase):
         # one
         stringFldStoredTest = docFromReader.get("stringStored")
         self.assertEqual(stringFldStoredTest, self.binaryValStored)
-
-        reader.close()
-
-    def testCompressionTools(self):
-
-        bytes = JArray('byte')(self.binaryValCompressed)
-        binaryFldCompressed = StoredField("binaryCompressed", CompressionTools.compress(bytes))
-        stringFldCompressed = StoredField("stringCompressed", CompressionTools.compressString(self.binaryValCompressed))
-
-        doc = Document()
-        doc.add(binaryFldCompressed)
-        doc.add(stringFldCompressed)
-
-        # add the doc to a ram index
-        writer = self.getWriter(analyzer=StandardAnalyzer())
-        writer.addDocument(doc)
-        writer.close()
-
-        # open a reader and fetch the document
-        reader = self.getReader()
-        docFromReader = reader.document(0)
-        self.assert_(docFromReader is not None)
-
-        # fetch the binary compressed field and compare it's content with
-        # the original one
-        bytes = CompressionTools.decompress(docFromReader.getBinaryValue("binaryCompressed"))
-        binaryFldCompressedTest = bytes.string_
-        self.assertEqual(binaryFldCompressedTest, self.binaryValCompressed)
-        self.assertEqual(CompressionTools.decompressString(docFromReader.getBinaryValue("stringCompressed")), self.binaryValCompressed)
 
         reader.close()
 

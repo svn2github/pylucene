@@ -1,5 +1,5 @@
-Version 3.0 ->
--------------------
+Version 3.0 -> 3.1
+------------------
  - fixed bug PYLUCENE-36 (Paulo Villegas)
  - reworked type construction to use PyType_FromSpecWithBases (Python 3)
  - added 'm' suffix to linux -lpython statement for shared jcc lib

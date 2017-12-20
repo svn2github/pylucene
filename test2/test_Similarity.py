@@ -27,15 +27,6 @@ from org.apache.pylucene.search.similarities import PythonClassicSimilarity
 
 class SimpleSimilarity(PythonClassicSimilarity):
 
-    def queryNorm(self, sumOfSquaredWeights):
-        return 1.0
-
-    def coord(self, overlap, maxOverlap):
-        return 1.0
-
-    def lengthNorm(self, state):
-        return state.getBoost()
-
     def tf(self, freq):
         return freq
 

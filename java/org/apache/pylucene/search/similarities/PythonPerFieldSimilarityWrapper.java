@@ -13,20 +13,18 @@
  * ====================================================================
  */
 
-package org.apache.pylucene.analysis;
+package org.apache.pylucene.search.similarities;
 
-import org.apache.lucene.analysis.TokenFilter;
-import org.apache.lucene.analysis.TokenStream;
-import java.io.IOException;
+import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.search.similarities.PerFieldSimilarityWrapper;
 
 
-public class PythonTokenFilter extends TokenFilter {
+public class PythonPerFieldSimilarityWrapper extends PerFieldSimilarityWrapper {
 
     private long pythonObject;
 
-    public PythonTokenFilter(TokenStream tokenStream)
+    public PythonPerFieldSimilarityWrapper()
     {
-        super(tokenStream);
     }
 
     public void pythonExtension(long pythonObject)
@@ -46,7 +44,9 @@ public class PythonTokenFilter extends TokenFilter {
 
     public native void pythonDecRef();
 
+    /**
+     * Returns a {@link Similarity} for scoring a field.
+     */
     @Override
-    public native boolean incrementToken()
-        throws IOException;
+    public native Similarity get(String name);
 }

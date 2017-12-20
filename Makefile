@@ -15,8 +15,8 @@
 # site-packages directory.
 #
 
-VERSION=6.5.0
-LUCENE_VER=6.5.0
+VERSION=7.2.0
+LUCENE_VER=7.2.0
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
@@ -47,7 +47,7 @@ LUCENE=$(LUCENE_SRC)/lucene
 #PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install3
 #ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
 #PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc.__main__ --shared --arch x86_64
+#JCC=$(PYTHON) -m jcc --shared --arch x86_64
 #NUM_FILES=8
 
 # Mac OS X 10.12 (64-bit Python 2.7, Java 1.8)
@@ -178,6 +178,7 @@ MISC_JAR=$(LUCENE)/build/misc/lucene-misc-$(LUCENE_VER).jar
 ANTLR_JAR=$(LUCENE)/expressions/lib/antlr4-runtime-4.5.1-1.jar
 ASM_JAR=$(LUCENE)/expressions/lib/asm-5.1.jar
 ASM_COMMONS_JAR=$(LUCENE)/expressions/lib/asm-commons-5.1.jar
+HPPC_JAR=$(LUCENE)/facet/lib/hppc-0.7.3.jar
 
 ICUPKG:=$(shell which icupkg)
 
@@ -264,7 +265,7 @@ $(MISC_JAR): $(LUCENE_JAR)
 
 JCCFLAGS?=
 
-jars: $(JARS) $(ANTLR_JAR) $(ASM_JAR) $(ASM_COMMONS)
+jars: $(JARS) $(ANTLR_JAR) $(ASM_JAR) $(ASM_COMMONS) $(HPPC_JAR)
 
 
 ifneq ($(ICUPKG),)
@@ -296,6 +297,7 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --include $(ANTLR_JAR) \
            --include $(ASM_JAR) \
            --include $(ASM_COMMONS_JAR) \
+           --include $(HPPC_JAR) \
            --package java.lang java.lang.System \
                                java.lang.Runtime \
            --package java.util java.util.Arrays \
@@ -322,7 +324,8 @@ GENERATE=$(JCC) $(foreach jar,$(JARS),--jar $(jar)) \
            --python lucene \
            --mapping org.apache.lucene.document.Document 'get:(Ljava/lang/String;)Ljava/lang/String;' \
            --mapping java.util.Properties 'getProperty:(Ljava/lang/String;)Ljava/lang/String;' \
-           --sequence java.util.AbstractList 'size:()I' 'get:(I)Ljava/lang/Object;' \
+           --sequence java.util.AbstractCollection 'size:()I' '-:-' \
+           --sequence java.util.AbstractList '-:-' 'get:(I)Ljava/lang/Object;' \
            org.apache.lucene.index.IndexWriter:getReader \
            org.apache.lucene.analysis.Tokenizer:input \
            --version $(LUCENE_VER) \

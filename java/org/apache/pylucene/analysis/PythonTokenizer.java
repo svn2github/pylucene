@@ -16,7 +16,6 @@
 package org.apache.pylucene.analysis;
 
 import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.Token;
 import java.io.IOException;
 
 

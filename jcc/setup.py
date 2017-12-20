@@ -12,7 +12,7 @@
 
 import os, sys, platform, subprocess
 
-jcc_ver = '3.0'
+jcc_ver = '3.1'
 machine = platform.machine()
 using_python2 = sys.version_info < (3,)
 
