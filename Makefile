@@ -44,11 +44,11 @@ LUCENE=$(LUCENE_SRC)/lucene
 #
 
 # Mac OS X 10.12 (64-bit Python 3.6, Java 1.8)
-#PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install3
-#ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
-#PYTHON=$(PREFIX_PYTHON)/bin/python
-#JCC=$(PYTHON) -m jcc --shared --arch x86_64
-#NUM_FILES=8
+PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install3
+ANT=/Users/vajda/tmp/apache-ant-1.9.3/bin/ant
+PYTHON=$(PREFIX_PYTHON)/bin/python
+JCC=$(PYTHON) -m jcc --shared --arch x86_64
+NUM_FILES=8
 
 # Mac OS X 10.12 (64-bit Python 2.7, Java 1.8)
 #PREFIX_PYTHON=/Users/vajda/apache/pylucene/_install2
