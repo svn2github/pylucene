@@ -6,7 +6,6 @@ Version 3.0 -> 3.1
  - fixed bug with using split instead of rpartition on path (Petrus Hyvönen)
  - fixed bug PYLUCENE-38 (Aric Coady)
  - fixed bug PYLUCENE-39
- - 
 
 Version 2.23 -> 3.0
 -------------------
