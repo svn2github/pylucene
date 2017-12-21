@@ -83,7 +83,7 @@ if __name__ == "__main__":
     except ImportError:
         pass
     else:
-        if icu.ICU_VERSION >= '49':
+        if icu.ICU_VERSION >= '49' and icu.ICU_VERSION <= '59.1':
             lucene.initVM(vmargs=['-Djava.awt.headless=true'])
             if '-loop' in sys.argv:
                 sys.argv.remove('-loop')
@@ -95,4 +95,4 @@ if __name__ == "__main__":
             else:
                  unittest.main()
         else:
-            print("ICU version >= 49 is required, running:", icu.ICU_VERSION, file=sys.stderr)
+            print("ICU version [49 - 59.1] is required, running:", icu.ICU_VERSION, file=sys.stderr)

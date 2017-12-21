@@ -27,6 +27,9 @@ from org.apache.pylucene.search.similarities import PythonClassicSimilarity
 
 class SimpleSimilarity(PythonClassicSimilarity):
 
+    def lengthNorm(self, numTerms):
+        return 1.0
+
     def tf(self, freq):
         return freq
 

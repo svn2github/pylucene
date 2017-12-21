@@ -48,6 +48,8 @@ public class PythonClassicSimilarity extends ClassicSimilarity {
     public native void pythonDecRef();
 
     @Override
+    public native float lengthNorm(int numTerms);
+    @Override
     public native float tf(float freq);
     @Override
     public native float sloppyFreq(int distance);

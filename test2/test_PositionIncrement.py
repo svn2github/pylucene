@@ -212,7 +212,7 @@ class PositionIncrementTestCase(PyLuceneTestCase):
 
         count = 0;
         collector = PayloadSpanCollector()
-        pspans = snq.createWeight(searcher, False).getSpans(
+        pspans = snq.createWeight(searcher, False, 1.0).getSpans(
             searcher.getIndexReader().leaves().get(0),
             SpanWeight.Postings.PAYLOADS)
 
@@ -228,7 +228,7 @@ class PositionIncrementTestCase(PyLuceneTestCase):
         self.assert_(sawZero)
         self.assertEquals(8, count)
 
-        spans = snq.createWeight(searcher, False).getSpans(
+        spans = snq.createWeight(searcher, False, 1.0).getSpans(
             searcher.getIndexReader().leaves().get(0),
             SpanWeight.Postings.POSITIONS)
         count = 0
