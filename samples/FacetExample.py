@@ -91,7 +91,7 @@ drilldownCategories = [["root","a","f1"],  ["root","a","f2"]]
 
 class SimpleIndexer(object):
 
-    def index (cls, indexDir, taxoDir, facets_config):
+    def index(cls, indexDir, taxoDir, facets_config):
         """Create an index, and adds to it sample documents and facets.
         indexDir Directory in which the index should be created.
         taxoDir Directory in which the taxonomy index should be created.
