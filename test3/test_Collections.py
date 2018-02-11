@@ -106,7 +106,7 @@ class Test_CollectionsFloatSet(Test_CollectionsSetBase):
         return set([1.5, 4.5, -0.5])
 
 
-class Test_CollectionsBoolList(Test_CollectionsSetBase):
+class Test_CollectionsBoolSet(Test_CollectionsSetBase):
 
     def createTestSet(self):
         return set([True,False])
