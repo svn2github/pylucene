@@ -390,13 +390,13 @@ distrib:
 	tar -cf - --exclude build `find $(LUCENE_SRC) -type l | xargs -n 1 echo --exclude` $(LUCENE_SRC) | tar -C distrib/pylucene-$(VERSION) -xvf -
 	cd distrib; tar --disable-copyfile -cvzf $(ARCHIVE) pylucene-$(VERSION)
 	cd distrib; gpg2 --armor --output $(ARCHIVE).asc --detach-sig $(ARCHIVE)
-	cd distrib; md5sum $(ARCHIVE) > $(ARCHIVE).md5
+	cd distrib; shasum -a 256 $(ARCHIVE) > $(ARCHIVE).sha256
 
 stage:
-	cd distrib; cp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 ../../dist/dev/pylucene/
+	cd distrib; cp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).sha256 ../../dist/dev/pylucene/
 
 release:
-	cd distrib; cp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).md5 ../../dist/release/pylucene/
+	cd distrib; cp -p $(ARCHIVE) $(ARCHIVE).asc $(ARCHIVE).sha256 ../../dist/release/pylucene/
 
 print-%:
 	@echo $* = $($*)
