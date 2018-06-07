@@ -24,7 +24,7 @@ def patch_st_dir(patch_version, st_egg, jccdir):
 Shared mode is disabled, setuptools patch.43.%s must be applied to enable it
 or the NO_SHARED environment variable must be set to turn off this error.
 
-    sudo patch -d %s -Nup0 < %s/jcc/patches/patch.43.%s
+    sudo patch -d %s -Nup0 < %s/jcc2/patches/patch.43.%s
 
 See %s/INSTALL for more information about shared mode.
 ''' %(patch_version, st_egg, jccdir, patch_version, jccdir)
@@ -39,7 +39,7 @@ or the NO_SHARED environment variable must be set to turn off this error.
     mkdir tmp
     cd tmp
     unzip -q %s
-    patch -Nup0 < %s/jcc/patches/patch.43.%s
+    patch -Nup0 < %s/jcc2/patches/patch.43.%s
     sudo zip %s -f
     cd ..
     rm -rf tmp
@@ -53,7 +53,7 @@ def patch_setuptools(with_setuptools):
 
     try:
         from setuptools.command.build_ext import sh_link_shared_object
-        enable_shared = True  # jcc/patches/patch.43 was applied
+        enable_shared = True  # jcc2/patches/patch.43 was applied
     except ImportError:
         jccdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         st_egg = os.path.dirname(setuptools.__path__[0])

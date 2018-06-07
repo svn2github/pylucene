@@ -22,7 +22,7 @@ def patch_setuptools(with_setuptools):
 
     try:
         from setuptools.command.build_ext import sh_link_shared_object
-        enable_shared = True  # jcc/patches/patch.43 was applied
+        enable_shared = True  # jcc2/patches/patch.43 was applied
     except ImportError:
         # patch build_ext so that it doesn't mess with a Library's extension
         from setuptools.command.build_ext import build_ext as _build_ext
