@@ -483,7 +483,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
 
                 if (PyUnicode_Check(arg))
                 {
-                    char *option = PyUnicode_AsUTF8(arg);
+                    const char *option = PyUnicode_AsUTF8(arg);
 
                     if (nOptions < sizeof(vm_options) / sizeof(JavaVMOption))
                         add_option("", option, &vm_options[nOptions++]);
