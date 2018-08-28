@@ -15,8 +15,8 @@
 # site-packages directory.
 #
 
-VERSION=7.2.0
-LUCENE_VER=7.2.0
+VERSION=7.4.0
+LUCENE_VER=7.4.0
 PYLUCENE:=$(shell pwd)
 LUCENE_SRC=lucene-java-$(LUCENE_VER)
 LUCENE=$(LUCENE_SRC)/lucene
@@ -178,7 +178,7 @@ MISC_JAR=$(LUCENE)/build/misc/lucene-misc-$(LUCENE_VER).jar
 ANTLR_JAR=$(LUCENE)/expressions/lib/antlr4-runtime-4.5.1-1.jar
 ASM_JAR=$(LUCENE)/expressions/lib/asm-5.1.jar
 ASM_COMMONS_JAR=$(LUCENE)/expressions/lib/asm-commons-5.1.jar
-HPPC_JAR=$(LUCENE)/facet/lib/hppc-0.7.3.jar
+HPPC_JAR=$(LUCENE)/facet/lib/hppc-0.8.1.jar
 
 ICUPKG:=$(shell which icupkg)
 
