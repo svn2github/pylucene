@@ -1,7 +1,8 @@
 Version 3.1 ->
 ------------------
  - added missing 'const' breaking build with Python 3.7 (Aric Coady)
- -
+ - fixed bug with not skipping META-INF/ entries in .jar files
+ - 
 
 Version 3.0 -> 3.1
 ------------------

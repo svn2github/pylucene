@@ -370,7 +370,7 @@ def expandjar(path):
 
     for member in jar.infolist():
         f = member.filename
-        if f.endswith('.class'):
+        if not f.startswith('META-INF/') and f.endswith('.class'):
             yield f.split('.')[0].replace('/', '.')
 
     jar.close()
