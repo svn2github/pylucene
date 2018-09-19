@@ -211,7 +211,11 @@ try:
         from pkg_resources import SetuptoolsVersion
         with_modern_setuptools = True
     except ImportError:
-        with_modern_setuptools = False
+        try:
+            from pkg_resources.extern.packaging.version import Version
+            with_modern_setuptools = True
+        except ImportError:
+            with_modern_setuptools = False
 
     enable_shared = False
 

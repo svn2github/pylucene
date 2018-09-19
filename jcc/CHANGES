@@ -1,3 +1,8 @@
+Version 3.2 ->
+--------------
+ - fixed bug PYLUCENE-43
+ - 
+
 Version 3.1 -> 3.2
 ------------------
  - added missing 'const' breaking build with Python 3.7 (Aric Coady)
