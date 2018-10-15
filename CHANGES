@@ -1,7 +1,12 @@
-Version 6.5.0 -> 7.2.0
+Version 7.4.0 -> 7.5.0
 ----------------------
- - using Lucene 7.2.0 sources
- - PyLucene built with JCC 3.1
+ - using Lucene 7.5.0 sources
+ - PyLucene built with JCC 3.3
+
+Version 6.5.0 -> 7.4.0
+----------------------
+ - using Lucene 7.4.0 sources
+ - PyLucene built with JCC 3.2
 
 Version 6.4.1 -> 6.5.0
 ----------------------
