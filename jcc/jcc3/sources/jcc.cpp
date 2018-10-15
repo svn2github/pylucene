@@ -462,7 +462,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                 {
                     free(buf);
                     for (unsigned int i = 0; i < nOptions; i++)
-                        delete vm_options[i].optionString;
+                        free(vm_options[i].optionString);
                     PyErr_Format(PyExc_ValueError,
                                  "Too many options (> %d)", nOptions);
                     return NULL;
@@ -490,7 +490,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                     else
                     {
                         for (unsigned int j = 0; j < nOptions; j++)
-                            delete vm_options[j].optionString;
+                            free(vm_options[j].optionString);
                         PyErr_Format(PyExc_ValueError,
                                      "Too many options (> %d)", nOptions);
                         Py_DECREF(fast);
@@ -500,7 +500,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                 else
                 {
                     for (unsigned int j = 0; j < nOptions; j++)
-                        delete vm_options[j].optionString;
+                        free(vm_options[j].optionString);
                     PyErr_Format(PyExc_TypeError,
                                  "vmargs arg %d is not a string", i);
                     Py_DECREF(fast);
@@ -527,7 +527,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         if (JNI_CreateJavaVM(&vm, (void **) &vm_env, &vm_args) < 0)
         {
             for (unsigned int i = 0; i < nOptions; i++)
-                delete vm_options[i].optionString;
+                free(vm_options[i].optionString);
 
             PyErr_Format(PyExc_ValueError,
                          "An error occurred while creating Java VM");
@@ -537,7 +537,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         env->set_vm(vm, vm_env);
 
         for (unsigned int i = 0; i < nOptions; i++)
-            delete vm_options[i].optionString;
+            free(vm_options[i].optionString);
 
         t_jccenv *jccenv = (t_jccenv *) PY_TYPE(JCCEnv)->tp_alloc(PY_TYPE(JCCEnv), 0);
         jccenv->env = env;

@@ -131,7 +131,7 @@ static void t_jccenv_dealloc(t_jccenv *self)
 
 static void add_option(char *name, char *value, JavaVMOption *option)
 {
-    char *buf = new char[strlen(name) + strlen(value) + 1];
+  char *buf = (char *) malloc(strlen(name) + strlen(value) + 1);
 
     sprintf(buf, "%s%s", name, value);
     option->optionString = buf;
@@ -145,7 +145,7 @@ static void add_paths(char *name, char *p0, char *p1, JavaVMOption *option)
 #else
     char pathsep = ':';
 #endif
-    char *buf = new char[strlen(name) + strlen(p0) + strlen(p1) + 4];
+    char *buf = (char *) malloc(strlen(name) + strlen(p0) + strlen(p1) + 4);
 
     sprintf(buf, "%s%s%c%s", name, p0, pathsep, p1);
     option->optionString = buf;
@@ -461,7 +461,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                 {
                     free(buf);
                     for (unsigned int i = 0; i < nOptions; i++)
-                        delete vm_options[i].optionString;
+                        free(vm_options[i].optionString);
                     PyErr_Format(PyExc_ValueError,
                                  "Too many options (> %d)", nOptions);
                     return NULL;
@@ -489,7 +489,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                     else
                     {
                         for (unsigned int j = 0; j < nOptions; j++)
-                            delete vm_options[j].optionString;
+                            free(vm_options[j].optionString);
                         PyErr_Format(PyExc_ValueError,
                                      "Too many options (> %d)", nOptions);
                         Py_DECREF(fast);
@@ -499,7 +499,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
                 else
                 {
                     for (unsigned int j = 0; j < nOptions; j++)
-                        delete vm_options[j].optionString;
+                        free(vm_options[j].optionString);
                     PyErr_Format(PyExc_TypeError,
                                  "vmargs arg %d is not a string", i);
                     Py_DECREF(fast);
@@ -526,7 +526,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         if (JNI_CreateJavaVM(&vm, (void **) &vm_env, &vm_args) < 0)
         {
             for (unsigned int i = 0; i < nOptions; i++)
-                delete vm_options[i].optionString;
+                free(vm_options[i].optionString);
 
             PyErr_Format(PyExc_ValueError,
                          "An error occurred while creating Java VM");
@@ -536,7 +536,7 @@ _DLL_EXPORT PyObject *initVM(PyObject *self, PyObject *args, PyObject *kwds)
         env->set_vm(vm, vm_env);
 
         for (unsigned int i = 0; i < nOptions; i++)
-            delete vm_options[i].optionString;
+            free(vm_options[i].optionString);
 
         t_jccenv *jccenv = (t_jccenv *) PY_TYPE(JCCEnv).tp_alloc(&PY_TYPE(JCCEnv), 0);
         jccenv->env = env;
