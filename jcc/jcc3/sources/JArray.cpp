@@ -574,33 +574,32 @@ public:
 
     class iterator_type {
     public:
-        PyTypeObject type_object;
+        PyTypeObject *type_object;
 
         void install(char *name, PyObject *module)
         {
-            type_object.tp_name = name;
+            PyType_Slot slots[] = {
+                { Py_tp_dealloc, (void *) _t_iterator<U>::dealloc },
+                { Py_tp_doc, (void *) "JArrayIterator<T> wrapper type" },
+                { Py_tp_iter, (void *) PyObject_SelfIter },
+                { Py_tp_iternext, (void *) _t_iterator<U>::iternext },
+                { 0, NULL }
+            };
 
-            if (PyType_Ready(&type_object) == 0)
-            {
-                Py_INCREF((PyObject *) &type_object);
-                PyModule_AddObject(module, name, (PyObject *) &type_object);
-            }
+            PyType_Spec spec = {
+                name, 
+                sizeof(_t_iterator<U>),
+                0,
+                Py_TPFLAGS_DEFAULT,
+                slots
+            };
 
-            _t_iterator<U>::JArrayIterator = &type_object;
-        }
+            type_object = (PyTypeObject *) PyType_FromSpec(&spec);
 
-        iterator_type()
-        {
-            memset(&type_object, 0, sizeof(type_object));
+            if (type_object != NULL)
+                PyModule_AddObject(module, name, (PyObject *) type_object);
 
-            Py_REFCNT(&type_object) = 1;
-            Py_TYPE(&type_object) = NULL;
-            type_object.tp_basicsize = sizeof(_t_iterator<U>);
-            type_object.tp_dealloc = (destructor) _t_iterator<U>::dealloc;
-            type_object.tp_flags = Py_TPFLAGS_DEFAULT;
-            type_object.tp_doc = "JArrayIterator<T> wrapper type";
-            type_object.tp_iter = (getiterfunc) PyObject_SelfIter;
-            type_object.tp_iternext = (iternextfunc) _t_iterator<U>::iternext;
+            _t_iterator<U>::JArrayIterator = type_object;
         }
     };
 
@@ -668,7 +667,7 @@ public:
 
         PyObject *bases = PyTuple_Pack(1, PY_TYPE(Object));
 
-        type_object = (PyTypeObject*) PyType_FromSpecWithBases(&spec, bases);
+        type_object = (PyTypeObject *) PyType_FromSpecWithBases(&spec, bases);
         Py_DECREF(bases);
 
         if (type_object != NULL)
