@@ -610,20 +610,11 @@ public:
     {
         static PyMethodDef methods[] = {
             { "cast_",
-              (PyCFunction) (PyObject *(*)(PyTypeObject *,
-                                           PyObject *, PyObject *))
-              cast_<T>,
-              METH_VARARGS | METH_CLASS, NULL },
+              (PyCFunction) cast_<T>, METH_VARARGS | METH_CLASS, "" },
             { "instance_",
-              (PyCFunction) (PyObject *(*)(PyTypeObject *,
-                                           PyObject *, PyObject *))
-              instance_<T>,
-              METH_VARARGS | METH_CLASS, NULL },
+              (PyCFunction) instance_<T>, METH_VARARGS | METH_CLASS, "" },
             { "assignable_",
-              (PyCFunction) (PyObject *(*)(PyTypeObject *,
-                                           PyObject *, PyObject *))
-              assignable_<T>,
-              METH_VARARGS | METH_CLASS, NULL },
+              (PyCFunction) assignable_<T>, METH_VARARGS | METH_CLASS, "" },
             { NULL, NULL, 0, NULL }
         };
 
