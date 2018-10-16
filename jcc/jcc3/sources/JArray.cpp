@@ -608,7 +608,7 @@ public:
     void install(char *name, char *type_name, char *iterator_name,
                  PyObject *module)
     {
-        PyMethodDef methods[] = {
+        static PyMethodDef methods[] = {
             { "cast_",
               (PyCFunction) (PyObject *(*)(PyTypeObject *,
                                            PyObject *, PyObject *))
