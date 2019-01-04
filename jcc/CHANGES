@@ -1,3 +1,8 @@
+Version 3.3 -> 3.4
+------------------
+ - added NAN to the list of reserved words
+ - 
+
 Version 3.2 -> 3.3
 ------------------
  - fixed bug PYLUCENE-43
